@@ -1,0 +1,560 @@
+/*!**************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/components/Hero.module.css ***!
+  \**************************************************************************************************************************************************************************************************************************************************************************/
+.Hero_hero__T3Fr4 {
+  padding: 4rem 0 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.Hero_content__9ypWn {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.Hero_title__Bn2TU {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .Hero_title__Bn2TU {
+    font-size: 3.5rem;
+  }
+}
+
+.Hero_highlight___Cwgz {
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.Hero_subtitle__lkRtQ {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .Hero_subtitle__lkRtQ {
+    font-size: 1.25rem;
+  }
+}
+
+.Hero_appsSection__nWFd3 {
+  margin-top: 1rem;
+}
+
+.Hero_appsTitle__Jh261 {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.Hero_cards__dBcEV {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 1rem;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .Hero_cards__dBcEV {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.Hero_card__gqOeG {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.Hero_card__gqOeG:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.Hero_card__gqOeG::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.Hero_card__gqOeG:hover::before {
+  opacity: 1;
+}
+
+.Hero_cardIcon__CDGfG {
+  font-size: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.Hero_cardInfo__MHO4w {
+  flex: 1 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.Hero_cardInfo__MHO4w h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.Hero_cardInfo__MHO4w p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.Hero_linkText__vo0Kf {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  display: inline-block;
+  opacity: 0.8;
+}
+
+.Hero_card__gqOeG:hover .Hero_linkText__vo0Kf {
+  opacity: 1;
+}
+
+/*!*********************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/components/AdSenseMock.module.css ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************/
+.AdSenseMock_adWrapper__5ZEXW {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin: 1.5rem 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.AdSenseMock_adLabel__WXW8H {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-bottom-left-radius: 0.25rem;
+  text-transform: uppercase;
+}
+
+.AdSenseMock_adContent__RE4ZV {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.AdSenseMock_adContent__RE4ZV strong {
+  font-size: 0.95rem;
+}
+
+.AdSenseMock_adContent__RE4ZV span {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/*!*****************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/components/Sidebar.module.css ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************/
+.Sidebar_sidebar__v6daX {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.Sidebar_widget__AjeCo {
+  padding: 1.5rem;
+  border-radius: 1rem;
+}
+
+.Sidebar_widgetTitle__DuliR {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+/* Profile Card */
+.Sidebar_profileHeader__9Qiu2 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.Sidebar_avatar__eAVA_ {
+  font-size: 2.5rem;
+  background-color: var(--border-color);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Sidebar_profileName__rALWl {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.Sidebar_profileRole__MvQfC {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.Sidebar_profileQuote__6lTrI {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.Sidebar_profileLinks__c4INf {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.Sidebar_profileLinks__c4INf a {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.Sidebar_profileLinks__c4INf a:hover {
+  background-color: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+}
+
+.Sidebar_stickyAd__9Cj5P {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 6rem;
+}
+
+/* Lists */
+.Sidebar_appList__Ceqhj {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.Sidebar_appList__Ceqhj a {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.Sidebar_appList__Ceqhj a:hover {
+  color: var(--accent-color);
+}
+
+.Sidebar_postList__6smRU {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  counter-reset: post-counter;
+}
+
+.Sidebar_postList__6smRU li {
+  font-size: 0.95rem;
+}
+
+.Sidebar_postList__6smRU a {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  transition: color 0.2s ease;
+}
+
+.Sidebar_postList__6smRU a:hover {
+  color: var(--accent-color);
+}
+
+.Sidebar_postNumber__D2bAd {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/*!******************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/components/PostCard.module.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************/
+.PostCard_card__5hTz7 {
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.PostCard_card__5hTz7:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.PostCard_featured__Xmwyr {
+  border: 2px solid var(--accent-color);
+}
+
+.PostCard_imagePlaceholder__2HAoL {
+  background-color: var(--border-color);
+  aspect-ratio: 16/9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.PostCard_featured__Xmwyr .PostCard_imagePlaceholder__2HAoL {
+  aspect-ratio: 21/9;
+}
+
+.PostCard_content__R456t {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.PostCard_meta__TPno1 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.PostCard_category__GXSvi {
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.PostCard_date__rPeTA {
+  color: var(--text-secondary);
+}
+
+.PostCard_title__z8eru {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.PostCard_featured__Xmwyr .PostCard_title__z8eru {
+  font-size: 1.5rem;
+}
+
+.PostCard_title__z8eru:hover {
+  text-decoration: underline;
+}
+
+.PostCard_summary__v6Reb {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.PostCard_featured__Xmwyr .PostCard_summary__v6Reb {
+  -webkit-line-clamp: 3;
+}
+
+.PostCard_tags__qr6Pd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.PostCard_tag__W_nvw {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+  .PostCard_card__5hTz7:not(.PostCard_featured__Xmwyr) {
+    flex-direction: row;
+  }
+  
+  .PostCard_card__5hTz7:not(.PostCard_featured__Xmwyr) .PostCard_imagePlaceholder__2HAoL {
+    width: 240px;
+    aspect-ratio: 4/3;
+    flex-shrink: 0;
+  }
+}
+
+/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/app/page.module.css ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************/
+.page_gridContainer__7pS37 {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 2rem;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .page_gridContainer__7pS37 {
+    grid-template-columns: 7fr 3fr;
+    gap: 3rem;
+  }
+}
+
+.page_mainArea__jNVoP {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.page_filterTabs__MWfCj {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.page_tabBtn__mMpRP {
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.page_tabBtn__mMpRP:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.page_activeTab__kgdSK {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.page_activeTab__kgdSK:hover {
+  background-color: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.page_postList__wCrMv {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.page_pagination__8VB5K {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+}
+
+.page_pageBtn__GErvS {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.page_pageBtn__GErvS:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.page_activePage__hF46d {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.page_activePage__hF46d:hover {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.page_pageDots___8P0M {
+  color: var(--text-secondary);
+}
+
+.page_sidebarWrapper__uOXPl {
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .page_sidebarWrapper__uOXPl > aside {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 6rem;
+  }
+}
+
