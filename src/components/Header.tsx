@@ -35,6 +35,7 @@ export default function Header() {
           <ul className={styles.navList}>
             <li><Link href="/ai-apps">AI Apps</Link></li>
             <li><Link href="/biz">Biz</Link></li>
+            <li><Link href="/tools/quote-generator">AI 견적서</Link></li>
             <li><Link href="/about">About</Link></li>
           </ul>
         </nav>
