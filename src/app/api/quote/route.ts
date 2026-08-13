@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { INDUSTRY_PRESETS, isIndustry } from "@/lib/quotePresets";
+import { INDUSTRY_PRESETS, isIndustry, type IndustryPreset } from "@/lib/quotePresets";
 import { extractTextFromFile } from "@/lib/extractText";
+import { QuoteSchema, type Quote } from "@/lib/quoteSchema";
 
 // 무료/저비용 운영을 위해 Gemini Flash Lite 사용. 필요 시 모델명만 교체하면 됩니다.
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
@@ -10,24 +10,6 @@ const MIN_TEXT_LENGTH = 20;
 const MAX_TEXT_LENGTH = 12000;
 const MAX_FILE_SIZE_MB = 8;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
-const QuoteItemSchema = z.object({
-  name: z.string(),
-  category: z.string().optional().default(""),
-  days: z.number().finite().nonnegative(),
-  amount: z.number().finite().nonnegative(),
-  reason: z.string(),
-});
-
-const QuoteSchema = z.object({
-  summary: z.string().optional().default(""),
-  items: z.array(QuoteItemSchema).min(1),
-  total_min: z.number().finite().nonnegative(),
-  total_max: z.number().finite().nonnegative(),
-  risks: z.array(z.string()).optional().default([]),
-});
-
-type Quote = z.infer<typeof QuoteSchema>;
 
 // Gemini structured output용 응답 스키마 (OpenAPI 서브셋, 타입은 대문자 표기)
 const GEMINI_RESPONSE_SCHEMA = {
@@ -71,12 +53,42 @@ function extractJson(raw: string): unknown {
   return JSON.parse(raw.slice(start, end + 1));
 }
 
-function normalizeQuote(quote: Quote): Quote {
+function normalizeQuote(quote: Quote, preset: IndustryPreset): Quote {
+  let normalized = quote;
+
   // AI가 min/max를 반대로 주는 경우를 대비한 안전장치
-  if (quote.total_min > quote.total_max) {
-    return { ...quote, total_min: quote.total_max, total_max: quote.total_min };
+  if (normalized.total_min > normalized.total_max) {
+    normalized = { ...normalized, total_min: normalized.total_max, total_max: normalized.total_min };
   }
-  return quote;
+
+  // 비현실적인 견적 방지: 업종 평균 일당(minDailyRate~maxDailyRate) 기준 상하한 캡
+  // 프리랜서 개인 단가는 평균보다 낮을 수 있고 에이전시는 평균보다 높을 수 있어 30~50% 여유를 둠
+  const totalDays = normalized.items.reduce((sum, item) => sum + item.days, 0);
+  if (totalDays > 0) {
+    const plausibleMin = totalDays * preset.minDailyRate * 0.7;
+    const plausibleMax = totalDays * preset.maxDailyRate * 1.5;
+    const clamp = (value: number) => Math.round(Math.min(Math.max(value, plausibleMin), plausibleMax));
+
+    const finalMin = clamp(normalized.total_min);
+    let finalMax = clamp(normalized.total_max);
+    if (finalMin === finalMax) {
+      finalMax = Math.round(finalMin * 1.2);
+    }
+
+    if (finalMin !== normalized.total_min || finalMax !== normalized.total_max) {
+      normalized = {
+        ...normalized,
+        total_min: finalMin,
+        total_max: finalMax,
+        risks: [
+          ...normalized.risks,
+          "AI가 산출한 금액이 업종 평균과 크게 달라 합리적인 범위로 자동 보정되었습니다. 실제 계약 전 전문가 검토를 권장합니다.",
+        ],
+      };
+    }
+  }
+
+  return normalized;
 }
 
 export async function POST(req: NextRequest) {
@@ -217,7 +229,7 @@ ${trimmedText}`;
     if (!parsedQuote.success) {
       throw new Error("AI 응답이 예상한 형식과 다릅니다.");
     }
-    quote = normalizeQuote(parsedQuote.data);
+    quote = normalizeQuote(parsedQuote.data, preset);
   } catch (err) {
     console.error("[quote] AI 응답 파싱 실패:", err, rawText);
     return NextResponse.json(
