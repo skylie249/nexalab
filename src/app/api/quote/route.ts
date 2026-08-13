@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { cookies } from "next/headers";
-import { supabaseAdmin } from "@/lib/supabase-admin";
 import { INDUSTRY_PRESETS, isIndustry } from "@/lib/quotePresets";
 
 // 무료/저비용 운영을 위해 Gemini Flash Lite 사용. 필요 시 모델명만 교체하면 됩니다.
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
-const SESSION_COOKIE = "nexalab_qs_id";
 
 const MIN_TEXT_LENGTH = 20;
 const MAX_TEXT_LENGTH = 12000;
@@ -200,33 +197,6 @@ ${trimmedText}`;
     );
   }
 
-  const cookieStore = await cookies();
-  let sessionId = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!sessionId) {
-    sessionId = crypto.randomUUID();
-  }
-
-  try {
-    const { error: insertError } = await supabaseAdmin.from("quote_requests").insert({
-      industry,
-      hourly_rate: hourlyRate ?? null,
-      extracted_text: trimmedText,
-      ai_response: quote,
-      session_id: sessionId,
-    });
-    if (insertError) {
-      // 기록 실패는 사용자 경험에 영향을 주지 않도록 무시하고 로그만 남김 (예: 테이블 미생성, 키 미설정 등)
-      console.error("[quote] Supabase insert 오류:", insertError.message);
-    }
-  } catch (err) {
-    console.error("[quote] Supabase 저장 실패:", err);
-  }
-
-  const response = NextResponse.json({ quote });
-  response.cookies.set(SESSION_COOKIE, sessionId, {
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 30,
-  });
-  return response;
+  // 견적 결과는 저장하지 않고 그대로 반환만 합니다 (Supabase 미연동).
+  return NextResponse.json({ quote });
 }

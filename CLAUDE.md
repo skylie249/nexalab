@@ -55,7 +55,9 @@
 7. (선택, 추후) 이메일 입력 시 리포트 발송 → 리드 수집
 ```
 
-### 데이터베이스 스키마 (Supabase)
+### 데이터베이스 스키마 (Supabase) — ⚠️ 현재 미사용
+
+> 2026-08-13 업데이트로 견적 결과를 저장하지 않는 방식으로 바뀌면서 아래 두 테이블은 코드에서 더 이상 참조하지 않습니다. Supabase에 만들어두셨다면 삭제하셔도 무방합니다. 아래 스키마는 추후 리드 수집(5단계)이나 캡핑(7단계)을 실제로 구현할 때 참고할 설계로만 남겨둡니다.
 
 ```sql
 -- 견적 요청 기록 테이블
@@ -181,7 +183,7 @@ export async function POST(req: Request) {
 | PDF 텍스트 추출 | `pdf-parse` 또는 `pdfjs-dist` |
 | DOCX 텍스트 추출 | `mammoth` |
 | AI 분석 | Anthropic API (Claude) |
-| 결과 저장 | Supabase DB (`quote_requests` 테이블) |
+| 결과 저장 | (현재 미사용) 저장하지 않고 화면에만 표시. 추후 필요 시 Supabase DB (`quote_requests` 테이블) |
 | PDF 생성 (견적서 export) | `@react-pdf/renderer` |
 | Rate limiting | Supabase Edge Function 또는 Vercel 미들웨어 |
 
@@ -210,4 +212,6 @@ export async function POST(req: Request) {
     2. Supabase에 `quote_requests` 테이블 수동 생성 (CLAUDE.md 상단 스키마 참고) + anon 역할의 INSERT 정책 추가 (없으면 견적 생성은 정상 동작하되 기록만 저장되지 않고 서버 로그에 에러 출력됨)
   - **(업데이트) AI 제공자를 Claude → Gemini로 변경**: Claude Pro 구독은 API 사용료를 커버하지 않아 별도 종량 과금이 필요하다는 점을 확인 후, 비용 부담이 적은 Gemini API(`gemini-3.1-flash-lite`, REST `generateContent` 직접 호출)로 교체함. `@anthropic-ai/sdk` 의존성 제거, `structured output`(`responseMimeType: "application/json"` + `responseSchema`)으로 JSON 형식 강제. 모델 교체가 필요하면 `route.ts`의 `GEMINI_MODEL` 상수만 변경하면 됨
   - **(업데이트) Supabase 저장을 service_role 키로 전환**: `quote_requests` insert가 RLS 정책 미설정 시 실패하던 문제를 해결하기 위해 service_role 키를 도입. 단, `NEXT_PUBLIC_*` 접두사를 붙이면 브라우저 번들에 노출되어 DB 전체가 RLS 없이 뚫리는 심각한 보안 사고로 이어지므로, **`SUPABASE_SERVICE_ROLE_KEY`(공개 접두사 없음) + `src/lib/supabase-admin.ts`(서버 전용, `server-only` 패키지로 클라이언트 번들 포함 시 빌드 에러 발생시킴)**로 분리 구현함. 공개 콘텐츠 조회(`page.tsx`, `posts/[id]/page.tsx`)는 기존 anon 키(`src/lib/supabase.ts`) 그대로 사용
+  - **(업데이트) Supabase 저장 기능 제거**: 견적 결과를 DB에 기록하지 않고 화면에 보여주기만 하는 방식으로 변경. `src/app/api/quote/route.ts`에서 Supabase insert, 익명 세션 쿠키 로직을 모두 제거했고 `src/lib/supabase-admin.ts`(더 이상 참조되지 않음)와 `server-only` 패키지도 삭제함. `.env.local`의 `SUPABASE_SERVICE_ROLE_KEY`는 현재 미사용 상태로 값만 남겨둠. 이 문서 상단의 `quote_requests` / `industry_presets` 스키마는 현재 코드와 연동되어 있지 않은 참고용 설계임
+  - **(업데이트) `posts`/`categories` 테이블 RLS 정책 추가 가이드 제공**: 두 테이블이 RLS disabled 상태였는데, 이 경우 anon 키만으로 쓰기(INSERT/UPDATE/DELETE)까지 가능할 수 있는 보안 리스크가 있어 `supabase-rls.sql`(신규, 저장소 루트) 파일로 RLS 활성화 + 공개 읽기 전용(`SELECT`) 정책 SQL을 정리해둠. 실행은 Supabase SQL Editor에서 사용자가 직접 해야 함. 글 작성/수정은 계속 대시보드에서 진행(대시보드는 RLS 영향 안 받음)
 
