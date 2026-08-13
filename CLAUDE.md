@@ -264,6 +264,13 @@ export async function POST(req: Request) {
 - `next.config.mjs`: `pdf-parse`(`pdfjs-dist`)를 Next.js 서버 웹팩 번들링 대상에서 제외(`serverExternalPackages`) — 번들링 시 `pdfjs-dist`가 `Object.defineProperty called on non-object` 오류로 깨지는 문제가 있어 필수로 추가함
 - `.docx`만 지원 (`mammoth`는 구형 `.doc` 미지원)
 
+⚠️ **트러블슈팅 (Vercel 배포 후 발생): PDF 업로드 시 `FUNCTION_INVOCATION_FAILED` / `DOMMatrix is not defined`**
+- 원인: `extractText.ts`는 처음부터 `pdfjs-dist`를 직접 쓴 적이 없고 항상 `pdf-parse`(`PDFParse` 클래스)만 사용해왔음. 실제 원인은 `pdf-parse` v2가 Node/서버리스 환경에서 브라우저의 `DOMMatrix` 등 캔버스 API 자리에 `@napi-rs/canvas`(네이티브 napi 모듈)를 쓰는데, 이 패키지가 webpack 번들링 대상에서 빠지지 않아 Vercel 런타임에서 로드에 실패하던 것 — pdf-parse 공식 Vercel/Next.js 가이드([`docs/troubleshooting.md`](https://github.com/mehmet-kozan/pdf-parse/blob/main/docs/troubleshooting.md))에서 확인
+- 조치 (완료):
+  1. `next.config.mjs`의 `serverExternalPackages`에 `"@napi-rs/canvas"` 추가 (`pdf-parse`, `pdfjs-dist`와 함께 번들링 제외)
+  2. `extractText.ts` 최상단에 `import "pdf-parse/worker";`를 `import { PDFParse } from "pdf-parse";`보다 먼저 추가 — 워커를 먼저 등록해야 서버리스 환경에서 정상 동작
+- 검증: `tsc --noEmit`/`next build` 통과 + 로컬에서 직접 만든 최소 PDF 파일로 `extractTextFromFile` 동작 확인(텍스트 정상 추출, 에러 없음). **Vercel 실제 배포 환경에서의 최종 확인은 아직 못함 — 배포 후 PDF 업로드로 재현 여부 확인 필요**
+
 #### 구현 메모 (3단계 — 위저드)
 
 - `src/app/tools/quote-generator/QuoteGeneratorClient.tsx`: 컴포넌트를 `step`("landing" / "wizard" / "form") 상태로 분기하도록 재구성

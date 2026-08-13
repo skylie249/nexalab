@@ -1,3 +1,6 @@
+// Vercel 등 서버리스 환경에서 pdf-parse의 워커를 먼저 등록해야 DOMMatrix 관련
+// FUNCTION_INVOCATION_FAILED 오류 없이 동작함 (pdf-parse 공식 Vercel 가이드)
+import "pdf-parse/worker";
 import { PDFParse } from "pdf-parse";
 import mammoth from "mammoth";
 
