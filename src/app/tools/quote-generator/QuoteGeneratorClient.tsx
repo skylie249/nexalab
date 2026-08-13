@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { INDUSTRY_OPTIONS, type Industry } from "@/lib/quotePresets";
 import styles from "./page.module.css";
 
@@ -303,6 +304,12 @@ export default function QuoteGeneratorClient() {
           <button type="button" className={styles.primaryButton} onClick={handleDownloadPdf} disabled={pdfLoading}>
             {pdfLoading ? "PDF 생성 중..." : "📄 PDF 다운로드"}
           </button>
+          <Link
+            href={`/tools/profit-calculator?income=${Math.round((quote.total_min + quote.total_max) / 2)}&industry=${industry}`}
+            className={styles.secondaryButton}
+          >
+            📊 이 견적으로 손익 계산해보기
+          </Link>
           <button type="button" className={styles.secondaryButton} onClick={handleResetResult}>
             ← 다시 작성하기
           </button>

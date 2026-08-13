@@ -101,6 +101,16 @@
   color: var(--text-primary);
 }
 
+.noteBox {
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+}
+
 .field input,
 .costSection input {
   font-family: inherit;
@@ -182,6 +192,38 @@
 }
 
 .modeTabActive:hover {
+  color: #fff;
+}
+
+/* 업종 선택: 드롭다운 대신 칩 그룹 — 모바일 터치 영역 확보 + 자동 줄바꿈 */
+.industryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.industryChip {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.industryChip:hover {
+  color: var(--text-primary);
+}
+
+.industryChipActive {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.industryChipActive:hover {
   color: #fff;
 }
 
@@ -351,4 +393,120 @@
   color: var(--text-secondary);
   line-height: 1.5;
   text-align: center;
+}
+
+/* 비용 항목 비중: 100% 가로 스택 바 + 범례. 세그먼트 사이 2px 간격은 바 배경색이 비쳐 보이는 방식으로 구현 */
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.breakdownTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.breakdownBar {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+}
+
+.breakdownSegment {
+  position: relative;
+  min-width: 4px;
+  transition: filter 0.15s ease;
+}
+
+.breakdownSegment:hover,
+.breakdownSegment:focus-visible {
+  filter: brightness(1.1);
+  outline: none;
+}
+
+.breakdownTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--text-primary);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.breakdownSegment:hover .breakdownTooltip,
+.breakdownSegment:focus-visible .breakdownTooltip {
+  opacity: 1;
+}
+
+/* 세로 목록으로 고정 — 2열 그리드는 값 텍스트가 길 때 라벨 폭이 0으로 눌리는 문제가 있어 지양 */
+.breakdownLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.breakdownLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.breakdownSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.breakdownLegendLabel {
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breakdownLegendValue {
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.marginComment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.marginComment p {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.marginCommentNote {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }

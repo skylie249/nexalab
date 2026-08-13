@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import styles from "./page.module.css";
 import ProfitCalculatorClient from "./ProfitCalculatorClient";
 
@@ -21,7 +22,9 @@ export default function ProfitCalculatorPage() {
         </p>
       </header>
 
-      <ProfitCalculatorClient />
+      <Suspense fallback={null}>
+        <ProfitCalculatorClient />
+      </Suspense>
     </div>
   );
 }
