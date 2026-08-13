@@ -1,0 +1,354 @@
+.page {
+  padding: 3rem 0 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 2.75rem;
+  }
+}
+
+.highlight {
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* 모바일 기본값: 폼과 결과 카드를 세로로 쌓음. 데스크톱에서만 2열로 확장 */
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    flex-direction: row;
+    align-items: flex-start;
+    max-width: 1100px;
+  }
+
+  .form {
+    flex: 1.4;
+  }
+
+  .resultSticky {
+    flex: 1;
+    position: sticky;
+    top: 100px;
+  }
+}
+
+.card {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.field input,
+.costSection input {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.field input:focus,
+.costSection input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.costSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.costSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.costSectionTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.checkboxRow input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.modeTabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modeTab {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.modeTab:hover {
+  color: var(--text-primary);
+}
+
+.modeTabActive {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.modeTabActive:hover {
+  color: #fff;
+}
+
+/* 시간 × 단가 입력행: 모바일은 1열 스택, 데스크톱은 한 줄 배치 */
+.inlineFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .inlineFields {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.inlineOperator {
+  display: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .inlineOperator {
+    display: block;
+  }
+}
+
+/* 외주비/기타 경비 동적 입력행: 모바일 1열 스택, 데스크톱 그리드 */
+.dynamicRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dynamicRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+@media (min-width: 640px) {
+  .dynamicRow {
+    flex-direction: row;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .dynamicRow input:first-child {
+    flex: 1.4;
+  }
+
+  .dynamicRow input:nth-child(2) {
+    flex: 1;
+  }
+}
+
+.rowRemove {
+  flex-shrink: 0;
+  align-self: flex-end;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .rowRemove {
+    align-self: center;
+  }
+}
+
+.rowRemove:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.addRowButton {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px dashed var(--border-color);
+}
+
+.addRowButton:hover {
+  border-color: var(--accent-color);
+  background-color: var(--bg-secondary);
+}
+
+.formNote {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.resultCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.resultCardsTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* 결과 카드 그룹: 화면 폭에 따라 auto-fit으로 1~2열(모바일)에서 3열(데스크톱)까지 자연스럽게 wrap */
+.resultGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.metricCardPrimary {
+  border-color: var(--accent-color);
+}
+
+.metricLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.metricValue {
+  font-size: clamp(0.95rem, 4.5vw, 1.15rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.metricCardPrimary .metricValue {
+  color: var(--accent-color);
+}
+
+.negative {
+  color: #ef4444 !important;
+}
+
+.resultHint {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  text-align: center;
+}

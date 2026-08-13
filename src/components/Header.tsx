@@ -46,6 +46,7 @@ export default function Header() {
             <li><Link href="/ai-apps">AI Apps</Link></li>
             <li><Link href="/biz">Biz</Link></li>
             <li><Link href="/tools/quote-generator">AI 견적서</Link></li>
+            <li><Link href="/tools/profit-calculator">손익 계산기</Link></li>
             <li><Link href="/about">About</Link></li>
           </ul>
         </nav>
@@ -78,6 +79,7 @@ export default function Header() {
           <li><Link href="/ai-apps" onClick={closeMenu}>AI Apps</Link></li>
           <li><Link href="/biz" onClick={closeMenu}>Biz</Link></li>
           <li><Link href="/tools/quote-generator" onClick={closeMenu}>AI 견적서</Link></li>
+          <li><Link href="/tools/profit-calculator" onClick={closeMenu}>손익 계산기</Link></li>
           <li><Link href="/about" onClick={closeMenu}>About</Link></li>
         </ul>
       </nav>
