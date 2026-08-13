@@ -245,12 +245,30 @@ export async function POST(req: Request) {
 
 ### 개발 로드맵 (단계별 진행)
 
-- [ ] **1단계 (MVP)**: 텍스트 붙여넣기 → Gemini API 분석 → 결과 화면 (파일 업로드 없이 텍스트 인풋으로 먼저 검증, 저장 없이 응답만 반환)
-- [ ] **2단계**: 파일 업로드 추가 (PDF: `pdf-parse`, DOCX: `mammoth`) — 파싱 후 메모리 즉시 폐기
-- [ ] **3단계**: 요청서 작성 도우미(위저드) 추가 — 질문형 UI + Gemini API로 요청서 텍스트 자동 생성 (저장 없음)
+- [x] **1단계 (MVP)**: 텍스트 붙여넣기 → Gemini API 분석 → 결과 화면 (저장 없이 응답만 반환)
+- [x] **2단계**: 파일 업로드 추가 (PDF: `pdf-parse`, DOCX: `mammoth`) — 파싱 후 메모리 즉시 폐기
+- [x] **3단계**: 요청서 작성 도우미(위저드) 추가 — 질문형 UI + Gemini API로 요청서 텍스트 자동 생성 (저장 없음)
 - [ ] **4단계**: 결과를 PDF 견적서로 export (`@react-pdf/renderer`) — 서버 저장 없이 즉석 생성/스트리밍
 - [ ] **5단계**: Rate limiting 적용 (DB 없이 Vercel Edge/미들웨어 기반 IP 제한 방식으로 구현)
 - [ ] **6단계**: `industryPresets` 설정 파일 데이터 채우기 (업종별 시장 평균 단가 조사 필요, 코드 기반 관리 유지)
+
+#### 구현 메모 (1~2단계)
+
+- `src/app/tools/quote-generator/QuoteGeneratorClient.tsx`: "텍스트 붙여넣기" / "파일 업로드 (PDF·DOCX)" 탭으로 입력 방식 전환. 파일은 8MB 제한, 선택 후 파일명 표시 + 제거 버튼 제공
+- `src/lib/extractText.ts`: 업로드된 `File`을 메모리에서 `Buffer`로 변환해 PDF는 `pdf-parse`(`PDFParse.getText()`), DOCX는 `mammoth`(`extractRawText()`)로 텍스트만 추출 — 디스크/Storage에 쓰지 않음
+- `src/app/api/quote/route.ts`: 요청 본문을 JSON에서 `multipart/form-data`(`req.formData()`)로 변경. `file` 필드가 있으면 추출 텍스트를, 없으면 `text` 필드를 그대로 사용해 기존 Gemini 분석 로직으로 합류
+- `next.config.mjs`: `pdf-parse`(`pdfjs-dist`)를 Next.js 서버 웹팩 번들링 대상에서 제외(`serverExternalPackages`) — 번들링 시 `pdfjs-dist`가 `Object.defineProperty called on non-object` 오류로 깨지는 문제가 있어 필수로 추가함
+- `.docx`만 지원 (`mammoth`는 구형 `.doc` 미지원)
+
+#### 구현 메모 (3단계 — 위저드)
+
+- `src/app/tools/quote-generator/QuoteGeneratorClient.tsx`: 컴포넌트를 `step`("landing" / "wizard" / "form") 상태로 분기하도록 재구성
+  - **landing**: "서비스 요청서(RFP)가 있으신가요?" 선택 카드 2개 — 있음 → 기존 `form` 단계(1~2단계 UI)로, 없음 → `wizard` 단계로 진입
+  - **wizard**: 4단계 질문(서비스 종류 / 페이지·기능(자유 텍스트 + "잘 모르겠어요" 체크박스) / 예산 유무(있으면 범위 입력) / 희망 완료 시점)을 한 번에 하나씩 표시. 마지막 질문에서 "AI로 요청서 만들기" 클릭 시 `/api/wizard-to-request` 호출
+  - 위저드 완료 시 생성된 텍스트를 기존 `text` 상태에 채우고 `form` 단계로 합류(문서 흐름의 "2번 단계로 합류"에 해당) — `form`에서는 "AI가 답변을 바탕으로 작성한 초안입니다" 안내와 함께 자유롭게 수정 가능
+  - 업종 선택은 문서 흐름대로 위저드 질문에는 포함하지 않고, 위저드 완료 후 합류하는 `form` 단계에서 선택 (위저드 생성 프롬프트는 업종 비의존적)
+- `src/app/api/wizard-to-request/route.ts` (신규): `{serviceType, features, budget, deadline}` → Gemini API(`/api/quote`와 동일 모델·REST 방식) 호출 → 자연스러운 문장의 요청서 텍스트만 반환. 입력/출력 모두 저장하지 않음
+- **로컬 미검증**: `GEMINI_API_KEY`가 로컬 환경에 없어 위저드→요청서 생성→견적 분석까지 이어지는 전체 흐름은 로컬에서 실행하지 않았음(사용자 요청). 타입체크(`tsc --noEmit`)와 `next build`만 통과 확인. Vercel 배포 환경에서 실제 동작 확인 필요
 
 ### 마케팅/배포 계획 (참고)
 - Product Hunt 등록 (무료 AI 도구, "견적서" 관련 키워드는 반응 좋은 편)
@@ -263,16 +281,17 @@ export async function POST(req: Request) {
 
 ## 기술 스택 참고
 
-| 구성 요소 | 사용 기술 |
-|---|---|
-| 파일 업로드 처리 | 요청 처리 중 메모리에서만 파싱 (Supabase Storage 등 영속 저장소 미사용) |
-| PDF 텍스트 추출 | `pdf-parse` 또는 `pdfjs-dist` |
-| DOCX 텍스트 추출 | `mammoth` |
-| AI 분석 (견적 분석 + 위저드 요청서 생성) | **Gemini API** (`@google/generative-ai`, 모델: `gemini-2.5-flash`) |
-| 결과 저장 | **저장 없음** — API 응답으로만 반환, 클라이언트 상태(React state)로만 유지 |
-| PDF 생성 (견적서 export) | `@react-pdf/renderer`, 서버 저장 없이 즉석 생성/스트리밍 |
-| Rate limiting | DB 없이 Vercel Edge Middleware 또는 in-memory 방식 |
-| 환경변수 | `GEMINI_API_KEY` (.env.local 필요) |
+| 구성 요소 | 사용 기술 | 상태 |
+|---|---|---|
+| 파일 업로드 처리 | 요청 처리 중 메모리에서만 파싱 (Supabase Storage 등 영속 저장소 미사용) | ✅ 구현됨 |
+| PDF 텍스트 추출 | `pdf-parse` (v2, `PDFParse.getText()`) | ✅ 구현됨 |
+| DOCX 텍스트 추출 | `mammoth` (`extractRawText()`, `.docx`만 지원) | ✅ 구현됨 |
+| AI 분석 (견적 분석) | **Gemini API** REST 직접 호출 (`fetch`), 모델: `gemini-3.1-flash-lite` (SDK 미사용) | ✅ 구현됨 |
+| AI 위저드 요청서 생성 | Gemini API (위 견적 분석과 동일 방식) | ✅ 구현됨 (로컬 미검증) |
+| 결과 저장 | **저장 없음** — API 응답으로만 반환, 클라이언트 상태(React state)로만 유지 | ✅ 구현됨 |
+| PDF 생성 (견적서 export) | `@react-pdf/renderer`, 서버 저장 없이 즉석 생성/스트리밍 | ⏳ 4단계 예정 |
+| Rate limiting | DB 없이 Vercel Edge Middleware 또는 in-memory 방식 | ⏳ 5단계 예정 |
+| 환경변수 | `GEMINI_API_KEY` (.env.local 필요) | — |
 
 > 참고: 기존 사이트에서 Supabase는 블로그 포스트 관리용으로는 계속 사용하되, 이 견적서 생성기 기능에서는 사용하지 않음.
 

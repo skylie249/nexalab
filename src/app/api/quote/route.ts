@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { INDUSTRY_PRESETS, isIndustry } from "@/lib/quotePresets";
+import { extractTextFromFile } from "@/lib/extractText";
 
 // 무료/저비용 운영을 위해 Gemini Flash Lite 사용. 필요 시 모델명만 교체하면 됩니다.
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 const MIN_TEXT_LENGTH = 20;
 const MAX_TEXT_LENGTH = 12000;
+const MAX_FILE_SIZE_MB = 8;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const QuoteItemSchema = z.object({
   name: z.string(),
@@ -77,31 +80,57 @@ function normalizeQuote(quote: Quote): Quote {
 }
 
 export async function POST(req: NextRequest) {
-  let body: unknown;
+  let formData: FormData;
   try {
-    body = await req.json();
+    formData = await req.formData();
   } catch {
     return NextResponse.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
   }
 
-  const RequestSchema = z.object({
-    industry: z.string(),
-    hourlyRate: z.number().finite().positive().optional(),
-    text: z.string(),
-  });
-
-  const parsedRequest = RequestSchema.safeParse(body);
-  if (!parsedRequest.success) {
-    return NextResponse.json({ error: "요청 형식이 올바르지 않습니다." }, { status: 400 });
-  }
-
-  const { industry, hourlyRate, text } = parsedRequest.data;
-
-  if (!isIndustry(industry)) {
+  const industry = formData.get("industry");
+  if (typeof industry !== "string" || !isIndustry(industry)) {
     return NextResponse.json({ error: "지원하지 않는 업종입니다." }, { status: 400 });
   }
 
-  const trimmedText = text.trim();
+  let hourlyRate: number | undefined;
+  const hourlyRateRaw = formData.get("hourlyRate");
+  if (typeof hourlyRateRaw === "string" && hourlyRateRaw.trim() !== "") {
+    const parsed = Number(hourlyRateRaw);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return NextResponse.json({ error: "시간당 단가 값이 올바르지 않습니다." }, { status: 400 });
+    }
+    hourlyRate = parsed;
+  }
+
+  const file = formData.get("file");
+  const textRaw = formData.get("text");
+
+  let extractedText: string;
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: `파일 용량은 ${MAX_FILE_SIZE_MB}MB 이하만 업로드할 수 있습니다.` },
+        { status: 400 }
+      );
+    }
+    try {
+      extractedText = await extractTextFromFile(file);
+    } catch (err) {
+      console.error("[quote] 파일 텍스트 추출 실패:", err);
+      const message =
+        err instanceof Error ? err.message : "파일에서 텍스트를 추출하지 못했습니다.";
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+  } else if (typeof textRaw === "string") {
+    extractedText = textRaw;
+  } else {
+    return NextResponse.json(
+      { error: "서비스 요청서 파일 또는 텍스트를 입력해주세요." },
+      { status: 400 }
+    );
+  }
+
+  const trimmedText = extractedText.trim();
   if (trimmedText.length < MIN_TEXT_LENGTH) {
     return NextResponse.json(
       { error: `요청서 내용을 ${MIN_TEXT_LENGTH}자 이상 입력해주세요.` },

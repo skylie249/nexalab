@@ -102,6 +102,254 @@
   font-weight: 600;
 }
 
+.stepTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.stepDesc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.backLink {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.backLink:hover {
+  color: var(--accent-color);
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .choiceGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.choiceCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.choiceCard:hover {
+  border-color: var(--accent-color);
+}
+
+.choiceCardActive {
+  border-color: var(--accent-color);
+  background-color: var(--accent-color);
+}
+
+.choiceCardActive .choiceTitle {
+  color: #fff;
+}
+
+.choiceCardCompact {
+  padding: 0.9rem 1.1rem;
+}
+
+.choiceTitle {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.choiceDesc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.wizardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.wizardHeader .backLink {
+  margin-bottom: 0;
+}
+
+.wizardProgress {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.checkboxRow input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.radioRow input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.wizardNav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.wizardNav .primaryButton {
+  width: 100%;
+}
+
+.noteBox {
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.modeTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.modeTab {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.modeTab:hover {
+  color: var(--text-primary);
+}
+
+.modeTabActive {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.modeTabActive:hover {
+  color: #fff;
+}
+
+.fileDropzone {
+  border: 1px dashed var(--border-color);
+  border-radius: 0.5rem;
+  background-color: var(--bg-secondary);
+  position: relative;
+}
+
+.fileInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fileLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.fileHint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  opacity: 0.75;
+}
+
+.fileSelected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.fileName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileRemove {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-color);
+}
+
+.fileRemove:hover {
+  background-color: var(--border-color);
+}
+
 .primaryButton {
   padding: 0.9rem 1.5rem;
   border-radius: 0.75rem;
