@@ -93,6 +93,11 @@
   color: var(--text-secondary);
 }
 
+.pageBtnDisabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .activePage {
   background-color: var(--accent-color);
   color: white;

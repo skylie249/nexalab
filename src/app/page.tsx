@@ -1,11 +1,12 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import Hero from "@/components/Hero";
 import Sidebar from "@/components/Sidebar";
 import PostCard from "@/components/PostCard";
 import { supabase } from "@/lib/supabase";
 import styles from "./page.module.css";
+
+// 60초마다 백그라운드에서 재검증 (ISR)
+export const revalidate = 60;
 
 const PAGE_SIZE = 6;
 
@@ -31,75 +32,68 @@ interface Post {
   categories?: { name: string; slug: string } | null;
 }
 
-export default function Home() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+async function getCategories(): Promise<Category[]> {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("id, name, slug")
+    .order("name", { ascending: true });
 
-  // Load categories once, based on what's actually stored in Supabase.
-  useEffect(() => {
-    async function fetchCategories() {
-      const { data, error } = await supabase
-        .from("categories")
-        .select("id, name, slug")
-        .order("name", { ascending: true });
+  if (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+  return data || [];
+}
 
-      if (error) {
-        console.error("Error fetching categories:", error);
-      } else {
-        setCategories(data || []);
-      }
-    }
+async function getPosts(categoryId: string | undefined, page: number) {
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
 
-    fetchCategories();
-  }, []);
+  let query = supabase
+    .from("posts")
+    .select("*, categories(name, slug)", { count: "exact" })
+    .eq("published", true)
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
-  // Load posts whenever the active category or page changes.
-  useEffect(() => {
-    async function fetchPosts() {
-      setLoading(true);
-      try {
-        const from = (page - 1) * PAGE_SIZE;
-        const to = from + PAGE_SIZE - 1;
+  if (categoryId) {
+    query = query.eq("category_id", categoryId);
+  }
 
-        let query = supabase
-          .from("posts")
-          .select("*, categories(name, slug)", { count: "exact" })
-          .eq("published", true)
-          .order("created_at", { ascending: false })
-          .range(from, to);
+  const { data, count, error } = await query;
 
-        if (activeCategory) {
-          query = query.eq("category_id", activeCategory.id);
-        }
+  if (error) {
+    console.error("Error fetching posts:", error);
+    return { posts: [] as Post[], totalCount: 0 };
+  }
 
-        const { data, count, error } = await query;
+  return { posts: (data || []) as Post[], totalCount: count || 0 };
+}
 
-        if (error) {
-          console.error("Error fetching posts:", error);
-        } else {
-          setPosts(data || []);
-          setTotalCount(count || 0);
-        }
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+function buildHref(categorySlug: string | null, page: number) {
+  const params = new URLSearchParams();
+  if (categorySlug) params.set("category", categorySlug);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/?${qs}` : "/";
+}
 
-    fetchPosts();
-  }, [activeCategory, page]);
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; page?: string }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const categorySlug = resolvedSearchParams.category || null;
+  const page = Math.max(1, parseInt(resolvedSearchParams.page || "1", 10) || 1);
 
+  const categories = await getCategories();
+  const activeCategory = categorySlug
+    ? categories.find((c) => c.slug === categorySlug) || null
+    : null;
+
+  const { posts, totalCount } = await getPosts(activeCategory?.id, page);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-
-  const handleSelectCategory = (category: Category | null) => {
-    setActiveCategory(category);
-    setPage(1);
-  };
 
   // Only the first post of the first page is presented as "featured".
   const featuredPost = page === 1 && posts.length > 0 ? posts[0] : null;
@@ -122,27 +116,25 @@ export default function Home() {
         {/* Main Content Area - 70% */}
         <section className={styles.mainArea}>
           <div className={styles.filterTabs}>
-            <button
+            <Link
+              href={buildHref(null, 1)}
               className={`${styles.tabBtn} ${activeCategory === null ? styles.activeTab : ""}`}
-              onClick={() => handleSelectCategory(null)}
             >
               ALL
-            </button>
+            </Link>
             {categories.map((category) => (
-              <button
+              <Link
                 key={category.id}
+                href={buildHref(category.slug, 1)}
                 className={`${styles.tabBtn} ${activeCategory?.id === category.id ? styles.activeTab : ""}`}
-                onClick={() => handleSelectCategory(category)}
               >
                 {CATEGORY_ICONS[category.slug] || "📁"} {category.name}
-              </button>
+              </Link>
             ))}
           </div>
 
           <div className={styles.postList}>
-            {loading ? (
-              <p>Loading posts...</p>
-            ) : posts.length === 0 ? (
+            {posts.length === 0 ? (
               <p>게시글이 없습니다.</p>
             ) : (
               <>
@@ -159,29 +151,29 @@ export default function Home() {
 
           {totalPages > 1 && (
             <div className={styles.pagination}>
-              <button
-                className={styles.pageBtn}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                &lt;
-              </button>
+              {page > 1 ? (
+                <Link className={styles.pageBtn} href={buildHref(categorySlug, page - 1)}>
+                  &lt;
+                </Link>
+              ) : (
+                <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>&lt;</span>
+              )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                <button
+                <Link
                   key={p}
+                  href={buildHref(categorySlug, p)}
                   className={`${styles.pageBtn} ${page === p ? styles.activePage : ""}`}
-                  onClick={() => setPage(p)}
                 >
                   {p}
-                </button>
+                </Link>
               ))}
-              <button
-                className={styles.pageBtn}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                &gt;
-              </button>
+              {page < totalPages ? (
+                <Link className={styles.pageBtn} href={buildHref(categorySlug, page + 1)}>
+                  &gt;
+                </Link>
+              ) : (
+                <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>&gt;</span>
+              )}
             </div>
           )}
         </section>
