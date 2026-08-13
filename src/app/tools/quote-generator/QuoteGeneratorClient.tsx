@@ -46,8 +46,6 @@ export default function QuoteGeneratorClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quote, setQuote] = useState<Quote | null>(null);
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfError, setPdfError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 요청서 작성 도우미(위저드) 상태
@@ -209,39 +207,6 @@ export default function QuoteGeneratorClient() {
     setError(null);
   };
 
-  const handleDownloadPdf = async () => {
-    if (!quote || pdfLoading) return;
-    setPdfLoading(true);
-    setPdfError(null);
-
-    try {
-      const res = await fetch("/api/quote/pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ industry, quote }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "PDF 생성 중 오류가 발생했습니다.");
-      }
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "nexalab-quote.pdf";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      setPdfError(err instanceof Error ? err.message : "PDF 다운로드 중 오류가 발생했습니다.");
-    } finally {
-      setPdfLoading(false);
-    }
-  };
-
   if (quote) {
     return (
       <section className={styles.resultWrap}>
@@ -298,15 +263,10 @@ export default function QuoteGeneratorClient() {
           </p>
         </div>
 
-        {pdfError && <p className={styles.error}>{pdfError}</p>}
-
         <div className={styles.resultActions}>
-          <button type="button" className={styles.primaryButton} onClick={handleDownloadPdf} disabled={pdfLoading}>
-            {pdfLoading ? "PDF 생성 중..." : "📄 PDF 다운로드"}
-          </button>
           <Link
             href={`/tools/profit-calculator?income=${Math.round((quote.total_min + quote.total_max) / 2)}&industry=${industry}`}
-            className={styles.secondaryButton}
+            className={styles.primaryButton}
           >
             📊 이 견적으로 손익 계산해보기
           </Link>

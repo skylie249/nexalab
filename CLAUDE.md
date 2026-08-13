@@ -82,7 +82,7 @@
    - 시장 평균 단가 기준 견적 범위 산출
    - 리스크 요소 식별 (예: "결제 연동은 PG사 심사 기간 별도 고려 필요")
 5. 결과 화면 표시: 항목별 테이블(작업 항목 | 예상 공수 | 소계) + 총 견적 범위 + 근거
-6. PDF 다운로드 버튼 제공
+6. ~~PDF 다운로드 버튼 제공~~ — **제외됨**: `@react-pdf/renderer`가 Next.js App Router에서 정상 동작하지 않아(아래 로드맵 4단계 참고) 기능 자체를 도입하지 않기로 결정
 7. (선택, 추후) 이메일 입력 시 리포트 발송 → 리드 수집
 ```
 
@@ -104,7 +104,6 @@
   - 업로드된 파일/텍스트는 요청 처리 중에만 메모리 상에서 사용, 응답 후 즉시 폐기
   - Supabase Storage에 파일을 영속 저장하지 않음 (필요 시 처리용 임시 버퍼만 사용, 디스크/버킷에 쓰지 않는 것을 기본값으로)
   - 결과(견적 데이터)는 API 응답으로만 클라이언트에 전달, 클라이언트 측 상태(React state)로만 유지
-  - PDF 다운로드도 서버에 파일을 저장하지 않고, 요청 시점에 즉석 생성 후 스트리밍으로 응답
 - 예외적으로 저장이 필요한 경우 (추후 검토):
   - 순수 통계 목적의 익명 집계만 저장 (예: "오늘 몇 건 분석했는지" 카운터) — 원문 내용은 제외
   - 이메일 리드 수집 기능(로드맵 6단계)을 실제로 도입할 경우, 이메일 주소만 별도 최소 컬럼으로 저장하고 요청서 원문과는 연결하지 않음
@@ -235,7 +234,6 @@ export async function POST(req: Request) {
 
 > ⚠️ 주의: Gemini는 `generationConfig.responseMimeType: 'application/json'` 옵션으로 JSON 강제 출력이 가능하지만, 모델 버전에 따라 지원 여부가 다를 수 있으므로 try-catch 안전장치는 반드시 유지할 것.
 > ⚠️ 환경변수: `GEMINI_API_KEY`를 `.env.local`에 추가 필요.
-> ⚠️ PDF 다운로드(로드맵 4단계) 구현 시에도 서버에 파일을 저장하지 말고, 요청 시점에 즉석 생성 후 스트리밍 응답으로 처리할 것.
 
 ### 운영 리스크 및 대응 방안
 
@@ -252,7 +250,7 @@ export async function POST(req: Request) {
 - [x] **1단계 (MVP)**: 텍스트 붙여넣기 → Gemini API 분석 → 결과 화면 (저장 없이 응답만 반환)
 - [x] **2단계**: 파일 업로드 추가 (PDF: `pdf-parse`, DOCX: `mammoth`) — 파싱 후 메모리 즉시 폐기
 - [x] **3단계**: 요청서 작성 도우미(위저드) 추가 — 질문형 UI + Gemini API로 요청서 텍스트 자동 생성 (저장 없음)
-- [x] **4단계**: 결과를 PDF 견적서로 export (`@react-pdf/renderer`) — 서버 저장 없이 즉석 생성/스트리밍
+- [x] ~~**4단계**: 결과를 PDF 견적서로 export~~ — **시도 후 기능 제외 결정** (아래 구현 메모 참고, `@react-pdf/renderer` + Next.js App Router 호환성 문제)
 - [x] **5단계**: Rate limiting 적용 (DB 없이 Vercel Edge/미들웨어 기반 IP 제한 방식으로 구현)
 - [x] **6단계**: `industryPresets` 설정 파일 데이터 채우기 (업종별 시장 평균 단가 조사 필요, 코드 기반 관리 유지)
 
@@ -281,13 +279,18 @@ export async function POST(req: Request) {
 - `src/app/api/wizard-to-request/route.ts` (신규): `{serviceType, features, budget, deadline}` → Gemini API(`/api/quote`와 동일 모델·REST 방식) 호출 → 자연스러운 문장의 요청서 텍스트만 반환. 입력/출력 모두 저장하지 않음
 - **로컬 미검증**: `GEMINI_API_KEY`가 로컬 환경에 없어 위저드→요청서 생성→견적 분석까지 이어지는 전체 흐름은 로컬에서 실행하지 않았음(사용자 요청). 타입체크(`tsc --noEmit`)와 `next build`만 통과 확인. Vercel 배포 환경에서 실제 동작 확인 필요
 
-#### 구현 메모 (4단계 — PDF export)
+#### 구현 메모 (4단계 — PDF export, 시도 후 제외됨)
 
-- `src/lib/quoteSchema.ts` (신규): `route.ts`에 인라인으로 있던 `QuoteSchema`(zod)를 분리 — PDF 라우트(`app/api/quote/pdf/route.tsx`)와 견적 분석 라우트가 동일 스키마를 공유하기 위함
-- `src/lib/QuotePdfDocument.tsx` (신규): `@react-pdf/renderer` 기반 PDF 문서 컴포넌트. 한글 출력을 위해 `src/assets/fonts/`의 나눔고딕(Regular/Bold, OFL 라이선스)을 `Font.register`로 등록
-- `src/app/api/quote/pdf/route.tsx` (신규): `{ industry, quote }`를 받아 `renderToBuffer`로 즉석 렌더링 후 `Content-Disposition: attachment`로 스트리밍 응답. 서버에 파일을 저장하지 않음(방침 준수)
-- `next.config.mjs`: `outputFileTracingIncludes`로 `/api/quote/pdf` 라우트에 폰트 파일(`src/assets/fonts/**`)을 Vercel 서버리스 번들에 포함 — 폰트 파일은 일반 import 대상이 아니라 트레이싱이 자동으로 못 잡아서 명시 필요
-- `QuoteGeneratorClient.tsx`: 결과 화면에 "📄 PDF 다운로드" 버튼 추가 (`handleDownloadPdf`) — blob 응답을 받아 `URL.createObjectURL` + 임시 `<a download>`로 클라이언트 사이드 저장 트리거
+**결론: `@react-pdf/renderer`로 PDF 생성 기능을 구현했었으나, Vercel 배포 후 100% 재현되는 문제를 해결하지 못해 기능 자체를 코드베이스에서 제거함(2026-08-14). PDF 다운로드는 현재 로드맵에 없음.**
+
+- 최초 구현: `src/lib/quoteSchema.ts`(zod 스키마 분리), `src/lib/QuotePdfDocument.tsx`(`@react-pdf/renderer` 문서 컴포넌트, 나눔고딕 폰트), `src/app/api/quote/pdf/route.tsx`(App Router 라우트 핸들러, `renderToBuffer` 사용), `next.config.mjs`의 `outputFileTracingIncludes`(폰트 파일 번들 포함), `QuoteGeneratorClient.tsx`의 "📄 PDF 다운로드" 버튼 — 모두 제거됨
+- **증상**: 배포 후 PDF 다운로드 클릭 시 500 에러, 서버 로그에 `Minified React error #31 (Objects are not valid as a React child, found: object with keys {$$typeof, type, key, ref, props})`
+- **원인 조사 과정** (`next build && next start`로 로컬 재현 성공 후 진행):
+  1. `next.config.mjs`의 `serverExternalPackages`에 `@react-pdf/renderer` 추가(react-pdf 공식 문서가 App Router용으로 권장하는 회피책) — **효과 없음**, 동일 에러 재현
+  2. JSX 대신 `React.createElement`로 직접 엘리먼트 트리를 구성해도 App Router 라우트 안에서는 **동일하게 실패** — JSX 트랜스파일 문제가 아니라 Next.js App Router의 웹팩/RSC 번들링 레이어에서 우리 코드가 사용하는 'react' 모듈 인스턴스와 `@react-pdf/renderer`(정확히는 그 내부의 `@react-pdf/reconciler`)가 기대하는 'react' 인스턴스가 서로 다르게 취급되는 것으로 추정(다수의 관련 GitHub 이슈에서도 동일 증상 보고, 확정된 공식 수정 방법 없음)
+  3. 우회책으로 Pages Router API 라우트(`pages/api/quote/pdf.tsx`)로 이전 시도 — App Router의 RSC 번들링 레이어를 아예 타지 않으므로 이론상 회피 가능하나, `pages/`와 `app/`가 한 프로젝트에 공존하는 순간 이 프로젝트의 Next.js 버전(15.5.23)에서 `next build`의 내부 타입 생성기(`.next/types/validator.ts`)가 `Cannot find module '../../app/about/page.js'` 같은 무관한 페이지를 못 찾는 별도의 빌드 오류를 일으킴(재현 확인됨, Next.js GitHub에도 유사 미해결 이슈 존재) — 이 경로도 막힘
+- **결정**: 두 우회책 모두 로컬에서 안정적으로 검증되지 않아, 계속 디버깅하는 대신 PDF 다운로드 기능 자체를 제외하기로 결정. 관련 패키지(`@react-pdf/renderer`)·폰트 자산(`src/assets/fonts/`)·컴포넌트·라우트·버튼 모두 제거함
+- **재시도 시 참고**: 이 문제는 Next.js App Router + `@react-pdf/renderer` 조합의 알려진(미해결) 호환성 이슈로 보임. 재도입을 검토한다면 (a) Next.js/react-pdf의 향후 버전 업데이트로 해결됐는지 먼저 확인, (b) `@react-pdf/renderer` 대신 서버에서 완전히 분리된 방식(별도 마이크로서비스, 브라우저 측 `jsPDF`/`html2canvas` 조합 등)을 고려, (c) Pages Router 이전을 다시 시도할 경우 이번에 겪은 `pages`+`app` 공존 타입생성기 버그가 해당 Next.js 버전에서 아직 남아있는지 먼저 확인할 것
 
 #### 구현 메모 (5단계 — Rate limiting)
 
@@ -418,7 +421,6 @@ export async function POST(req: Request) {
 | 위저드/단계형 질문 | 여러 질문 한 화면에 표시 가능 | **1문항씩 단계 전환** 방식으로, 진행률 표시(예: 2/4) 함께 제공 | 요청서 작성 도우미 |
 | 업종 선택 등 옵션 선택 UI | 드롭다운 또는 버튼 그룹 | **버튼/칩 그룹** 우선 (터치 영역 확보) | 견적서 생성기, 손익 계산기 |
 | 파일 업로드 버튼 | 일반 버튼 | 터치 영역 44px 이상 확보, 모바일 파일 선택 시트 고려 | 견적서 생성기 |
-| PDF 다운로드/공유 버튼 | "다운로드" 문구 | 모바일에서는 "저장" 또는 "공유"로 문구 조정 검토 (브라우저별 다운로드 동작 차이 고려) | 견적서 생성기 |
 | 향후 추가될 TOC(목차) | 사이드바 고정 | **아코디언 또는 상단 드롭다운**으로 전환 (블로그 개선 항목 진행 시 함께 반영) | 블로그 개선 — 목차(TOC) 항목 |
 
 ### 주의사항
@@ -438,8 +440,8 @@ export async function POST(req: Request) {
 | AI 분석 (견적 분석) | **Gemini API** REST 직접 호출 (`fetch`), 모델: `gemini-3.1-flash-lite` (SDK 미사용) | ✅ 구현됨 |
 | AI 위저드 요청서 생성 | Gemini API (위 견적 분석과 동일 방식) | ✅ 구현됨 (로컬 미검증) |
 | 결과 저장 | **저장 없음** — API 응답으로만 반환, 클라이언트 상태(React state)로만 유지 | ✅ 구현됨 |
-| PDF 생성 (견적서 export) | `@react-pdf/renderer`, 서버 저장 없이 즉석 생성/스트리밍 | ⏳ 4단계 예정 |
-| Rate limiting | DB 없이 Vercel Edge Middleware 또는 in-memory 방식 | ⏳ 5단계 예정 |
+| PDF 생성 (견적서 export) | `@react-pdf/renderer` 시도했으나 Next.js App Router 호환성 문제로 제외 (구현 메모 4단계 참고) | ❌ 제외됨 |
+| Rate limiting | `src/middleware.ts`, DB 없이 in-memory 방식 | ✅ 구현됨 |
 | 환경변수 | `GEMINI_API_KEY` (.env.local 필요) | — |
 
 > 참고: 기존 사이트에서 Supabase는 블로그 포스트 관리용으로는 계속 사용하되, 이 견적서 생성기 기능에서는 사용하지 않음.
