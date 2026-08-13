@@ -83,6 +83,16 @@
   color: var(--text-primary);
 }
 
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageBtn:disabled:hover {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
 .activePage {
   background-color: var(--accent-color);
   color: white;

@@ -15,21 +15,6 @@
   border: 2px solid var(--accent-color);
 }
 
-.imagePlaceholder {
-  background-color: var(--border-color);
-  aspect-ratio: 16/9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  font-size: 1.2rem;
-  font-weight: 500;
-}
-
-.featured .imagePlaceholder {
-  aspect-ratio: 21/9;
-}
-
 .content {
   padding: 1.5rem;
   display: flex;
@@ -98,14 +83,3 @@
   border: 1px solid var(--border-color);
 }
 
-@media (min-width: 768px) {
-  .card:not(.featured) {
-    flex-direction: row;
-  }
-  
-  .card:not(.featured) .imagePlaceholder {
-    width: 240px;
-    aspect-ratio: 4/3;
-    flex-shrink: 0;
-  }
-}

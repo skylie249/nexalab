@@ -28,9 +28,9 @@ export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boole
         </div>
         <p className={styles.profileQuote}>"AI 기반 앱 개발 및 아키텍처 설계"</p>
         <div className={styles.profileLinks}>
-          <Link href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</Link>
-          <Link href="https://linkedin.com" target="_blank" rel="noopener noreferrer">LinkedIn</Link>
-          <Link href="mailto:contact@nexalab.app">Contact</Link>
+          <Link href="https://github.com/skylie249/" target="_blank" rel="noopener noreferrer">GitHub</Link>
+          <Link href="https://www.linkedin.com/in/nexalab0812" target="_blank" rel="noopener noreferrer">LinkedIn</Link>
+          <Link href="mailto:kimhg249@gmail.com">Contact</Link>
         </div>
       </div>
 
@@ -43,35 +43,10 @@ export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boole
         </div>
       )}
 
-      {/* 3. Live Ecosystem */}
-      <div className={`${styles.widget} glass`}>
-        <h3 className={styles.widgetTitle}>Live Ecosystem</h3>
-        <ul className={styles.appList}>
-          {liveApps.map((app) => (
-            <li key={app.name}>
-              <Link href={app.url} target="_blank" rel="noopener noreferrer">
-                🔗 {new URL(app.url).hostname}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
+
 
       {/* 4. Popular Posts (Only on main page) */}
-      {!isPostDetail && (
-        <div className={`${styles.widget} glass`}>
-          <h3 className={styles.widgetTitle}>Popular Posts</h3>
-          <ol className={styles.postList}>
-            {popularPosts.map((title, index) => (
-              <li key={index}>
-                <Link href="#">
-                  <span className={styles.postNumber}>{index + 1}.</span> {title}
-                </Link>
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
+
     </aside>
   );
 }

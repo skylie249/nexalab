@@ -13,7 +13,7 @@ const subApps = [
     name: "Venus Gecko",
     emoji: "🦎",
     desc: "파충류 샵/모니터링",
-    url: "https://venus.nexalab.app",
+    url: "https://venus-gecko.nexalab.app",
     color: "#10b981"
   },
   {
@@ -30,8 +30,8 @@ export default function Hero() {
     <section className={styles.hero}>
       <div className={styles.content}>
         <h1 className={styles.title}>
-          Building <span className={styles.highlight}>Next-Gen</span> Applications<br />
-          & AI Insights
+          <span className={styles.highlight}>AI</span>가 써내려가는<br />
+          다음 이야기, 애플리케이션
         </h1>
         <p className={styles.subtitle}>
           시니어 개발자의 AI 애플리케이션 빌드 로그 및 기술 실험실

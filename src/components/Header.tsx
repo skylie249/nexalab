@@ -30,32 +30,28 @@ export default function Header() {
             <span className={styles.appExt}>.app</span>
           </Link>
         </div>
-        
+
         <nav className={styles.nav}>
           <ul className={styles.navList}>
-            <li><Link href="#ai-apps">AI Apps</Link></li>
-            <li><Link href="#tech-arch">Tech & Arch</Link></li>
-            <li><Link href="#biz">Biz</Link></li>
-            <li><Link href="#about">About</Link></li>
+            <li><Link href="/ai-apps">AI Apps</Link></li>
+            <li><Link href="/biz">Biz</Link></li>
+            <li><Link href="/about">About</Link></li>
           </ul>
         </nav>
 
-        <div className={styles.actions}>
-          <button className={styles.iconButton} aria-label="Search">
-            🔍
-          </button>
-          <button 
-            className={styles.iconButton} 
-            onClick={toggleTheme} 
+        <div className={styles.actions1}>
+          <button
+            className={styles.iconButton}
+            onClick={toggleTheme}
             aria-label="Toggle Theme"
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
         </div>
       </div>
-      <div 
-        className={styles.progressBar} 
-        style={{ width: `${scrollProgress}%` }} 
+      <div
+        className={styles.progressBar}
+        style={{ width: `${scrollProgress}%` }}
       />
     </header>
   );

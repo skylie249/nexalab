@@ -3,7 +3,7 @@ import styles from "./Footer.module.css";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -12,11 +12,9 @@ export default function Footer() {
             <span className={styles.brandName}>NexaLab.app</span> - Next-Gen Tech & Business Lab
           </div>
           <div className={styles.links}>
-            <Link href="#about">About NexaLab</Link>
+            <Link href="/about">About NexaLab</Link>
             <span className={styles.divider}>|</span>
-            <Link href="/privacy-policy" className={styles.privacyLink}>Privacy Policy</Link>
-            <span className={styles.divider}>|</span>
-            <Link href="#contact">Contact</Link>
+            <Link href="mailto:kimhg249@gmail.com">Contact</Link>
           </div>
         </div>
         <div className={styles.bottomSection}>

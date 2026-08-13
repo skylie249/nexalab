@@ -1,0 +1,193 @@
+/*!*************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/app/about/page.module.css ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************/
+.page_page__bHvK0 {
+  padding: 3rem 0 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.page_intro__0UENd {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page_eyebrow__1uZpE {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.page_title__7_S0z {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .page_title__7_S0z {
+    font-size: 2.75rem;
+  }
+}
+
+.page_highlight__TH51R {
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page_subtitle__HMpml {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.page_profileCard__B5HV4 {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.page_avatar__KnFku {
+  font-size: 2.5rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+}
+
+.page_profileCard__B5HV4 h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.page_role__9D_0j {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+
+.page_quote__ni__S {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.75rem;
+}
+
+.page_links__cp6EJ {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.page_links__cp6EJ a {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.page_links__cp6EJ a:hover {
+  color: var(--accent-hover);
+}
+
+.page_grid__GOMR4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 1.5rem;
+  gap: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .page_grid__GOMR4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.page_card__9hOx0 {
+  padding: 1.5rem;
+  border-radius: 1rem;
+}
+
+.page_card__9hOx0 h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.page_card__9hOx0 p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.page_tags__L6uJF {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.page_tag__D_sTL {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 2rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.page_note__vyvkL {
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page_note__vyvkL h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.page_note__vyvkL p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.page_cta__D4QeR {
+  display: inline-block;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+.page_cta__D4QeR:hover {
+  color: var(--accent-hover);
+}
+
