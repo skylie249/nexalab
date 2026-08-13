@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation";
 import ArticleHeader from "@/components/ArticleHeader";
-import TableOfContents from "@/components/TableOfContents";
 import AdSenseMock from "@/components/AdSenseMock";
 import TagList from "@/components/TagList";
-import RelatedPosts from "@/components/RelatedPosts";
 import Sidebar from "@/components/Sidebar";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,7 +14,7 @@ export async function generateStaticParams() {
   try {
     const { data: posts } = await supabase.from('posts').select('id').eq('published', true);
     return posts?.map((post) => ({ id: post.id })) || [];
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -34,7 +32,7 @@ export default async function PostDetail({ params }: { params: Promise<{ id: str
       .eq('published', true)
       .single();
     post = data;
-  } catch (e) {
+  } catch {
     console.error("Supabase fetch error, using fallback mock data.");
   }
 

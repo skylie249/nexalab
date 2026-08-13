@@ -28,9 +28,11 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       .single();
     if (data) {
       postTitle = data.title;
-      category = (data as any).categories?.name || category;
+      const categories = data.categories as { name?: string } | { name?: string }[] | null;
+      const categoryData = Array.isArray(categories) ? categories[0] : categories;
+      category = categoryData?.name || category;
     }
-  } catch (e) {
+  } catch {
     // Fall back to defaults above.
   }
 

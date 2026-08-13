@@ -20,10 +20,21 @@ interface Category {
   slug: string;
 }
 
+interface Post {
+  id: string;
+  title: string;
+  content?: string;
+  excerpt?: string;
+  tags?: string[];
+  created_at: string;
+  category_id?: string;
+  categories?: { name: string; slug: string } | null;
+}
+
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -94,7 +105,7 @@ export default function Home() {
   const featuredPost = page === 1 && posts.length > 0 ? posts[0] : null;
   const regularPosts = featuredPost ? posts.slice(1) : posts;
 
-  const mapPostToCard = (post: any) => ({
+  const mapPostToCard = (post: Post) => ({
     id: post.id,
     category: post.categories?.name || "Uncategorized",
     date: new Date(post.created_at).toLocaleDateString("ko-KR"),

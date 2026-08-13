@@ -2,18 +2,6 @@ import Link from "next/link";
 import AdSenseMock from "./AdSenseMock";
 import styles from "./Sidebar.module.css";
 
-const liveApps = [
-  { name: "Harubite", url: "https://harubite.nexalab.app" },
-  { name: "Venus Gecko", url: "https://venus.nexalab.app" },
-  { name: "HappyICT-ON", url: "https://on.nexalab.app" }
-];
-
-const popularPosts = [
-  "Ollama 기반 로컬 LLM 환경 세팅",
-  "Vercel 빌드 오류 해결 백서",
-  "Spring Boot & MyBatis 최적화"
-];
-
 export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boolean }) {
   return (
     <aside className={styles.sidebar}>
@@ -26,7 +14,7 @@ export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boole
             <p className={styles.profileRole}>Senior Software Engineer / PM</p>
           </div>
         </div>
-        <p className={styles.profileQuote}>"AI 기반 앱 개발 및 아키텍처 설계"</p>
+        <p className={styles.profileQuote}>&ldquo;AI 기반 앱 개발 및 아키텍처 설계&rdquo;</p>
         <div className={styles.profileLinks}>
           <Link href="https://github.com/skylie249/" target="_blank" rel="noopener noreferrer">GitHub</Link>
           <Link href="https://www.linkedin.com/in/nexalab0812" target="_blank" rel="noopener noreferrer">LinkedIn</Link>
@@ -42,11 +30,6 @@ export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boole
           <AdSenseMock id="Ad #2" type="Sidebar Sticky Banner" width="300px" height="600px" />
         </div>
       )}
-
-
-
-      {/* 4. Popular Posts (Only on main page) */}
-
     </aside>
   );
 }
