@@ -8,6 +8,7 @@
     "navBiz": "Biz",
     "navQuoteGenerator": "AI 견적서",
     "navProfitCalculator": "손익 계산기",
+    "navSeoGeoChecker": "SEO/GEO 체커",
     "navAbout": "About",
     "toggleTheme": "테마 전환",
     "openMenu": "메뉴 열기",
@@ -215,5 +216,25 @@
     "chartFee": "플랫폼 수수료",
     "marginCommentNote": "* 업종 평균은 참고용 추정치이며 실제 통계와 다를 수 있어요.",
     "resultHint": "계약/견적 금액을 입력하면 결과가 표시됩니다."
+  },
+  "seoGeoChecker": {
+    "metaTitle": "SEO/GEO 무료 점검 도구 - NexaLab.app",
+    "metaDescription": "URL 하나만 입력하면 SEO 기본 항목과 AI 검색엔진(GEO) 준비도를 무료로 즉시 점검해 드립니다.",
+    "eyebrow": "Free Tool",
+    "title": "URL 하나로 끝내는 <highlight>SEO·GEO 점검</highlight>",
+    "subtitle": "내 사이트, ChatGPT랑 구글이 좋아할까요? URL을 입력하면 검색엔진 최적화와 AI 검색엔진 준비도를 즉시 점검해 드립니다.",
+    "urlInputLabel": "점검할 URL",
+    "urlPlaceholder": "https://example.com",
+    "submitButton": "무료로 점검하기",
+    "loadingText": "점검 중입니다...",
+    "errorEmptyUrl": "점검할 URL을 입력해주세요.",
+    "errorGeneric": "점검 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+    "formNote": "입력하신 URL과 점검 결과는 서버에 저장되지 않습니다.",
+    "seoScoreLabel": "SEO 점수",
+    "geoScoreLabel": "GEO 점수",
+    "passLabel": "통과",
+    "warnLabel": "개선 필요",
+    "failLabel": "실패",
+    "restartButton": "← 다른 URL 점검하기"
   }
 }

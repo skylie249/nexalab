@@ -12,6 +12,7 @@ const STATIC_PATHS: {
   { path: "", changeFrequency: "daily", priority: 1 },
   { path: "/tools/quote-generator", changeFrequency: "monthly", priority: 0.8 },
   { path: "/tools/profit-calculator", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/tools/seo-geo-checker", changeFrequency: "monthly", priority: 0.8 },
   { path: "/ai-apps", changeFrequency: "monthly", priority: 0.7 },
   { path: "/biz", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", changeFrequency: "monthly", priority: 0.5 },

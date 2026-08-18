@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "cheerio": "^1.2.0",
     "highlight.js": "^11.9.0",
     "mammoth": "^1.12.1",
     "next": "15.5.23",

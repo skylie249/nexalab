@@ -8,6 +8,7 @@
     "navBiz": "Biz",
     "navQuoteGenerator": "AI Quote",
     "navProfitCalculator": "Profit Calculator",
+    "navSeoGeoChecker": "SEO/GEO Checker",
     "navAbout": "About",
     "toggleTheme": "Toggle theme",
     "openMenu": "Open menu",
@@ -215,5 +216,25 @@
     "chartFee": "Platform fee",
     "marginCommentNote": "* Industry averages are rough estimates and may differ from actual statistics.",
     "resultHint": "Enter a contract/quote amount to see your results."
+  },
+  "seoGeoChecker": {
+    "metaTitle": "Free SEO/GEO Checker - NexaLab.app",
+    "metaDescription": "Enter a URL and instantly check basic SEO items plus AI search engine (GEO) readiness — for free.",
+    "eyebrow": "Free Tool",
+    "title": "One URL, a full <highlight>SEO & GEO check</highlight>",
+    "subtitle": "Will ChatGPT and Google like your site? Enter a URL and instantly check its search engine optimization and AI search engine readiness.",
+    "urlInputLabel": "URL to check",
+    "urlPlaceholder": "https://example.com",
+    "submitButton": "Check for free",
+    "loadingText": "Checking...",
+    "errorEmptyUrl": "Please enter a URL to check.",
+    "errorGeneric": "Something went wrong during the check. Please try again shortly.",
+    "formNote": "The URL you enter and the check results are not stored on our servers.",
+    "seoScoreLabel": "SEO Score",
+    "geoScoreLabel": "GEO Score",
+    "passLabel": "Pass",
+    "warnLabel": "Needs work",
+    "failLabel": "Fail",
+    "restartButton": "← Check another URL"
   }
 }

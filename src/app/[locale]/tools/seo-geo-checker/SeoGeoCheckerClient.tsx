@@ -1,0 +1,169 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { CATEGORY_LABELS, SCORE_DISCLAIMER_KO, SUBCATEGORY_ORDER } from "@/lib/seoGeoConfig";
+import type { AnalysisReport, CheckResult, CheckStatus } from "@/lib/seoGeoTypes";
+import styles from "./page.module.css";
+
+type Status = "idle" | "loading" | "success" | "error";
+
+interface ApiSuccess {
+  url: string;
+  checkedAt: string;
+  report: AnalysisReport;
+}
+
+const STATUS_ICON: Record<CheckStatus, string> = {
+  pass: "✅",
+  warn: "⚠️",
+  fail: "❌",
+};
+
+function ScoreCard({ label, score, grade }: { label: string; score: number; grade: string }) {
+  return (
+    <div className={styles.scoreCard}>
+      <span className={styles.scoreLabel}>{label}</span>
+      <div className={styles.scoreValueRow}>
+        <span className={styles.scoreValue}>{score}</span>
+        <span className={styles.scoreGrade}>{grade}</span>
+      </div>
+    </div>
+  );
+}
+
+function CheckRow({ check }: { check: CheckResult }) {
+  return (
+    <li className={styles.checkRow}>
+      <span className={styles.checkIcon} aria-hidden="true">
+        {STATUS_ICON[check.status]}
+      </span>
+      <div className={styles.checkBody}>
+        <span className={styles.checkTitle}>{check.title}</span>
+        <span className={styles.checkDetail}>{check.detail}</span>
+        {check.status !== "pass" && check.fixHint && (
+          <span className={styles.checkFixHint}>💡 {check.fixHint}</span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+export default function SeoGeoCheckerClient() {
+  const t = useTranslations("seoGeoChecker");
+  const [url, setUrl] = useState("");
+  const [status, setStatus] = useState<Status>("idle");
+  const [result, setResult] = useState<ApiSuccess | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (status === "loading") return;
+
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setStatus("error");
+      setErrorMessage(t("errorEmptyUrl"));
+      return;
+    }
+
+    setStatus("loading");
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch("/api/seo-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: trimmed }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage(data.error ?? t("errorGeneric"));
+        return;
+      }
+      setResult(data as ApiSuccess);
+      setStatus("success");
+    } catch {
+      setStatus("error");
+      setErrorMessage(t("errorGeneric"));
+    }
+  }
+
+  function handleRestart() {
+    setResult(null);
+    setStatus("idle");
+    setErrorMessage(null);
+  }
+
+  const groupedChecks = result
+    ? SUBCATEGORY_ORDER.map((subcategory) => ({
+        subcategory,
+        items: result.report.checks.filter((c) => c.subcategory === subcategory),
+      })).filter((group) => group.items.length > 0)
+    : [];
+
+  return (
+    <div className={styles.container}>
+      <form className={`${styles.card} glass`} onSubmit={handleSubmit}>
+        <div className={styles.urlRow}>
+          <input
+            type="text"
+            inputMode="url"
+            className={styles.urlInput}
+            placeholder={t("urlPlaceholder")}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={status === "loading"}
+            aria-label={t("urlInputLabel")}
+          />
+          <button type="submit" className={styles.submitButton} disabled={status === "loading"}>
+            {status === "loading" ? t("loadingText") : t("submitButton")}
+          </button>
+        </div>
+        <p className={styles.formNote}>{t("formNote")}</p>
+        {status === "error" && errorMessage && <p className={styles.errorBox}>{errorMessage}</p>}
+      </form>
+
+      {status === "success" && result && (
+        <div className={`${styles.card} ${styles.resultCard} glass`}>
+          <p className={styles.resultUrl}>{result.url}</p>
+
+          <div className={styles.scoreGrid}>
+            <ScoreCard label={t("seoScoreLabel")} score={result.report.seo.score} grade={result.report.seo.grade} />
+            <ScoreCard label={t("geoScoreLabel")} score={result.report.geo.score} grade={result.report.geo.grade} />
+          </div>
+
+          <p className={styles.disclaimer}>{SCORE_DISCLAIMER_KO}</p>
+
+          <div className={styles.summaryBadges}>
+            <span className={`${styles.badge} ${styles.badgePass}`}>
+              ✅ {t("passLabel")} {result.report.seo.pass + result.report.geo.pass}
+            </span>
+            <span className={`${styles.badge} ${styles.badgeWarn}`}>
+              ⚠️ {t("warnLabel")} {result.report.seo.warn + result.report.geo.warn}
+            </span>
+            <span className={`${styles.badge} ${styles.badgeFail}`}>
+              ❌ {t("failLabel")} {result.report.seo.fail + result.report.geo.fail}
+            </span>
+          </div>
+
+          {groupedChecks.map((group) => (
+            <section key={group.subcategory} className={styles.categorySection}>
+              <h2 className={styles.categoryTitle}>{CATEGORY_LABELS[group.subcategory]}</h2>
+              <ul className={styles.checkList}>
+                {group.items.map((check) => (
+                  <CheckRow key={check.id} check={check} />
+                ))}
+              </ul>
+            </section>
+          ))}
+
+          <button type="button" className={styles.restartButton} onClick={handleRestart}>
+            {t("restartButton")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

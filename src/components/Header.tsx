@@ -162,6 +162,7 @@ export default function Header() {
             <li><Link href="/biz">{t("navBiz")}</Link></li>
             <li><Link href="/tools/quote-generator">{t("navQuoteGenerator")}</Link></li>
             <li><Link href="/tools/profit-calculator">{t("navProfitCalculator")}</Link></li>
+            <li><Link href="/tools/seo-geo-checker">{t("navSeoGeoChecker")}</Link></li>
             <li><Link href="/about">{t("navAbout")}</Link></li>
           </ul>
         </nav>
@@ -215,6 +216,7 @@ export default function Header() {
           <li><Link href="/biz" onClick={closeMenu}>{t("navBiz")}</Link></li>
           <li><Link href="/tools/quote-generator" onClick={closeMenu}>{t("navQuoteGenerator")}</Link></li>
           <li><Link href="/tools/profit-calculator" onClick={closeMenu}>{t("navProfitCalculator")}</Link></li>
+          <li><Link href="/tools/seo-geo-checker" onClick={closeMenu}>{t("navSeoGeoChecker")}</Link></li>
           <li><Link href="/about" onClick={closeMenu}>{t("navAbout")}</Link></li>
         </ul>
       </nav>

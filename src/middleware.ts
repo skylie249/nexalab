@@ -15,9 +15,13 @@ interface RateLimitEntry {
 }
 
 // Gemini API를 호출해 실제 비용이 발생하는 엔드포인트만 제한 (IP당 24시간 기준)
+// /api/seo-check는 외부 API 비용은 없지만, 요청 1건당 사용자가 지정한 URL로 최대 4번의
+// 서버 측 fetch(HTML+robots.txt+llms.txt+sitemap.xml)가 발생해 SSRF 프로빙/스크래핑 남용
+// 우려가 있으므로 동일하게 제한한다.
 const RATE_LIMITS: Record<string, RateLimitRule> = {
   "/api/quote": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
   "/api/wizard-to-request": { max: 8, windowMs: 24 * 60 * 60 * 1000 },
+  "/api/seo-check": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
 };
 
 // DB 없이 인스턴스 메모리에만 유지하는 best-effort 카운터.
@@ -64,6 +68,7 @@ export const config = {
   matcher: [
     "/api/quote",
     "/api/wizard-to-request",
+    "/api/seo-check",
     // next-intl: 페이지 경로만 대상 — api, _next, 정적 파일(확장자 포함 경로)은 제외
     "/((?!api|_next|_vercel|.*\\..*).*)",
   ],
