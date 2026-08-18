@@ -1,6 +1,4 @@
 .wrapper {
-  max-width: 1000px;
-  margin: 0 auto;
   width: 100%;
   display: grid;
   grid-template-columns: 1fr;
@@ -9,7 +7,8 @@
 
 @media (min-width: 768px) {
   .wrapper {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
 }
 
@@ -17,117 +16,115 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1.1rem 1.25rem;
-  border-radius: 1.25rem;
-  border-left: 4px solid var(--accent-color);
+  padding: 1.25rem;
+  border-radius: 1rem;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
-  height: 100%;
+  position: relative;
+  overflow: hidden;
 }
 
 .card:hover {
-  transform: scale(1.02);
+  transform: translateY(-4px) scale(1.02);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
-.icon {
-  flex-shrink: 0;
-  width: 2.75rem;
-  height: 2.75rem;
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.cardIcon {
+  font-size: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
   border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+  flex-shrink: 0;
 }
 
-.textWrap {
+.cardInfo {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 
-.mainCopyDesktop,
-.mainCopyMobile {
-  font-size: 1rem;
+.titleDesktop,
+.titleMobile {
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.35;
 }
 
-.mainCopyDesktop {
+.titleDesktop {
   display: none;
 }
 
-.mainCopyMobile {
+.titleMobile {
   display: block;
 }
 
-.subCopyDesktop {
+.descDesktop {
   display: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
+  line-height: 1.5;
 }
 
-.ctaDesktop,
-.ctaMobile {
-  flex-shrink: 0;
-  font-weight: 700;
-  color: var(--accent-color);
-  white-space: nowrap;
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  border: 1px solid var(--accent-color);
-  transition: background 0.2s ease, color 0.2s ease;
-}
-
-.ctaDesktop {
-  display: none;
-  font-size: 0.9rem;
-}
-
-.ctaMobile {
-  display: inline-flex;
+.linkText {
   font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+  display: inline-block;
+  opacity: 0.8;
 }
 
-.card:hover .ctaDesktop,
-.card:hover .ctaMobile {
-  background: var(--accent-color);
-  color: #fff;
+.card:hover .linkText {
+  opacity: 1;
+}
+
+.ctaDesktopText {
+  display: none;
+}
+
+.ctaMobileText {
+  display: inline;
 }
 
 @media (min-width: 768px) {
-  .card {
-    padding: 1.5rem 1.75rem;
-    gap: 1.25rem;
-  }
-
-  .icon {
-    width: 3.5rem;
-    height: 3.5rem;
-    font-size: 1.75rem;
-  }
-
-  .mainCopyDesktop {
+  .titleDesktop {
     display: block;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
   }
 
-  .mainCopyMobile {
+  .titleMobile {
     display: none;
   }
 
-  .subCopyDesktop {
+  .descDesktop {
     display: block;
   }
 
-  .ctaDesktop {
-    display: inline-flex;
+  .ctaDesktopText {
+    display: inline;
   }
 
-  .ctaMobile {
+  .ctaMobileText {
     display: none;
   }
 }
