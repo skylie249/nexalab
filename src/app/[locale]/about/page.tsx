@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
+import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
+import JsonLd from "@/components/JsonLd";
 import styles from "./page.module.css";
 
 export async function generateMetadata({
@@ -10,10 +13,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "about" });
+  const title = t("metaTitle");
+  const description = t("metaDescription");
 
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title,
+    description,
+    alternates: buildAlternates(locale as Locale, "/about"),
+    openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/about" }),
+    twitter: buildTwitter({ title, description, locale: locale as Locale }),
   };
 }
 
@@ -30,6 +38,19 @@ export default async function AboutPage({
 
   return (
     <div className={styles.page}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          mainEntity: {
+            "@type": "Person",
+            name: "Kim Ho-gyun",
+            jobTitle: t("role"),
+            url: absoluteUrl(`/${locale}/about`),
+            sameAs: ["https://github.com/skylie249/", "https://www.linkedin.com/in/nexalab0812"],
+          },
+        }}
+      />
       <header className={styles.intro}>
         <span className={styles.eyebrow}>{t("eyebrow")}</span>
         <h1 className={styles.title}>

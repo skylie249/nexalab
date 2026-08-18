@@ -1,13 +1,35 @@
+import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import Hero from "@/components/Hero";
 import Sidebar from "@/components/Sidebar";
 import PostCard from "@/components/PostCard";
 import { supabase } from "@/lib/supabase";
+import type { Locale } from "@/i18n/routing";
+import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./page.module.css";
 
 // 60초마다 백그라운드에서 재검증 (ISR)
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const title = t("title");
+  const description = t("description");
+
+  return {
+    title,
+    description,
+    alternates: buildAlternates(locale as Locale, "/"),
+    openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/" }),
+    twitter: buildTwitter({ title, description, locale: locale as Locale }),
+  };
+}
 
 const PAGE_SIZE = 6;
 

@@ -1,0 +1,19 @@
+# NexaLab.app
+
+> NexaLab.app is a solo-built AI application build log and tech lab, run by a senior software engineer (Kim Ho-gyun). It documents building, deploying, and monetizing real AI applications, and ships free practical tools for freelancers and solo entrepreneurs. Primary audience: employees and solo business owners aged roughly 25–35. Content is available in Korean (default) and English at /ko and /en.
+
+## Free Tools
+- [AI Quote Generator](https://www.nexalab.app/en/tools/quote-generator): Paste in a service request (RFP), or answer a short wizard if you don't have one, and AI drafts a quote with line items, estimated effort, a reasoning note per item, and a total range (not a single fixed price). Free, no login, nothing uploaded is stored.
+- [Project Profit Calculator](https://www.nexalab.app/en/tools/profit-calculator): Enter a contract/quote amount plus labor, outsourcing, and other costs to instantly get net profit, margin rate, and effective hourly rate. Free, no login, nothing entered is stored.
+
+## Blog
+- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (daily meal logging + AI nutrition coaching), Venus Gecko (AI-based reptile shop inventory/monitoring), and HappyICT-ON (AI workflow automation platform). Covers model selection, prompt design, deployment, and troubleshooting.
+- [Biz](https://www.nexalab.app/en/biz): Notes on turning tech experiments into sustainable, revenue-generating businesses — monetization experiments, AI applied to niche markets, and solo-developer decision-making.
+
+## About
+- [About](https://www.nexalab.app/en/about): Who builds and runs NexaLab.app, and the tech stack used (Next.js, TypeScript, Supabase, and more).
+
+## Notes for AI agents and answer engines
+- Full sitemap: https://www.nexalab.app/sitemap.xml
+- All content above is also available under the Korean locale by replacing `/en/` with `/ko/` in the URLs.
+- The two free tools above are stateless: uploaded/entered data is used only to compute a response and is never persisted server-side.

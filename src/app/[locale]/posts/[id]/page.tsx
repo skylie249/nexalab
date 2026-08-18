@@ -1,14 +1,19 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import ArticleHeader from "@/components/ArticleHeader";
 import AdSenseMock from "@/components/AdSenseMock";
 import TagList from "@/components/TagList";
 import Sidebar from "@/components/Sidebar";
+import JsonLd from "@/components/JsonLd";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { supabase } from "@/lib/supabase";
+import type { Locale } from "@/i18n/routing";
+import { SITE_NAME, absoluteUrl, buildAlternates } from "@/lib/seo";
 import styles from "./page.module.css";
 
 export async function generateStaticParams() {
@@ -20,24 +25,73 @@ export async function generateStaticParams() {
   }
 }
 
+const getPost = cache(async (id: string) => {
+  try {
+    const { data } = await supabase
+      .from('posts')
+      .select('*, categories(name, locale)')
+      .eq('id', id)
+      .eq('published', true)
+      .single();
+    return data;
+  } catch {
+    console.error("Supabase fetch error, using fallback mock data.");
+    return null;
+  }
+});
+
+function buildDescription(post: { excerpt?: string; content?: string }): string {
+  if (post.excerpt) return post.excerpt;
+  if (post.content) return post.content.replace(/[#*`>_-]/g, "").slice(0, 150).trim() + "...";
+  return "";
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}): Promise<Metadata> {
+  const { locale, id } = await params;
+  const post = await getPost(id);
+
+  if (!post || (post.categories?.locale && post.categories.locale !== locale)) {
+    return { robots: { index: false, follow: false } };
+  }
+
+  const title = `${post.title} - ${SITE_NAME}`;
+  const description = buildDescription(post);
+  const url = absoluteUrl(`/${locale}/posts/${id}`);
+
+  return {
+    title,
+    description,
+    alternates: buildAlternates(locale as Locale, `/posts/${id}`),
+    openGraph: {
+      title: post.title,
+      description,
+      url,
+      siteName: SITE_NAME,
+      locale: locale === "ko" ? "ko_KR" : "en_US",
+      type: "article",
+      publishedTime: post.created_at,
+      modifiedTime: post.updated_at || post.created_at,
+      authors: ["Kim Ho-gyun"],
+      tags: post.tags || [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+    },
+  };
+}
+
 export default async function PostDetail({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const resolvedParams = await params;
   setRequestLocale(resolvedParams.locale);
   const dateLocale = resolvedParams.locale === "en" ? "en-US" : "ko-KR";
 
-  // Supabase Fetch
-  let post = null;
-  try {
-    const { data } = await supabase
-      .from('posts')
-      .select('*, categories(name, locale)')
-      .eq('id', resolvedParams.id)
-      .eq('published', true)
-      .single();
-    post = data;
-  } catch {
-    console.error("Supabase fetch error, using fallback mock data.");
-  }
+  const post = await getPost(resolvedParams.id);
 
   // Fallback Mock Data for UI testing without real DB
   if (!post) {
@@ -49,8 +103,43 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
     notFound();
   }
 
+  const postUrl = absoluteUrl(`/${resolvedParams.locale}/posts/${resolvedParams.id}`);
+  const categoryName = post.categories?.name || "Uncategorized";
+
   return (
     <div className={styles.gridContainer}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          description: buildDescription(post),
+          image: absoluteUrl(`/${resolvedParams.locale}/posts/${resolvedParams.id}/opengraph-image`),
+          datePublished: post.created_at,
+          dateModified: post.updated_at || post.created_at,
+          author: { "@type": "Person", name: "Kim Ho-gyun", url: absoluteUrl(`/${resolvedParams.locale}/about`) },
+          publisher: {
+            "@type": "Organization",
+            name: SITE_NAME,
+            logo: { "@type": "ImageObject", url: absoluteUrl("/icon.svg") },
+          },
+          mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+          articleSection: categoryName,
+          keywords: (post.tags || []).join(", "),
+          inLanguage: resolvedParams.locale === "ko" ? "ko-KR" : "en-US",
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: absoluteUrl(`/${resolvedParams.locale}`) },
+            { "@type": "ListItem", position: 2, name: categoryName, item: absoluteUrl(`/${resolvedParams.locale}`) },
+            { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+          ],
+        }}
+      />
       <section className={styles.mainArea}>
         <ArticleHeader
           category={post.categories?.name || 'Uncategorized'}
