@@ -1,0 +1,133 @@
+.wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .wrapper {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 1.25rem;
+  border-left: 4px solid var(--accent-color);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  height: 100%;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+
+.textWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.mainCopyDesktop,
+.mainCopyMobile {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mainCopyDesktop {
+  display: none;
+}
+
+.mainCopyMobile {
+  display: block;
+}
+
+.subCopyDesktop {
+  display: none;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.ctaDesktop,
+.ctaMobile {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--accent-color);
+  white-space: nowrap;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-color);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.ctaDesktop {
+  display: none;
+  font-size: 0.9rem;
+}
+
+.ctaMobile {
+  display: inline-flex;
+  font-size: 0.8rem;
+}
+
+.card:hover .ctaDesktop,
+.card:hover .ctaMobile {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .card {
+    padding: 1.5rem 1.75rem;
+    gap: 1.25rem;
+  }
+
+  .icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.75rem;
+  }
+
+  .mainCopyDesktop {
+    display: block;
+    font-size: 1.05rem;
+  }
+
+  .mainCopyMobile {
+    display: none;
+  }
+
+  .subCopyDesktop {
+    display: block;
+  }
+
+  .ctaDesktop {
+    display: inline-flex;
+  }
+
+  .ctaMobile {
+    display: none;
+  }
+}

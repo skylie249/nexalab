@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ToolPromoBanner from "./ToolPromoBanner";
 import styles from "./Hero.module.css";
 
 const subApps = [
@@ -37,6 +38,8 @@ export default function Hero() {
           시니어 개발자의 AI 애플리케이션 빌드 로그 및 기술 실험실
         </p>
       </div>
+
+      <ToolPromoBanner />
 
       <div className={styles.appsSection}>
         <h2 className={styles.appsTitle}>Live Sub-Apps</h2>
