@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { INDUSTRY_OPTIONS, type Industry } from "@/lib/quotePresets";
+import { formatWon } from "@/lib/formatCurrency";
 import styles from "./page.module.css";
 
 const ACCEPTED_FILE_TYPES = ".pdf,.docx";
 const MAX_FILE_SIZE_MB = 8;
-const SERVICE_TYPE_OPTIONS = ["신규 제작", "리뉴얼", "기능 추가"];
 
 interface QuoteItem {
   name: string;
@@ -25,15 +26,21 @@ interface Quote {
   risks?: string[];
 }
 
-function formatWon(amount: number) {
-  return `${Math.round(amount).toLocaleString("ko-KR")}원`;
-}
-
 type Step = "landing" | "wizard" | "form";
 type InputMode = "text" | "file";
 type BudgetKnown = "yes" | "no" | null;
 
 export default function QuoteGeneratorClient() {
+  const t = useTranslations("quoteGenerator");
+  const tIndustries = useTranslations("industries");
+  const locale = useLocale();
+
+  const SERVICE_TYPE_OPTIONS = [
+    t("serviceTypeNew"),
+    t("serviceTypeRenewal"),
+    t("serviceTypeAddFeature"),
+  ];
+
   const [step, setStep] = useState<Step>("landing");
 
   // 공통(견적 분석) 상태
@@ -62,7 +69,7 @@ export default function QuoteGeneratorClient() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
     if (selected && selected.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setError(`파일 용량은 ${MAX_FILE_SIZE_MB}MB 이하만 업로드할 수 있습니다.`);
+      setError(t("errorFileTooLarge", { maxMb: MAX_FILE_SIZE_MB }));
       e.target.value = "";
       setFile(null);
       return;
@@ -115,7 +122,7 @@ export default function QuoteGeneratorClient() {
 
   const handleWizardNext = () => {
     if (wizardStep === 0 && !serviceType) {
-      setWizardError("서비스 종류를 선택해주세요.");
+      setWizardError(t("errorServiceTypeRequired"));
       return;
     }
     setWizardError(null);
@@ -144,7 +151,7 @@ export default function QuoteGeneratorClient() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "요청서 생성 중 오류가 발생했습니다.");
+        throw new Error(data.error || t("errorWizardGeneric"));
       }
 
       setText(data.requestText as string);
@@ -152,7 +159,7 @@ export default function QuoteGeneratorClient() {
       setFromWizard(true);
       setStep("form");
     } catch (err) {
-      setWizardError(err instanceof Error ? err.message : "요청 중 오류가 발생했습니다.");
+      setWizardError(err instanceof Error ? err.message : t("errorGeneric"));
     } finally {
       setWizardLoading(false);
     }
@@ -163,11 +170,11 @@ export default function QuoteGeneratorClient() {
     if (loading) return;
 
     if (inputMode === "file" && !file) {
-      setError("분석할 파일을 업로드해주세요.");
+      setError(t("errorFileRequired"));
       return;
     }
     if (inputMode === "text" && text.trim().length < 20) {
-      setError("요청서 내용을 20자 이상 입력해주세요.");
+      setError(t("errorTextTooShort"));
       return;
     }
 
@@ -192,11 +199,11 @@ export default function QuoteGeneratorClient() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "알 수 없는 오류가 발생했습니다.");
+        throw new Error(data.error || t("errorUnknown"));
       }
       setQuote(data.quote as Quote);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "요청 중 오류가 발생했습니다.");
+      setError(err instanceof Error ? err.message : t("errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -217,10 +224,10 @@ export default function QuoteGeneratorClient() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>작업 항목</th>
-                  <th>분류</th>
-                  <th>예상 공수</th>
-                  <th>소계</th>
+                  <th>{t("resultTableHeaderItem")}</th>
+                  <th>{t("resultTableHeaderCategory")}</th>
+                  <th>{t("resultTableHeaderDays")}</th>
+                  <th>{t("resultTableHeaderSubtotal")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -231,8 +238,8 @@ export default function QuoteGeneratorClient() {
                       <div className={styles.itemReason}>{item.reason}</div>
                     </td>
                     <td>{item.category || "-"}</td>
-                    <td>{item.days}일</td>
-                    <td>{formatWon(item.amount)}</td>
+                    <td>{t("resultDaysUnit", { days: item.days })}</td>
+                    <td>{formatWon(item.amount, locale)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -240,15 +247,15 @@ export default function QuoteGeneratorClient() {
           </div>
 
           <div className={styles.totalBox}>
-            <span className={styles.totalLabel}>총 견적 범위</span>
+            <span className={styles.totalLabel}>{t("resultTotalLabel")}</span>
             <span className={styles.totalAmount}>
-              {formatWon(quote.total_min)} ~ {formatWon(quote.total_max)}
+              {formatWon(quote.total_min, locale)} ~ {formatWon(quote.total_max, locale)}
             </span>
           </div>
 
           {quote.risks && quote.risks.length > 0 && (
             <div className={styles.risks}>
-              <h3>⚠️ 참고할 리스크 요소</h3>
+              <h3>{t("resultRisksTitle")}</h3>
               <ul>
                 {quote.risks.map((risk, idx) => (
                   <li key={idx}>{risk}</li>
@@ -257,10 +264,7 @@ export default function QuoteGeneratorClient() {
             </div>
           )}
 
-          <p className={styles.disclaimer}>
-            본 견적은 AI가 입력된 내용을 바탕으로 산출한 참고용 추정치이며, 실제 계약 금액과 다를 수 있습니다.
-            실제 계약 전 반드시 전문가 검토를 거치시기 바랍니다.
-          </p>
+          <p className={styles.disclaimer}>{t("resultDisclaimer")}</p>
         </div>
 
         <div className={styles.resultActions}>
@@ -268,10 +272,10 @@ export default function QuoteGeneratorClient() {
             href={`/tools/profit-calculator?income=${Math.round((quote.total_min + quote.total_max) / 2)}&industry=${industry}`}
             className={styles.primaryButton}
           >
-            📊 이 견적으로 손익 계산해보기
+            {t("resultProfitCalcCta")}
           </Link>
           <button type="button" className={styles.secondaryButton} onClick={handleResetResult}>
-            ← 다시 작성하기
+            {t("resultRestartCta")}
           </button>
         </div>
       </section>
@@ -281,19 +285,16 @@ export default function QuoteGeneratorClient() {
   if (step === "landing") {
     return (
       <div className={`${styles.card} glass`}>
-        <h2 className={styles.stepTitle}>서비스 요청서(RFP)가 있으신가요?</h2>
-        <p className={styles.stepDesc}>
-          있으시면 바로 업로드하거나 붙여넣어 주세요. 없으시면 몇 가지 질문에 답하는 것만으로
-          AI가 요청서 초안을 대신 작성해 드려요.
-        </p>
+        <h2 className={styles.stepTitle}>{t("landingStepTitle")}</h2>
+        <p className={styles.stepDesc}>{t("landingStepDesc")}</p>
         <div className={styles.choiceGrid}>
           <button type="button" className={styles.choiceCard} onClick={() => setStep("form")}>
-            <span className={styles.choiceTitle}>네, 있어요</span>
-            <span className={styles.choiceDesc}>파일을 업로드하거나 내용을 붙여넣을게요</span>
+            <span className={styles.choiceTitle}>{t("landingHasRfpTitle")}</span>
+            <span className={styles.choiceDesc}>{t("landingHasRfpDesc")}</span>
           </button>
           <button type="button" className={styles.choiceCard} onClick={startWizard}>
-            <span className={styles.choiceTitle}>아니요, 대충만 알고 있어요</span>
-            <span className={styles.choiceDesc}>몇 가지만 답하면 AI가 요청서를 만들어드려요</span>
+            <span className={styles.choiceTitle}>{t("landingNoRfpTitle")}</span>
+            <span className={styles.choiceDesc}>{t("landingNoRfpDesc")}</span>
           </button>
         </div>
       </div>
@@ -305,14 +306,14 @@ export default function QuoteGeneratorClient() {
       <div className={`${styles.card} glass`}>
         <div className={styles.wizardHeader}>
           <button type="button" className={styles.backLink} onClick={handleWizardBack}>
-            ← {wizardStep === 0 ? "처음으로" : "이전"}
+            ← {wizardStep === 0 ? t("wizardBackHome") : t("wizardBackPrev")}
           </button>
-          <span className={styles.wizardProgress}>질문 {wizardStep + 1} / 4</span>
+          <span className={styles.wizardProgress}>{t("wizardProgress", { step: wizardStep + 1 })}</span>
         </div>
 
         {wizardStep === 0 && (
           <div className={styles.field}>
-            <label>어떤 종류의 서비스가 필요하세요?</label>
+            <label>{t("wizardStep0Label")}</label>
             <div className={styles.choiceGrid}>
               {SERVICE_TYPE_OPTIONS.map((opt) => (
                 <button
@@ -332,11 +333,11 @@ export default function QuoteGeneratorClient() {
 
         {wizardStep === 1 && (
           <div className={styles.field}>
-            <label htmlFor="wizardFeatures">대략 어떤 페이지/기능이 필요하세요?</label>
+            <label htmlFor="wizardFeatures">{t("wizardStep1Label")}</label>
             <textarea
               id="wizardFeatures"
               rows={6}
-              placeholder="예: 회사 소개 페이지, 상품 목록, 온라인 결제 기능이 필요해요."
+              placeholder={t("wizardStep1Placeholder")}
               value={features}
               disabled={featuresUnknown}
               onChange={(e) => setFeatures(e.target.value)}
@@ -350,14 +351,14 @@ export default function QuoteGeneratorClient() {
                   if (e.target.checked) setFeatures("");
                 }}
               />
-              아직 구체적으로 잘 모르겠어요
+              {t("wizardStep1Unknown")}
             </label>
           </div>
         )}
 
         {wizardStep === 2 && (
           <div className={styles.field}>
-            <label>예산 감이 있으신가요?</label>
+            <label>{t("wizardStep2Label")}</label>
             <div className={styles.radioGroup}>
               <label className={styles.radioRow}>
                 <input
@@ -366,7 +367,7 @@ export default function QuoteGeneratorClient() {
                   checked={budgetHas === "yes"}
                   onChange={() => setBudgetHas("yes")}
                 />
-                네, 대략 있어요
+                {t("wizardStep2Yes")}
               </label>
               <label className={styles.radioRow}>
                 <input
@@ -375,13 +376,13 @@ export default function QuoteGeneratorClient() {
                   checked={budgetHas === "no"}
                   onChange={() => setBudgetHas("no")}
                 />
-                아직 없어요
+                {t("wizardStep2No")}
               </label>
             </div>
             {budgetHas === "yes" && (
               <input
                 type="text"
-                placeholder="예: 300~500만원"
+                placeholder={t("wizardStep2Placeholder")}
                 value={budgetRange}
                 onChange={(e) => setBudgetRange(e.target.value)}
               />
@@ -391,11 +392,11 @@ export default function QuoteGeneratorClient() {
 
         {wizardStep === 3 && (
           <div className={styles.field}>
-            <label htmlFor="wizardDeadline">언제까지 필요하세요?</label>
+            <label htmlFor="wizardDeadline">{t("wizardStep3Label")}</label>
             <input
               id="wizardDeadline"
               type="text"
-              placeholder="예: 한 달 내, 특별히 정해진 시점은 없어요"
+              placeholder={t("wizardStep3Placeholder")}
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
             />
@@ -407,7 +408,7 @@ export default function QuoteGeneratorClient() {
         <div className={styles.wizardNav}>
           {wizardStep < 3 ? (
             <button type="button" className={styles.primaryButton} onClick={handleWizardNext}>
-              다음
+              {t("wizardNext")}
             </button>
           ) : (
             <button
@@ -416,7 +417,7 @@ export default function QuoteGeneratorClient() {
               onClick={handleGenerateRequest}
               disabled={wizardLoading}
             >
-              {wizardLoading ? "AI가 요청서를 작성 중입니다..." : "AI로 요청서 만들기"}
+              {wizardLoading ? t("wizardGenerating") : t("wizardGenerate")}
             </button>
           )}
         </div>
@@ -427,62 +428,60 @@ export default function QuoteGeneratorClient() {
   return (
     <form className={`${styles.card} glass ${styles.form}`} onSubmit={handleSubmit}>
       <button type="button" className={styles.backLink} onClick={resetToLanding}>
-        ← 처음으로
+        {t("formBackHome")}
       </button>
 
       <div className={styles.field}>
-        <label htmlFor="industry">업종</label>
+        <label htmlFor="industry">{t("formIndustryLabel")}</label>
         <select id="industry" value={industry} onChange={(e) => setIndustry(e.target.value as Industry)}>
           {INDUSTRY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {opt.label}
+              {tIndustries(opt.value)}
             </option>
           ))}
         </select>
       </div>
 
       <div className={styles.field}>
-        <label htmlFor="hourlyRate">희망 시간당 단가 (선택, 원)</label>
+        <label htmlFor="hourlyRate">{t("formHourlyRateLabel")}</label>
         <input
           id="hourlyRate"
           type="number"
           min={0}
-          placeholder="입력하지 않으면 업계 평균 단가로 계산합니다"
+          placeholder={t("formHourlyRatePlaceholder")}
           value={hourlyRate}
           onChange={(e) => setHourlyRate(e.target.value)}
         />
       </div>
 
       <div className={styles.field}>
-        <label>서비스 요청서 (RFP)</label>
+        <label>{t("formRfpLabel")}</label>
         <div className={styles.modeTabs}>
           <button
             type="button"
             className={`${styles.modeTab} ${inputMode === "text" ? styles.modeTabActive : ""}`}
             onClick={() => handleModeChange("text")}
           >
-            텍스트 붙여넣기
+            {t("formModeText")}
           </button>
           <button
             type="button"
             className={`${styles.modeTab} ${inputMode === "file" ? styles.modeTabActive : ""}`}
             onClick={() => handleModeChange("file")}
           >
-            파일 업로드 (PDF·DOCX)
+            {t("formModeFile")}
           </button>
         </div>
 
         {inputMode === "text" ? (
           <>
             {fromWizard && (
-              <p className={styles.noteBox}>
-                AI가 답변을 바탕으로 작성한 요청서 초안입니다. 필요하면 자유롭게 수정하세요.
-              </p>
+              <p className={styles.noteBox}>{t("formWizardNote")}</p>
             )}
             <textarea
               id="rfpText"
               rows={10}
-              placeholder="클라이언트가 보낸 요청서 내용, 이메일, 미팅 메모 등을 붙여넣어 주세요."
+              placeholder={t("formTextPlaceholder")}
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
@@ -496,7 +495,7 @@ export default function QuoteGeneratorClient() {
               <div className={styles.fileSelected}>
                 <span className={styles.fileName}>📄 {file.name}</span>
                 <button type="button" className={styles.fileRemove} onClick={handleRemoveFile}>
-                  제거
+                  {t("formFileRemove")}
                 </button>
               </div>
             ) : (
@@ -510,8 +509,8 @@ export default function QuoteGeneratorClient() {
                   className={styles.fileInput}
                 />
                 <label htmlFor="rfpFile" className={styles.fileLabel}>
-                  <span>파일을 선택하거나 이곳에 끌어다 놓으세요</span>
-                  <span className={styles.fileHint}>PDF, DOCX · 최대 {MAX_FILE_SIZE_MB}MB</span>
+                  <span>{t("formFileLabel")}</span>
+                  <span className={styles.fileHint}>{t("formFileHint", { maxMb: MAX_FILE_SIZE_MB })}</span>
                 </label>
               </>
             )}
@@ -522,12 +521,10 @@ export default function QuoteGeneratorClient() {
       {error && <p className={styles.error}>{error}</p>}
 
       <button type="submit" className={styles.primaryButton} disabled={loading}>
-        {loading ? "AI가 분석 중입니다..." : "AI 견적 분석하기"}
+        {loading ? t("formSubmitting") : t("formSubmit")}
       </button>
 
-      <p className={styles.formNote}>
-        업로드된 내용은 견적 산출에만 사용됩니다. 결과는 참고용 추정치이며 실제 계약은 전문가 검토가 필요합니다.
-      </p>
+      <p className={styles.formNote}>{t("formNote")}</p>
     </form>
   );
 }

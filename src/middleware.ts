@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import createMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
+
+const intlMiddleware = createMiddleware(routing);
 
 interface RateLimitRule {
   max: number;
@@ -29,30 +33,38 @@ function getClientIp(req: NextRequest): string {
 
 export function middleware(req: NextRequest) {
   const rule = RATE_LIMITS[req.nextUrl.pathname];
-  if (!rule) return NextResponse.next();
 
-  const ip = getClientIp(req);
-  const key = `${req.nextUrl.pathname}:${ip}`;
-  const now = Date.now();
+  if (rule) {
+    const ip = getClientIp(req);
+    const key = `${req.nextUrl.pathname}:${ip}`;
+    const now = Date.now();
 
-  const entry = store.get(key);
-  if (!entry || entry.resetAt <= now) {
-    store.set(key, { count: 1, resetAt: now + rule.windowMs });
+    const entry = store.get(key);
+    if (!entry || entry.resetAt <= now) {
+      store.set(key, { count: 1, resetAt: now + rule.windowMs });
+      return NextResponse.next();
+    }
+
+    if (entry.count >= rule.max) {
+      const retryAfterSec = Math.ceil((entry.resetAt - now) / 1000);
+      return NextResponse.json(
+        { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+        { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
+      );
+    }
+
+    entry.count += 1;
     return NextResponse.next();
   }
 
-  if (entry.count >= rule.max) {
-    const retryAfterSec = Math.ceil((entry.resetAt - now) / 1000);
-    return NextResponse.json(
-      { error: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
-      { status: 429, headers: { "Retry-After": String(retryAfterSec) } }
-    );
-  }
-
-  entry.count += 1;
-  return NextResponse.next();
+  return intlMiddleware(req);
 }
 
 export const config = {
-  matcher: ["/api/quote", "/api/wizard-to-request"],
+  matcher: [
+    "/api/quote",
+    "/api/wizard-to-request",
+    // next-intl: 페이지 경로만 대상 — api, _next, 정적 파일(확장자 포함 경로)은 제외
+    "/((?!api|_next|_vercel|.*\\..*).*)",
+  ],
 };

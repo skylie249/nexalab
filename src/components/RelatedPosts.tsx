@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import styles from "./RelatedPosts.module.css";
 
 interface RelatedPostsProps {
@@ -6,9 +7,11 @@ interface RelatedPostsProps {
 }
 
 export default function RelatedPosts({ posts }: RelatedPostsProps) {
+  const t = useTranslations("postDetail");
+
   return (
     <section className={styles.section}>
-      <h3 className={styles.title}>관련 글 (Related Posts)</h3>
+      <h3 className={styles.title}>{t("relatedPostsTitle")}</h3>
       <ul className={styles.list}>
         {posts.map((post) => (
           <li key={post.id}>

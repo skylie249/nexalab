@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import Hero from "@/components/Hero";
 import Sidebar from "@/components/Sidebar";
 import PostCard from "@/components/PostCard";
@@ -32,10 +33,11 @@ interface Post {
   categories?: { name: string; slug: string } | null;
 }
 
-async function getCategories(): Promise<Category[]> {
+async function getCategories(locale: string): Promise<Category[]> {
   const { data, error } = await supabase
     .from("categories")
     .select("id, name, slug")
+    .eq("locale", locale)
     .order("name", { ascending: true });
 
   if (error) {
@@ -45,14 +47,16 @@ async function getCategories(): Promise<Category[]> {
   return data || [];
 }
 
-async function getPosts(categoryId: string | undefined, page: number) {
+async function getPosts(categoryId: string | undefined, page: number, locale: string) {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
+  // categories!inner: 카테고리가 현재 로케일에 속한 글만 노출 (카테고리는 언어별로 분리 운영)
   let query = supabase
     .from("posts")
-    .select("*, categories(name, slug)", { count: "exact" })
+    .select("*, categories!inner(name, slug)", { count: "exact" })
     .eq("published", true)
+    .eq("categories.locale", locale)
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -79,30 +83,38 @@ function buildHref(categorySlug: string | null, page: number) {
 }
 
 export default async function Home({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ category?: string; page?: string }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("home");
+
   const resolvedSearchParams = await searchParams;
   const categorySlug = resolvedSearchParams.category || null;
   const page = Math.max(1, parseInt(resolvedSearchParams.page || "1", 10) || 1);
 
-  const categories = await getCategories();
+  const categories = await getCategories(locale);
   const activeCategory = categorySlug
     ? categories.find((c) => c.slug === categorySlug) || null
     : null;
 
-  const { posts, totalCount } = await getPosts(activeCategory?.id, page);
+  const { posts, totalCount } = await getPosts(activeCategory?.id, page, locale);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   // Only the first post of the first page is presented as "featured".
   const featuredPost = page === 1 && posts.length > 0 ? posts[0] : null;
   const regularPosts = featuredPost ? posts.slice(1) : posts;
 
+  const dateLocale = locale === "en" ? "en-US" : "ko-KR";
+
   const mapPostToCard = (post: Post) => ({
     id: post.id,
-    category: post.categories?.name || "Uncategorized",
-    date: new Date(post.created_at).toLocaleDateString("ko-KR"),
+    category: post.categories?.name || t("uncategorized"),
+    date: new Date(post.created_at).toLocaleDateString(dateLocale),
     title: post.title,
     summary: post.excerpt || (post.content ? post.content.substring(0, 100) + "..." : ""),
     tags: post.tags || [],
@@ -120,7 +132,7 @@ export default async function Home({
               href={buildHref(null, 1)}
               className={`${styles.tabBtn} ${activeCategory === null ? styles.activeTab : ""}`}
             >
-              ALL
+              {t("tabAll")}
             </Link>
             {categories.map((category) => (
               <Link
@@ -135,7 +147,7 @@ export default async function Home({
 
           <div className={styles.postList}>
             {posts.length === 0 ? (
-              <p>게시글이 없습니다.</p>
+              <p>{t("emptyState")}</p>
             ) : (
               <>
                 {featuredPost && (

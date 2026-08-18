@@ -1,48 +1,50 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import ToolPromoBanner from "./ToolPromoBanner";
 import styles from "./Hero.module.css";
 
-const subApps = [
-  {
-    name: "Harubite",
-    emoji: "🥪",
-    desc: "하루바이트 서비스",
-    url: "https://harubite.nexalab.app",
-    color: "#f59e0b"
-  },
-  {
-    name: "Venus Gecko",
-    emoji: "🦎",
-    desc: "파충류 샵/모니터링",
-    url: "https://venus-gecko.nexalab.app",
-    color: "#10b981"
-  },
-  {
-    name: "HappyICT-ON",
-    emoji: "⚡",
-    desc: "워크플로우 플랫폼",
-    url: "https://on.nexalab.app",
-    color: "#8b5cf6"
-  }
-];
-
 export default function Hero() {
+  const t = useTranslations("hero");
+
+  const subApps = [
+    {
+      name: "Harubite",
+      emoji: "🥪",
+      desc: t("harubiteDesc"),
+      url: "https://harubite.nexalab.app",
+      color: "#f59e0b"
+    },
+    {
+      name: "Venus Gecko",
+      emoji: "🦎",
+      desc: t("venusGeckoDesc"),
+      url: "https://venus-gecko.nexalab.app",
+      color: "#10b981"
+    },
+    {
+      name: "HappyICT-ON",
+      emoji: "⚡",
+      desc: t("happyIctOnDesc"),
+      url: "https://on.nexalab.app",
+      color: "#8b5cf6"
+    }
+  ];
+
   return (
     <section className={styles.hero}>
       <div className={styles.content}>
         <h1 className={styles.title}>
-          <span className={styles.highlight}>AI</span>가 써내려가는<br />
-          다음 이야기, 애플리케이션
+          {t.rich("title", {
+            highlight: (chunks) => <span className={styles.highlight}>{chunks}</span>,
+          })}
         </h1>
-        <p className={styles.subtitle}>
-          시니어 개발자의 AI 애플리케이션 빌드 로그 및 기술 실험실
-        </p>
+        <p className={styles.subtitle}>{t("subtitle")}</p>
       </div>
 
       <ToolPromoBanner />
 
       <div className={styles.appsSection}>
-        <h2 className={styles.appsTitle}>Live Sub-Apps</h2>
+        <h2 className={styles.appsTitle}>{t("liveSubApps")}</h2>
         <div className={styles.cards}>
           {subApps.map((app) => (
             <Link key={app.name} href={app.url} target="_blank" rel="noopener noreferrer" className={`${styles.card} glass`}>
@@ -52,7 +54,7 @@ export default function Hero() {
               <div className={styles.cardInfo}>
                 <h3>{app.name}</h3>
                 <p>{app.desc}</p>
-                <span className={styles.linkText} style={{ color: app.color }}>바로가기 ↗</span>
+                <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
               </div>
             </Link>
           ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import styles from "./TableOfContents.module.css";
 
 interface TOCItem {
@@ -14,6 +15,7 @@ interface TOCProps {
 }
 
 export default function TableOfContents({ items }: TOCProps) {
+  const t = useTranslations("postDetail");
   const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function TableOfContents({ items }: TOCProps) {
 
   return (
     <nav className={styles.toc}>
-      <h3 className={styles.title}>목차</h3>
+      <h3 className={styles.title}>{t("tableOfContentsTitle")}</h3>
       <ul className={styles.list}>
         {items.map((item) => (
           <li 

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
 import ArticleHeader from "@/components/ArticleHeader";
 import AdSenseMock from "@/components/AdSenseMock";
 import TagList from "@/components/TagList";
@@ -19,15 +20,17 @@ export async function generateStaticParams() {
   }
 }
 
-export default async function PostDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function PostDetail({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const resolvedParams = await params;
+  setRequestLocale(resolvedParams.locale);
+  const dateLocale = resolvedParams.locale === "en" ? "en-US" : "ko-KR";
 
   // Supabase Fetch
   let post = null;
   try {
     const { data } = await supabase
       .from('posts')
-      .select('*, categories(name)')
+      .select('*, categories(name, locale)')
       .eq('id', resolvedParams.id)
       .eq('published', true)
       .single();
@@ -41,6 +44,11 @@ export default async function PostDetail({ params }: { params: Promise<{ id: str
     notFound();
   }
 
+  // 카테고리는 언어별로 분리 운영 — 현재 로케일과 글의 카테고리 언어가 다르면 404
+  if (post.categories?.locale && post.categories.locale !== resolvedParams.locale) {
+    notFound();
+  }
+
   return (
     <div className={styles.gridContainer}>
       <section className={styles.mainArea}>
@@ -48,8 +56,8 @@ export default async function PostDetail({ params }: { params: Promise<{ id: str
           category={post.categories?.name || 'Uncategorized'}
           title={post.title}
           author="Kim Ho-gyun"
-          date={new Date(post.created_at).toLocaleDateString('ko-KR')}
-          readTime="8분"
+          date={new Date(post.created_at).toLocaleDateString(dateLocale)}
+          readTimeMinutes={8}
           hits={post.views?.toLocaleString() || "0"}
         />
 

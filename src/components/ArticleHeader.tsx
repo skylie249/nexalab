@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import styles from "./ArticleHeader.module.css";
 
 interface ArticleHeaderProps {
@@ -5,11 +6,13 @@ interface ArticleHeaderProps {
   title: string;
   author: string;
   date: string;
-  readTime: string;
+  readTimeMinutes: number;
   hits: string;
 }
 
-export default function ArticleHeader({ category, title, author, date, readTime, hits }: ArticleHeaderProps) {
+export default function ArticleHeader({ category, title, author, date, readTimeMinutes, hits }: ArticleHeaderProps) {
+  const t = useTranslations("postDetail");
+
   return (
     <header className={styles.header}>
       <div className={styles.category}>🏷️ {category}</div>
@@ -19,9 +22,9 @@ export default function ArticleHeader({ category, title, author, date, readTime,
         <span className={styles.divider}>·</span>
         <span className={styles.date}>📅 {date}</span>
         <span className={styles.divider}>·</span>
-        <span className={styles.readTime}>⏱️ {readTime} 읽기</span>
+        <span className={styles.readTime}>⏱️ {t("readTimeSuffix", { minutes: readTimeMinutes })}</span>
         <span className={styles.divider}>·</span>
-        <span className={styles.hits}>👁️ {hits} Hits</span>
+        <span className={styles.hits}>👁️ {t("viewsSuffix", { views: hits })}</span>
       </div>
     </header>
   );

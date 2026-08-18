@@ -488,3 +488,21 @@ export async function POST(req: Request) {
   - `git pull` 시 두 구현이 같은 경로(`page.tsx`/`ProfitCalculatorClient.tsx`/`page.module.css`)를 두고 충돌 → 사용자 확인 후 **origin/main 버전을 최종 채택**, 이 세션의 `src/lib/profitCalculator.ts`는 삭제(더 이상 참조되지 않음)
   - `ToolPromoBanner`(2카드: AI 견적서 + 손익 계산기, 배너 지침서 확정 카피 그대로 사용)는 그대로 유지 — `/tools/profit-calculator` 링크는 동일하므로 코드 변경 없이 origin/main의 새 구현으로 자연스럽게 연결됨. 다만 배너 카피("이번 달 손익, 아직도 엑셀로 계산하세요?")는 월 매출 기준 문구라 계약 기반 프로젝트 손익 계산기와는 결이 살짝 다를 수 있어, 필요하면 추후 카피 재검토
   - 이번 세션에서 검증했던 항목(실시간 계산, 손실 시나리오, localStorage, 라이트/다크 모드)은 origin/main 버전에는 재검증하지 않았으므로 다음 작업 시 별도 확인 필요
+- **다국어(한국어/영어) 기능 추가**: `next-intl` 도입, URL 경로 분리 방식(`/ko/...`, `/en/...`) 채택
+  - `src/app/*`(layout/page/about/ai-apps/biz/posts/tools) 전체를 `src/app/[locale]/*`로 이동. `src/app/api`, `src/middleware.ts`, `src/app/icon.svg`, `src/app/not-found.tsx`는 로케일 세그먼트 밖에 유지
+  - `src/i18n/routing.ts`(locales: ko/en, defaultLocale: ko, localePrefix: always) + `request.ts` + `navigation.ts`(로케일 인식 `Link`/`usePathname`/`useRouter`), `next.config.mjs`를 `createNextIntlPlugin`으로 래핑
+  - `src/middleware.ts`: 기존 rate-limit 로직(`/api/quote`, `/api/wizard-to-request`)은 그대로 두고, 나머지 페이지 경로에 대해서만 next-intl의 `createMiddleware(routing)` 실행하도록 분기. matcher에 next-intl 권장 패턴(`/((?!api|_next|_vercel|.*\\..*).*)`) 추가
+  - 번역 범위는 **UI 문구만** — 헤더/푸터/히어로/배너/About·AI Apps·Biz 소개 페이지/AI 견적서 생성기(위저드 포함)/손익 계산기 UI 전체를 `messages/ko.json` · `messages/en.json`으로 분리. Supabase에서 가져오는 블로그 글 제목·본문·카테고리명은 원문(한국어) 그대로 두 로케일 모두에 노출(번역 안 함) — 사용자 확인된 범위
+  - Hero/About/AI Apps/Biz/AI 견적서/손익 계산기 타이틀의 강조 span은 `t.rich()`로 처리해 언어별 어순이 달라도(`AI가 써내려가는 다음 이야기` ↔ `The Next Story, Written by AI`) 강조 위치가 자연스럽게 붙도록 함
+  - `src/lib/formatCurrency.ts` 신규: `formatWon(amount, locale)` — ko는 `"1,234원"`, en은 `"₩1,234"` 형식으로 통일해서 견적서/손익 계산기 양쪽에서 재사용
+  - `ArticleHeader`의 `readTime`(기존 `"8분"` 문자열 하드코딩) → `readTimeMinutes`(숫자)로 변경하고 `postDetail.readTimeSuffix`/`viewsSuffix` 메시지로 단위까지 로케일에 맞게 포맷
+  - Header에 언어 전환 버튼 추가(`locale === 'ko' ? 'EN' : '한'` 토글) — `next-intl` `Link`의 `locale` prop으로 현재 경로를 유지한 채 전환
+  - **번역 제외 범위**(사용자 확인): AI 견적서/요청서 위저드가 Gemini API에 보내는 프롬프트 컨텍스트(`quotePresets.ts`의 `promptContext`/`sampleTasks`)와 서버(`route.ts`) 에러 메시지는 번역하지 않고 한국어 유지 — AI 백엔드 동작을 로케일별로 분기하는 것은 이번 범위 밖
+  - 검증: `npx tsc --noEmit`, `next lint`, `next build`(정적 페이지 76개, `/ko`·`/en` 양쪽 전부 생성 확인) 통과. 브라우저로 `/ko`·`/en` 홈, AI 견적서(랜딩+위저드), 손익 계산기(입력~결과~업종평균 비교 문구), 블로그 상세(UI만 영어, 본문은 한국어 유지) 확인, 언어 전환 버튼으로 현재 페이지 유지한 채 왕복 확인, 라이트/다크 모드 모두 확인
+  - **미구현/향후 과제**: 블로그 글 자체의 다국어 번역(DB 스키마 확장 또는 AI 번역 파이프라인 필요), API 에러 메시지 로케일화, `opengraph-image.tsx`의 alt 텍스트("NexaLab 포스팅 대표 이미지")는 미번역 상태로 남음
+- **카테고리를 언어별로 분리**: 기존 카테고리(AI Applications, Business & Ideas)는 한국어 글 전용, 앞으로 추가할 카테고리(직무별 최신 AI 뉴스)는 영어 글 전용으로 운영
+  - `categories` 테이블에 `locale`('ko'|'en') 컬럼 필요 — 신규 `supabase-categories-locale.sql` 작성해뒀으나, 실제 DB에는 이미 해당 컬럼이 존재하고 기존 카테고리 2개 모두 `locale='ko'`로 설정되어 있는 것을 확인함(사용자가 사전에 대시보드에서 추가한 것으로 보임). 새 SQL은 다른 환경에 동일하게 세팅할 때 참고용으로 남겨둠(재실행해도 안전하도록 `IF NOT EXISTS`/`DROP ... IF EXISTS` 패턴 사용)
+  - `src/app/[locale]/page.tsx`: `getCategories`/`getPosts`에 `locale` 파라미터 추가, `categories.eq('locale', locale)` / `posts.select('*, categories!inner(...)').eq('categories.locale', locale)`로 카테고리 탭·글 목록을 현재 로케일 것만 노출하도록 필터링(전체 29개 글이 전부 category_id를 가지고 있어 inner join으로 필터링해도 누락되는 글 없음을 사전에 확인)
+  - `src/app/[locale]/posts/[id]/page.tsx`: 글의 카테고리 언어와 현재 URL 로케일이 다르면 `notFound()` — 예를 들어 한국어 글 URL을 `/en/posts/...`로 열면 404 처리되어 언어가 섞여 보이지 않음
+  - 브라우저로 확인: `/ko`는 기존과 동일하게 카테고리 탭 2개 + 29개 글 정상 노출, `/en`은 카테고리 탭 없이 "No posts yet." 빈 상태로 정상 노출(아직 영어 카테고리/글이 없으므로 예상된 동작), 한국어 글을 `/en/posts/...`로 직접 접근 시 404 확인
+  - **다음 단계(사용자 작업)**: Supabase 대시보드에서 `locale='en'`인 새 카테고리 생성 후 그 카테고리로 영어 AI 뉴스 글을 작성하면 `/en` 홈에 자동으로 노출됨 — 앱 코드 추가 변경 불필요
