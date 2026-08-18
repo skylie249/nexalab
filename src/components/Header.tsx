@@ -8,6 +8,7 @@ import styles from "./Header.module.css";
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,11 +22,20 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
+  const closeMenu = () => setIsMenuOpen(false);
+
   return (
     <header className={`${styles.header} glass`}>
       <div className={styles.container}>
         <div className={styles.logo}>
-          <Link href="/">
+          <Link href="/" onClick={closeMenu}>
             <span className={styles.brandName}>NexaLab</span>
             <span className={styles.appExt}>.app</span>
           </Link>
@@ -49,8 +59,31 @@ export default function Header() {
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
+          <button
+            className={`${styles.iconButton} ${styles.menuButton}`}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            aria-label={isMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
+            aria-expanded={isMenuOpen}
+          >
+            <span className={`${styles.hamburger} ${isMenuOpen ? styles.hamburgerOpen : ""}`}>
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
         </div>
       </div>
+
+      <nav className={`${styles.mobileNav} ${isMenuOpen ? styles.mobileNavOpen : ""}`}>
+        <ul className={styles.mobileNavList}>
+          <li><Link href="/ai-apps" onClick={closeMenu}>AI Apps</Link></li>
+          <li><Link href="/biz" onClick={closeMenu}>Biz</Link></li>
+          <li><Link href="/tools/quote-generator" onClick={closeMenu}>AI 견적서</Link></li>
+          <li><Link href="/tools/profit-calculator" onClick={closeMenu}>손익 계산기</Link></li>
+          <li><Link href="/about" onClick={closeMenu}>About</Link></li>
+        </ul>
+      </nav>
+
       <div
         className={styles.progressBar}
         style={{ width: `${scrollProgress}%` }}

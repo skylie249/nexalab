@@ -50,25 +50,30 @@
   line-height: 1.6;
 }
 
+/* 모바일 기본값: 폼과 결과 카드를 세로로 쌓음. 데스크톱에서만 2열로 확장 */
 .layout {
-  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 800px;
   margin: 0 auto;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-  align-items: start;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .layout {
-    grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
-    gap: 2rem;
+    flex-direction: row;
+    align-items: flex-start;
+    max-width: 1100px;
   }
 
-  .resultPanel {
+  .form {
+    flex: 1.4;
+  }
+
+  .resultSticky {
+    flex: 1;
     position: sticky;
-    top: 6rem;
+    top: 100px;
   }
 }
 
@@ -81,7 +86,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .field {
@@ -96,7 +101,18 @@
   color: var(--text-primary);
 }
 
-.field input {
+.noteBox {
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+}
+
+.field input,
+.costSection input {
   font-family: inherit;
   font-size: 0.95rem;
   padding: 0.75rem 1rem;
@@ -104,72 +120,209 @@
   border: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
+  width: 100%;
 }
 
-.field input:focus {
+.field input:focus,
+.costSection input:focus {
   outline: none;
   border-color: var(--accent-color);
 }
 
-.fieldError {
-  font-size: 0.85rem;
-  color: #ef4444;
-  font-weight: 600;
+.costSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
 }
 
-.accordionToggle {
+.costSectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.costSectionTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.checkboxRow input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.modeTabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modeTab {
+  flex: 1;
+  padding: 0.6rem 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid var(--border-color);
   background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.chevron {
-  transition: transform 0.2s ease;
   color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
 }
 
-.chevronOpen {
-  transform: rotate(180deg);
+.modeTab:hover {
+  color: var(--text-primary);
 }
 
-.accordionBody {
+.modeTabActive {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.modeTabActive:hover {
+  color: #fff;
+}
+
+/* 업종 선택: 드롭다운 대신 칩 그룹 — 모바일 터치 영역 확보 + 자동 줄바꿈 */
+.industryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.industryChip {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.industryChip:hover {
+  color: var(--text-primary);
+}
+
+.industryChipActive {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+.industryChipActive:hover {
+  color: #fff;
+}
+
+/* 시간 × 단가 입력행: 모바일은 1열 스택, 데스크톱은 한 줄 배치 */
+.inlineFields {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding-top: 0.25rem;
+  gap: 0.5rem;
 }
 
-.checkboxField {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-primary);
+@media (min-width: 640px) {
+  .inlineFields {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
-.checkboxField input {
-  width: 1.1rem;
-  height: 1.1rem;
-  accent-color: var(--accent-color);
-}
-
-.secondaryButton {
-  align-self: center;
-  font-weight: 600;
+.inlineOperator {
+  display: none;
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-weight: 600;
 }
 
-.secondaryButton:hover {
+@media (min-width: 640px) {
+  .inlineOperator {
+    display: block;
+  }
+}
+
+/* 외주비/기타 경비 동적 입력행: 모바일 1열 스택, 데스크톱 그리드 */
+.dynamicRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dynamicRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+@media (min-width: 640px) {
+  .dynamicRow {
+    flex-direction: row;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .dynamicRow input:first-child {
+    flex: 1.4;
+  }
+
+  .dynamicRow input:nth-child(2) {
+    flex: 1;
+  }
+}
+
+.rowRemove {
+  flex-shrink: 0;
+  align-self: flex-end;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .rowRemove {
+    align-self: center;
+  }
+}
+
+.rowRemove:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.addRowButton {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--accent-color);
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px dashed var(--border-color);
+}
+
+.addRowButton:hover {
+  border-color: var(--accent-color);
+  background-color: var(--bg-secondary);
 }
 
 .formNote {
@@ -179,249 +332,181 @@
   line-height: 1.5;
 }
 
-.resultPanel {
-  display: flex;
-  flex-direction: column;
-}
-
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-}
-
 .resultCard {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
-.heroStats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.heroStat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  background-color: var(--bg-secondary);
-  text-align: center;
-}
-
-.heroLabel {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.heroValue {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--accent-color);
-}
-
-.heroValue.negative,
-.negative {
-  color: #ef4444;
-}
-
-.insight {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.9rem 1.1rem;
-  border-radius: 0.75rem;
-  border-left: 4px solid var(--status-color);
-  font-size: 0.9rem;
-  font-weight: 600;
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-.insight-loss {
-  --status-color: #d03b3b;
-}
-
-.insight-near-breakeven,
-.insight-low-margin {
-  --status-color: #fab219;
-}
-
-.insight-healthy {
-  --status-color: #0ca30c;
-}
-
-:global([data-theme="dark"]) .insight-loss {
-  --status-color: #e66767;
-}
-
-:global([data-theme="dark"]) .insight-near-breakeven,
-:global([data-theme="dark"]) .insight-low-margin {
-  --status-color: #fab219;
-}
-
-:global([data-theme="dark"]) .insight-healthy {
-  --status-color: #0ca30c;
-}
-
-.insightIcon {
-  font-size: 1.1rem;
-}
-
-.subStats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-}
-
-.subStat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.9rem;
-  border-radius: 0.6rem;
-  border: 1px solid var(--border-color);
-  text-align: center;
-}
-
-.subStat span {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.subStat strong {
+.resultCardsTitle {
   font-size: 0.95rem;
-  color: var(--text-primary);
-}
-
-.chartRoot {
-  --slot-cost: #2a78d6;
-  --slot-fixed: #eb6834;
-  --slot-variable: #1baf7a;
-  --slot-profit: #eda100;
-
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-}
-
-:global([data-theme="dark"]) .chartRoot {
-  --slot-cost: #3987e5;
-  --slot-fixed: #d95926;
-  --slot-variable: #199e70;
-  --slot-profit: #c98500;
-}
-
-.chartTitle {
-  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.stackBar {
-  display: flex;
-  gap: 2px;
-  width: 100%;
-  height: 28px;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.segment {
-  display: block;
-  min-width: 2px;
-  height: 100%;
-}
-
-.legend {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.legend li {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.legendLabel {
-  color: var(--text-primary);
-  font-weight: 600;
-  flex: 1;
-}
-
-.legendValue {
-  color: var(--text-secondary);
-}
-
-.lossNotice {
-  display: flex;
-  flex-direction: column;
+/* 결과 카드 그룹: 화면 폭에 따라 auto-fit으로 1~2열(모바일)에서 3열(데스크톱)까지 자연스럽게 wrap */
+.resultGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.75rem;
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   padding: 1rem;
   border-radius: 0.75rem;
   background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  text-align: center;
 }
 
-.lossNotice p {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+.metricCardPrimary {
+  border-color: var(--accent-color);
 }
 
-.lossNotice .legend li {
-  justify-content: space-between;
-}
-
-.taxBox {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.1rem;
-  border-radius: 0.75rem;
-  border: 1px dashed var(--border-color);
-  font-size: 0.85rem;
+.metricLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
-.taxBox strong {
+.metricValue {
+  font-size: clamp(0.95rem, 4.5vw, 1.15rem);
+  font-weight: 800;
   color: var(--text-primary);
-  font-size: 1rem;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
-.disclaimer {
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border-color);
-  font-size: 0.8rem;
+.metricCardPrimary .metricValue {
+  color: var(--accent-color);
+}
+
+.negative {
+  color: #ef4444 !important;
+}
+
+.resultHint {
+  font-size: 0.82rem;
   color: var(--text-secondary);
   line-height: 1.5;
   text-align: center;
 }
 
-@media (max-width: 480px) {
-  .subStats {
-    grid-template-columns: 1fr;
-  }
+/* 비용 항목 비중: 100% 가로 스택 바 + 범례. 세그먼트 사이 2px 간격은 바 배경색이 비쳐 보이는 방식으로 구현 */
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
 
-  .heroStats {
-    grid-template-columns: 1fr;
-  }
+.breakdownTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.breakdownBar {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+}
+
+.breakdownSegment {
+  position: relative;
+  min-width: 4px;
+  transition: filter 0.15s ease;
+}
+
+.breakdownSegment:hover,
+.breakdownSegment:focus-visible {
+  filter: brightness(1.1);
+  outline: none;
+}
+
+.breakdownTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--text-primary);
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 5;
+}
+
+.breakdownSegment:hover .breakdownTooltip,
+.breakdownSegment:focus-visible .breakdownTooltip {
+  opacity: 1;
+}
+
+/* 세로 목록으로 고정 — 2열 그리드는 값 텍스트가 길 때 라벨 폭이 0으로 눌리는 문제가 있어 지양 */
+.breakdownLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.breakdownLegendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.breakdownSwatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.breakdownLegendLabel {
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breakdownLegendValue {
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.marginComment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.marginComment p {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.marginCommentNote {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
 }

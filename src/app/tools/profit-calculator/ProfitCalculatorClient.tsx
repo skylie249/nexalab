@@ -1,360 +1,426 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { calculateProfit } from "@/lib/profitCalculator";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { INDUSTRY_OPTIONS, INDUSTRY_PRESETS, isIndustry, type Industry, type IndustryPreset } from "@/lib/quotePresets";
 import styles from "./page.module.css";
 
-const STORAGE_KEY = "nexalab_profit_calculator_inputs_v1";
-
-interface FormState {
-  revenue: string;
-  cost: string;
-  quantity: string;
-  fixedCost: string;
-  variableCost: string;
-  feeRatePercent: string;
-  applyTax: boolean;
+interface CostRow {
+  id: string;
+  label: string;
+  amount: string;
 }
 
-const INITIAL_STATE: FormState = {
-  revenue: "",
-  cost: "",
-  quantity: "",
-  fixedCost: "",
-  variableCost: "",
-  feeRatePercent: "",
-  applyTax: false,
-};
+let rowIdCounter = 0;
+function createRow(): CostRow {
+  rowIdCounter += 1;
+  return { id: `row-${rowIdCounter}`, label: "", amount: "" };
+}
+
+function toNumber(value: string): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
 
 function formatWon(amount: number) {
   return `${Math.round(amount).toLocaleString("ko-KR")}원`;
 }
 
-function formatPercent(value: number) {
-  return `${value.toFixed(1)}%`;
+function getMarginComment(marginRate: number, preset: IndustryPreset): string {
+  const [avgMin, avgMax] = preset.avgMarginRange;
+  if (marginRate < avgMin) {
+    return `${preset.label} 업종 평균(${avgMin}~${avgMax}%)보다 낮아요.`;
+  }
+  if (marginRate > avgMax) {
+    return `${preset.label} 업종 평균(${avgMin}~${avgMax}%)보다 높아요.`;
+  }
+  return `${preset.label} 업종 평균(${avgMin}~${avgMax}%) 범위 안에 있어요.`;
 }
 
-const INSIGHT_ICON: Record<string, string> = {
-  loss: "😟",
-  "near-breakeven": "⚖️",
-  "low-margin": "🤔",
-  healthy: "👍",
-};
+type LaborMode = "direct" | "timeRate";
+type FeeMode = "percent" | "fixed";
+
+interface CostRowsSectionProps {
+  title: string;
+  rows: CostRow[];
+  addLabel: string;
+  placeholder: string;
+  onAdd: () => void;
+  onRemove: (id: string) => void;
+  onChange: (id: string, field: "label" | "amount", value: string) => void;
+}
+
+function CostRowsSection({ title, rows, addLabel, placeholder, onAdd, onRemove, onChange }: CostRowsSectionProps) {
+  return (
+    <div className={styles.costSection}>
+      <span className={styles.costSectionTitle}>{title}</span>
+
+      {rows.length > 0 && (
+        <div className={styles.dynamicRows}>
+          {rows.map((row) => (
+            <div key={row.id} className={styles.dynamicRow}>
+              <input
+                type="text"
+                placeholder={placeholder}
+                value={row.label}
+                onChange={(e) => onChange(row.id, "label", e.target.value)}
+              />
+              <input
+                type="number"
+                min={0}
+                placeholder="금액(원)"
+                value={row.amount}
+                onChange={(e) => onChange(row.id, "amount", e.target.value)}
+              />
+              <button
+                type="button"
+                className={styles.rowRemove}
+                onClick={() => onRemove(row.id)}
+                aria-label="항목 삭제"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button type="button" className={styles.addRowButton} onClick={onAdd}>
+        {addLabel}
+      </button>
+    </div>
+  );
+}
+
+interface BreakdownItem {
+  key: string;
+  label: string;
+  amount: number;
+  colorVar: string;
+}
+
+function CostBreakdownChart({ items, totalCost }: { items: BreakdownItem[]; totalCost: number }) {
+  const visible = items.filter((item) => item.amount > 0);
+  if (visible.length < 2 || totalCost <= 0) return null;
+
+  return (
+    <div className={styles.breakdown}>
+      <span className={styles.breakdownTitle}>비용 항목 비중</span>
+
+      <div className={styles.breakdownBar}>
+        {visible.map((item) => {
+          const pct = (item.amount / totalCost) * 100;
+          return (
+            <div
+              key={item.key}
+              className={styles.breakdownSegment}
+              style={{ flexBasis: `${pct}%`, backgroundColor: `var(${item.colorVar})` }}
+              tabIndex={0}
+              role="img"
+              aria-label={`${item.label} ${formatWon(item.amount)}, 비중 ${pct.toFixed(1)}%`}
+            >
+              <span className={styles.breakdownTooltip}>
+                {item.label} · {formatWon(item.amount)} ({pct.toFixed(1)}%)
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <ul className={styles.breakdownLegend}>
+        {visible.map((item) => {
+          const pct = (item.amount / totalCost) * 100;
+          return (
+            <li key={item.key} className={styles.breakdownLegendItem}>
+              <span className={styles.breakdownSwatch} style={{ backgroundColor: `var(${item.colorVar})` }} />
+              <span className={styles.breakdownLegendLabel}>{item.label}</span>
+              <span className={styles.breakdownLegendValue}>
+                {formatWon(item.amount)} ({pct.toFixed(1)}%)
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
 
 export default function ProfitCalculatorClient() {
-  const [form, setForm] = useState<FormState>(INITIAL_STATE);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const searchParams = useSearchParams();
+  const incomeParam = searchParams.get("income");
+  const industryParam = searchParams.get("industry");
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        setForm({ ...INITIAL_STATE, ...JSON.parse(saved) });
-      }
-    } catch {
-      // localStorage 접근 불가 시(프라이빗 모드 등) 조용히 무시하고 빈 폼 유지
-    }
-    setHydrated(true);
-  }, []);
+  const fromQuote = Boolean(incomeParam && Number(incomeParam) > 0);
+  const [income, setIncome] = useState(fromQuote ? (incomeParam as string) : "");
+  const [industry, setIndustry] = useState<Industry>(
+    industryParam && isIndustry(industryParam) ? industryParam : INDUSTRY_OPTIONS[0]?.value ?? "web_dev"
+  );
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
-    } catch {
-      // 저장 실패는 기능에 영향 없으므로 무시
-    }
-  }, [form, hydrated]);
+  const [laborIncluded, setLaborIncluded] = useState(true);
+  const [laborMode, setLaborMode] = useState<LaborMode>("direct");
+  const [laborDirect, setLaborDirect] = useState("");
+  const [laborHours, setLaborHours] = useState("");
+  const [laborRate, setLaborRate] = useState("");
 
-  const updateField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
+  const [outsourcingRows, setOutsourcingRows] = useState<CostRow[]>([]);
+  const [expenseRows, setExpenseRows] = useState<CostRow[]>([]);
 
-  const revenueNumber = Number(form.revenue);
-  const showRevenueError = form.revenue !== "" && revenueNumber <= 0;
+  const [feeMode, setFeeMode] = useState<FeeMode>("percent");
+  const [feeValue, setFeeValue] = useState("");
 
-  const result = useMemo(() => {
-    if (!form.revenue || revenueNumber <= 0) return null;
-    return calculateProfit({
-      revenue: revenueNumber,
-      cost: Number(form.cost) || 0,
-      quantity: Number(form.quantity) || 0,
-      fixedCost: Number(form.fixedCost) || 0,
-      variableCost: Number(form.variableCost) || 0,
-      feeRatePercent: Number(form.feeRatePercent) || 0,
-      applyTax: form.applyTax,
-    });
-  }, [form, revenueNumber]);
+  const [investedHours, setInvestedHours] = useState("");
 
-  const handleClear = () => {
-    setForm(INITIAL_STATE);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // 무시
-    }
-  };
+  const updateRow =
+    (setRows: React.Dispatch<React.SetStateAction<CostRow[]>>) =>
+    (id: string, field: "label" | "amount", value: string) => {
+      setRows((rows) => rows.map((row) => (row.id === id ? { ...row, [field]: value } : row)));
+    };
 
-  const chartTotal = result
-    ? result.chart.costAmount + result.chart.fixedAmount + result.chart.variableAmount + result.chart.profitAmount
+  const addOutsourcingRow = () => setOutsourcingRows((rows) => [...rows, createRow()]);
+  const removeOutsourcingRow = (id: string) => setOutsourcingRows((rows) => rows.filter((row) => row.id !== id));
+  const changeOutsourcingRow = updateRow(setOutsourcingRows);
+
+  const addExpenseRow = () => setExpenseRows((rows) => [...rows, createRow()]);
+  const removeExpenseRow = (id: string) => setExpenseRows((rows) => rows.filter((row) => row.id !== id));
+  const changeExpenseRow = updateRow(setExpenseRows);
+
+  const incomeAmount = toNumber(income);
+  const hasIncome = incomeAmount > 0;
+
+  const laborAmount = laborIncluded
+    ? laborMode === "direct"
+      ? toNumber(laborDirect)
+      : toNumber(laborHours) * toNumber(laborRate)
     : 0;
 
-  const chartSegments = result
-    ? [
-        { key: "cost", label: "매입원가", amount: result.chart.costAmount, colorVar: "--slot-cost" },
-        { key: "fixed", label: "고정비", amount: result.chart.fixedAmount, colorVar: "--slot-fixed" },
-        { key: "variable", label: "변동비(수수료 포함)", amount: result.chart.variableAmount, colorVar: "--slot-variable" },
-        { key: "profit", label: "순이익", amount: result.chart.profitAmount, colorVar: "--slot-profit" },
-      ].filter((seg) => seg.amount > 0)
-    : [];
+  const outsourcingTotal = outsourcingRows.reduce((sum, row) => sum + toNumber(row.amount), 0);
+  const expenseTotal = expenseRows.reduce((sum, row) => sum + toNumber(row.amount), 0);
+  const feeAmount = feeMode === "percent" ? incomeAmount * (toNumber(feeValue) / 100) : toNumber(feeValue);
+
+  const totalCost = laborAmount + outsourcingTotal + expenseTotal + feeAmount;
+  const netProfit = incomeAmount - totalCost;
+  const marginRate = hasIncome ? (netProfit / incomeAmount) * 100 : 0;
+
+  const investedHoursAmount = toNumber(investedHours);
+  const hasInvestedHours = investedHoursAmount > 0;
+  const hourlyProfit = hasInvestedHours ? netProfit / investedHoursAmount : 0;
 
   return (
     <div className={styles.layout}>
-      <form className={`${styles.card} glass ${styles.form}`} onSubmit={(e) => e.preventDefault()}>
+      <div className={`${styles.card} glass ${styles.form}`}>
         <div className={styles.field}>
-          <label htmlFor="revenue">매출액 (총 판매금액, 원)</label>
+          <label htmlFor="income">계약/견적 금액 (수입)</label>
+          {fromQuote && (
+            <p className={styles.noteBox}>
+              AI 견적서 생성기 결과의 견적 범위 평균값을 가져왔어요. 실제 계약 금액에 맞게 수정하세요.
+            </p>
+          )}
           <input
-            id="revenue"
+            id="income"
             type="number"
             min={0}
-            inputMode="numeric"
-            required
             placeholder="예: 5000000"
-            value={form.revenue}
-            onChange={(e) => updateField("revenue", e.target.value)}
+            value={income}
+            onChange={(e) => setIncome(e.target.value)}
           />
-          {showRevenueError && <p className={styles.fieldError}>매출액을 입력해주세요</p>}
         </div>
 
         <div className={styles.field}>
-          <label htmlFor="cost">매입원가 (원가·제조비, 원)</label>
-          <input
-            id="cost"
-            type="number"
-            min={0}
-            inputMode="numeric"
-            placeholder="예: 2000000"
-            value={form.cost}
-            onChange={(e) => updateField("cost", e.target.value)}
-          />
+          <label>업종 (평균 마진율 비교용)</label>
+          <div className={styles.industryChips}>
+            {INDUSTRY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`${styles.industryChip} ${industry === opt.value ? styles.industryChipActive : ""}`}
+                onClick={() => setIndustry(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <button
-          type="button"
-          className={styles.accordionToggle}
-          onClick={() => setAdvancedOpen((v) => !v)}
-          aria-expanded={advancedOpen}
-        >
-          <span>고급 설정 {advancedOpen ? "접기" : "열기"} (선택)</span>
-          <span className={`${styles.chevron} ${advancedOpen ? styles.chevronOpen : ""}`}>▾</span>
-        </button>
-
-        {advancedOpen && (
-          <div className={styles.accordionBody}>
-            <div className={styles.field}>
-              <label htmlFor="quantity">판매 수량 (개)</label>
-              <input
-                id="quantity"
-                type="number"
-                min={0}
-                inputMode="numeric"
-                placeholder="입력 시 개당 단가·원가·순이익도 계산해요"
-                value={form.quantity}
-                onChange={(e) => updateField("quantity", e.target.value)}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="fixedCost">고정비 (임대료·인건비·구독료 등, 원)</label>
-              <input
-                id="fixedCost"
-                type="number"
-                min={0}
-                inputMode="numeric"
-                placeholder="예: 1000000"
-                value={form.fixedCost}
-                onChange={(e) => updateField("fixedCost", e.target.value)}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="variableCost">변동비 (배송비·광고비 등, 원)</label>
-              <input
-                id="variableCost"
-                type="number"
-                min={0}
-                inputMode="numeric"
-                placeholder="예: 300000"
-                value={form.variableCost}
-                onChange={(e) => updateField("variableCost", e.target.value)}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="feeRatePercent">플랫폼 수수료율 (%)</label>
-              <input
-                id="feeRatePercent"
-                type="number"
-                min={0}
-                max={100}
-                step="0.1"
-                inputMode="decimal"
-                placeholder="예: 5.5 (없으면 0)"
-                value={form.feeRatePercent}
-                onChange={(e) => updateField("feeRatePercent", e.target.value)}
-              />
-            </div>
-
-            <label className={styles.checkboxField}>
+        <div className={styles.costSection}>
+          <div className={styles.costSectionHeader}>
+            <span className={styles.costSectionTitle}>내 인건비</span>
+            <label className={styles.checkboxRow}>
               <input
                 type="checkbox"
-                checked={form.applyTax}
-                onChange={(e) => updateField("applyTax", e.target.checked)}
+                checked={laborIncluded}
+                onChange={(e) => setLaborIncluded(e.target.checked)}
               />
-              부가세 10% 반영해서 보기
+              비용에 포함
             </label>
           </div>
-        )}
 
-        <button type="button" className={styles.secondaryButton} onClick={handleClear}>
-          입력값 초기화
-        </button>
-
-        <p className={styles.formNote}>
-          입력한 숫자는 브라우저에만 저장되며, 서버로 전송되지 않습니다. 다음 방문 시 자동으로 불러와요.
-        </p>
-      </form>
-
-      <section className={styles.resultPanel}>
-        {!result ? (
-          <div className={`${styles.card} glass ${styles.placeholder}`}>
-            <p>매출액을 입력하면 순이익과 마진율을 바로 계산해서 보여드려요.</p>
-          </div>
-        ) : (
-          <div className={`${styles.card} glass ${styles.resultCard}`}>
-            <div className={styles.heroStats}>
-              <div className={styles.heroStat}>
-                <span className={styles.heroLabel}>순이익</span>
-                <span
-                  className={`${styles.heroValue} ${result.netProfit < 0 ? styles.negative : ""}`}
+          {laborIncluded && (
+            <>
+              <div className={styles.modeTabs}>
+                <button
+                  type="button"
+                  className={`${styles.modeTab} ${laborMode === "direct" ? styles.modeTabActive : ""}`}
+                  onClick={() => setLaborMode("direct")}
                 >
-                  {formatWon(result.netProfit)}
+                  직접 입력
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.modeTab} ${laborMode === "timeRate" ? styles.modeTabActive : ""}`}
+                  onClick={() => setLaborMode("timeRate")}
+                >
+                  시간 × 단가
+                </button>
+              </div>
+
+              {laborMode === "direct" ? (
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="인건비 금액(원)"
+                  value={laborDirect}
+                  onChange={(e) => setLaborDirect(e.target.value)}
+                />
+              ) : (
+                <div className={styles.inlineFields}>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="투입 시간"
+                    value={laborHours}
+                    onChange={(e) => setLaborHours(e.target.value)}
+                  />
+                  <span className={styles.inlineOperator}>×</span>
+                  <input
+                    type="number"
+                    min={0}
+                    placeholder="시간당 단가(원)"
+                    value={laborRate}
+                    onChange={(e) => setLaborRate(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <CostRowsSection
+          title="외주/협업자 비용"
+          addLabel="+ 협업자 추가"
+          placeholder="예: 디자이너 외주"
+          rows={outsourcingRows}
+          onAdd={addOutsourcingRow}
+          onRemove={removeOutsourcingRow}
+          onChange={changeOutsourcingRow}
+        />
+
+        <CostRowsSection
+          title="재료비 / 툴 / 구독료 등 기타 경비"
+          addLabel="+ 경비 추가"
+          placeholder="예: 스톡 이미지 구매"
+          rows={expenseRows}
+          onAdd={addExpenseRow}
+          onRemove={removeExpenseRow}
+          onChange={changeExpenseRow}
+        />
+
+        <div className={styles.costSection}>
+          <span className={styles.costSectionTitle}>플랫폼 수수료 (있다면)</span>
+          <div className={styles.modeTabs}>
+            <button
+              type="button"
+              className={`${styles.modeTab} ${feeMode === "percent" ? styles.modeTabActive : ""}`}
+              onClick={() => setFeeMode("percent")}
+            >
+              수입의 %
+            </button>
+            <button
+              type="button"
+              className={`${styles.modeTab} ${feeMode === "fixed" ? styles.modeTabActive : ""}`}
+              onClick={() => setFeeMode("fixed")}
+            >
+              정액
+            </button>
+          </div>
+          <input
+            type="number"
+            min={0}
+            placeholder={feeMode === "percent" ? "예: 10 (%)" : "예: 100000 (원)"}
+            value={feeValue}
+            onChange={(e) => setFeeValue(e.target.value)}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label htmlFor="investedHours">실제 투입 시간 (선택)</label>
+          <input
+            id="investedHours"
+            type="number"
+            min={0}
+            placeholder="입력하면 실질 시급을 계산해 드려요"
+            value={investedHours}
+            onChange={(e) => setInvestedHours(e.target.value)}
+          />
+        </div>
+
+        <p className={styles.formNote}>입력하신 금액은 저장되지 않으며, 계산은 이 화면에서만 즉시 이루어집니다.</p>
+      </div>
+
+      <div className={styles.resultSticky}>
+        <div className={`${styles.card} glass ${styles.resultCard}`}>
+          <span className={styles.resultCardsTitle}>계산 결과</span>
+
+          <div className={styles.resultGrid}>
+            <div className={styles.metricCard}>
+              <span className={styles.metricLabel}>총 비용</span>
+              <span className={styles.metricValue}>{hasIncome ? formatWon(totalCost) : "-"}</span>
+            </div>
+            <div className={`${styles.metricCard} ${styles.metricCardPrimary}`}>
+              <span className={styles.metricLabel}>순이익</span>
+              <span className={`${styles.metricValue} ${netProfit < 0 ? styles.negative : ""}`}>
+                {hasIncome ? formatWon(netProfit) : "-"}
+              </span>
+            </div>
+            <div className={styles.metricCard}>
+              <span className={styles.metricLabel}>마진율</span>
+              <span className={`${styles.metricValue} ${marginRate < 0 ? styles.negative : ""}`}>
+                {hasIncome ? `${marginRate.toFixed(1)}%` : "-"}
+              </span>
+            </div>
+            {hasInvestedHours && (
+              <div className={styles.metricCard}>
+                <span className={styles.metricLabel}>실질 시급</span>
+                <span className={`${styles.metricValue} ${hourlyProfit < 0 ? styles.negative : ""}`}>
+                  {hasIncome ? formatWon(hourlyProfit) : "-"}
                 </span>
               </div>
-              <div className={styles.heroStat}>
-                <span className={styles.heroLabel}>마진율</span>
-                <span
-                  className={`${styles.heroValue} ${result.marginRate < 0 ? styles.negative : ""}`}
-                >
-                  {formatPercent(result.marginRate)}
-                </span>
-              </div>
-            </div>
-
-            <div className={`${styles.insight} ${styles[`insight-${result.insight.tone}`]}`}>
-              <span className={styles.insightIcon}>{INSIGHT_ICON[result.insight.tone]}</span>
-              <span>{result.insight.message}</span>
-            </div>
-
-            <div className={styles.subStats}>
-              <div className={styles.subStat}>
-                <span>매출총이익</span>
-                <strong>{formatWon(result.grossProfit)}</strong>
-              </div>
-              <div className={styles.subStat}>
-                <span>원가율</span>
-                <strong>{formatPercent(result.costRate)}</strong>
-              </div>
-              <div className={styles.subStat}>
-                <span>손익분기 매출액</span>
-                <strong>
-                  {result.breakEvenRevenue !== null ? formatWon(result.breakEvenRevenue) : "계산 불가"}
-                </strong>
-              </div>
-            </div>
-
-            {result.netProfit >= 0 && chartTotal > 0 ? (
-              <div className={styles.chartRoot}>
-                <h3 className={styles.chartTitle}>매출 대비 비용 구조</h3>
-                <div className={styles.stackBar}>
-                  {chartSegments.map((seg) => (
-                    <span
-                      key={seg.key}
-                      className={styles.segment}
-                      style={{
-                        width: `${(seg.amount / chartTotal) * 100}%`,
-                        backgroundColor: `var(${seg.colorVar})`,
-                      }}
-                      title={`${seg.label} ${formatWon(seg.amount)} (${((seg.amount / chartTotal) * 100).toFixed(1)}%)`}
-                    />
-                  ))}
-                </div>
-                <ul className={styles.legend}>
-                  {chartSegments.map((seg) => (
-                    <li key={seg.key}>
-                      <span className={styles.dot} style={{ backgroundColor: `var(${seg.colorVar})` }} />
-                      <span className={styles.legendLabel}>{seg.label}</span>
-                      <span className={styles.legendValue}>
-                        {formatWon(seg.amount)} · {((seg.amount / chartTotal) * 100).toFixed(1)}%
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className={styles.lossNotice}>
-                <p>
-                  매입원가·고정비·변동비·수수료 합계가 매출액을 초과해서 비용 구조 그래프 대신 목록으로 보여드려요.
-                </p>
-                <ul className={styles.legend}>
-                  <li>
-                    <span className={styles.legendLabel}>매입원가</span>
-                    <span className={styles.legendValue}>{formatWon(result.chart.costAmount)}</span>
-                  </li>
-                  <li>
-                    <span className={styles.legendLabel}>고정비</span>
-                    <span className={styles.legendValue}>{formatWon(result.chart.fixedAmount)}</span>
-                  </li>
-                  <li>
-                    <span className={styles.legendLabel}>변동비(수수료 포함)</span>
-                    <span className={styles.legendValue}>{formatWon(result.chart.variableAmount)}</span>
-                  </li>
-                </ul>
-              </div>
             )}
-
-            {(result.unitPrice !== null || result.unitCost !== null) && (
-              <div className={styles.subStats}>
-                <div className={styles.subStat}>
-                  <span>개당 판매단가</span>
-                  <strong>{result.unitPrice !== null ? formatWon(result.unitPrice) : "-"}</strong>
-                </div>
-                <div className={styles.subStat}>
-                  <span>개당 원가</span>
-                  <strong>{result.unitCost !== null ? formatWon(result.unitCost) : "-"}</strong>
-                </div>
-                <div className={styles.subStat}>
-                  <span>개당 순이익</span>
-                  <strong>{result.unitProfit !== null ? formatWon(result.unitProfit) : "-"}</strong>
-                </div>
-              </div>
-            )}
-
-            {form.applyTax && (
-              <div className={styles.taxBox}>
-                <span>부가세 10% 반영 후 순이익 (참고용)</span>
-                <strong>{formatWon(result.netProfitAfterTax)}</strong>
-              </div>
-            )}
-
-            <p className={styles.disclaimer}>
-              본 결과는 입력값을 바탕으로 한 단순 참고용 계산이며, 손익분기점·부가세 반영 금액은 실제 세무 신고 기준과 다를 수 있습니다.
-              정확한 세무·회계 처리는 전문가와 상의하시기 바랍니다.
-            </p>
           </div>
-        )}
-      </section>
+
+          {hasIncome && (
+            <CostBreakdownChart
+              totalCost={totalCost}
+              items={[
+                { key: "labor", label: "내 인건비", amount: laborAmount, colorVar: "--chart-series-1" },
+                { key: "outsourcing", label: "외주/협업자 비용", amount: outsourcingTotal, colorVar: "--chart-series-2" },
+                { key: "expense", label: "기타 경비", amount: expenseTotal, colorVar: "--chart-series-3" },
+                { key: "fee", label: "플랫폼 수수료", amount: feeAmount, colorVar: "--chart-series-4" },
+              ]}
+            />
+          )}
+
+          {hasIncome && (
+            <div className={styles.marginComment}>
+              <p>{getMarginComment(marginRate, INDUSTRY_PRESETS[industry])}</p>
+              <span className={styles.marginCommentNote}>
+                * 업종 평균은 참고용 추정치이며 실제 통계와 다를 수 있어요.
+              </span>
+            </div>
+          )}
+
+          {!hasIncome && <p className={styles.resultHint}>계약/견적 금액을 입력하면 결과가 표시됩니다.</p>}
+        </div>
+      </div>
     </div>
   );
 }

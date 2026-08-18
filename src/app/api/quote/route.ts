@@ -1,30 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { INDUSTRY_PRESETS, isIndustry } from "@/lib/quotePresets";
+import { INDUSTRY_PRESETS, isIndustry, type IndustryPreset } from "@/lib/quotePresets";
+import { extractTextFromFile } from "@/lib/extractText";
+import { QuoteSchema, type Quote } from "@/lib/quoteSchema";
 
 // 무료/저비용 운영을 위해 Gemini Flash Lite 사용. 필요 시 모델명만 교체하면 됩니다.
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
 
 const MIN_TEXT_LENGTH = 20;
 const MAX_TEXT_LENGTH = 12000;
-
-const QuoteItemSchema = z.object({
-  name: z.string(),
-  category: z.string().optional().default(""),
-  days: z.number().finite().nonnegative(),
-  amount: z.number().finite().nonnegative(),
-  reason: z.string(),
-});
-
-const QuoteSchema = z.object({
-  summary: z.string().optional().default(""),
-  items: z.array(QuoteItemSchema).min(1),
-  total_min: z.number().finite().nonnegative(),
-  total_max: z.number().finite().nonnegative(),
-  risks: z.array(z.string()).optional().default([]),
-});
-
-type Quote = z.infer<typeof QuoteSchema>;
+const MAX_FILE_SIZE_MB = 8;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 // Gemini structured output용 응답 스키마 (OpenAPI 서브셋, 타입은 대문자 표기)
 const GEMINI_RESPONSE_SCHEMA = {
@@ -68,40 +53,96 @@ function extractJson(raw: string): unknown {
   return JSON.parse(raw.slice(start, end + 1));
 }
 
-function normalizeQuote(quote: Quote): Quote {
+function normalizeQuote(quote: Quote, preset: IndustryPreset): Quote {
+  let normalized = quote;
+
   // AI가 min/max를 반대로 주는 경우를 대비한 안전장치
-  if (quote.total_min > quote.total_max) {
-    return { ...quote, total_min: quote.total_max, total_max: quote.total_min };
+  if (normalized.total_min > normalized.total_max) {
+    normalized = { ...normalized, total_min: normalized.total_max, total_max: normalized.total_min };
   }
-  return quote;
+
+  // 비현실적인 견적 방지: 업종 평균 일당(minDailyRate~maxDailyRate) 기준 상하한 캡
+  // 프리랜서 개인 단가는 평균보다 낮을 수 있고 에이전시는 평균보다 높을 수 있어 30~50% 여유를 둠
+  const totalDays = normalized.items.reduce((sum, item) => sum + item.days, 0);
+  if (totalDays > 0) {
+    const plausibleMin = totalDays * preset.minDailyRate * 0.7;
+    const plausibleMax = totalDays * preset.maxDailyRate * 1.5;
+    const clamp = (value: number) => Math.round(Math.min(Math.max(value, plausibleMin), plausibleMax));
+
+    const finalMin = clamp(normalized.total_min);
+    let finalMax = clamp(normalized.total_max);
+    if (finalMin === finalMax) {
+      finalMax = Math.round(finalMin * 1.2);
+    }
+
+    if (finalMin !== normalized.total_min || finalMax !== normalized.total_max) {
+      normalized = {
+        ...normalized,
+        total_min: finalMin,
+        total_max: finalMax,
+        risks: [
+          ...normalized.risks,
+          "AI가 산출한 금액이 업종 평균과 크게 달라 합리적인 범위로 자동 보정되었습니다. 실제 계약 전 전문가 검토를 권장합니다.",
+        ],
+      };
+    }
+  }
+
+  return normalized;
 }
 
 export async function POST(req: NextRequest) {
-  let body: unknown;
+  let formData: FormData;
   try {
-    body = await req.json();
+    formData = await req.formData();
   } catch {
     return NextResponse.json({ error: "잘못된 요청 형식입니다." }, { status: 400 });
   }
 
-  const RequestSchema = z.object({
-    industry: z.string(),
-    hourlyRate: z.number().finite().positive().optional(),
-    text: z.string(),
-  });
-
-  const parsedRequest = RequestSchema.safeParse(body);
-  if (!parsedRequest.success) {
-    return NextResponse.json({ error: "요청 형식이 올바르지 않습니다." }, { status: 400 });
-  }
-
-  const { industry, hourlyRate, text } = parsedRequest.data;
-
-  if (!isIndustry(industry)) {
+  const industry = formData.get("industry");
+  if (typeof industry !== "string" || !isIndustry(industry)) {
     return NextResponse.json({ error: "지원하지 않는 업종입니다." }, { status: 400 });
   }
 
-  const trimmedText = text.trim();
+  let hourlyRate: number | undefined;
+  const hourlyRateRaw = formData.get("hourlyRate");
+  if (typeof hourlyRateRaw === "string" && hourlyRateRaw.trim() !== "") {
+    const parsed = Number(hourlyRateRaw);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return NextResponse.json({ error: "시간당 단가 값이 올바르지 않습니다." }, { status: 400 });
+    }
+    hourlyRate = parsed;
+  }
+
+  const file = formData.get("file");
+  const textRaw = formData.get("text");
+
+  let extractedText: string;
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: `파일 용량은 ${MAX_FILE_SIZE_MB}MB 이하만 업로드할 수 있습니다.` },
+        { status: 400 }
+      );
+    }
+    try {
+      extractedText = await extractTextFromFile(file);
+    } catch (err) {
+      console.error("[quote] 파일 텍스트 추출 실패:", err);
+      const message =
+        err instanceof Error ? err.message : "파일에서 텍스트를 추출하지 못했습니다.";
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+  } else if (typeof textRaw === "string") {
+    extractedText = textRaw;
+  } else {
+    return NextResponse.json(
+      { error: "서비스 요청서 파일 또는 텍스트를 입력해주세요." },
+      { status: 400 }
+    );
+  }
+
+  const trimmedText = extractedText.trim();
   if (trimmedText.length < MIN_TEXT_LENGTH) {
     return NextResponse.json(
       { error: `요청서 내용을 ${MIN_TEXT_LENGTH}자 이상 입력해주세요.` },
@@ -188,7 +229,7 @@ ${trimmedText}`;
     if (!parsedQuote.success) {
       throw new Error("AI 응답이 예상한 형식과 다릅니다.");
     }
-    quote = normalizeQuote(parsedQuote.data);
+    quote = normalizeQuote(parsedQuote.data, preset);
   } catch (err) {
     console.error("[quote] AI 응답 파싱 실패:", err, rawText);
     return NextResponse.json(
