@@ -1,0 +1,17 @@
+.deleteButton {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ef4444;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.deleteButton:hover:not(:disabled) {
+  border-color: #ef4444;
+}
+
+.deleteButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

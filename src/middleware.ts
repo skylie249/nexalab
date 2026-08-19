@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
+import { updateSession } from "./lib/supabase/middleware";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -35,7 +36,24 @@ function getClientIp(req: NextRequest): string {
   return req.headers.get("x-real-ip") ?? "unknown";
 }
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
+  if (req.nextUrl.pathname.startsWith("/admin")) {
+    const { supabaseResponse, user } = await updateSession(req);
+    const isLoginPage = req.nextUrl.pathname === "/admin/login";
+
+    if (!user && !isLoginPage) {
+      const loginUrl = new URL("/admin/login", req.url);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (user && isLoginPage) {
+      const postsUrl = new URL("/admin/posts", req.url);
+      return NextResponse.redirect(postsUrl);
+    }
+
+    return supabaseResponse;
+  }
+
   const rule = RATE_LIMITS[req.nextUrl.pathname];
 
   if (rule) {
@@ -69,7 +87,8 @@ export const config = {
     "/api/quote",
     "/api/wizard-to-request",
     "/api/seo-check",
-    // next-intl: 페이지 경로만 대상 — api, _next, 정적 파일(확장자 포함 경로)은 제외
-    "/((?!api|_next|_vercel|.*\\..*).*)",
+    "/admin/:path*",
+    // next-intl: 페이지 경로만 대상 — api, admin, _next, 정적 파일(확장자 포함 경로)은 제외
+    "/((?!api|admin|_next|_vercel|.*\\..*).*)",
   ],
 };

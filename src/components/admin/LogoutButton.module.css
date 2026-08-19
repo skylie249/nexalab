@@ -1,0 +1,13 @@
+.logoutButton {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.logoutButton:hover {
+  color: var(--text-primary);
+  border-color: var(--accent-color);
+}

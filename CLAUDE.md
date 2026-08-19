@@ -506,3 +506,19 @@ export async function POST(req: Request) {
   - `src/app/[locale]/posts/[id]/page.tsx`: 글의 카테고리 언어와 현재 URL 로케일이 다르면 `notFound()` — 예를 들어 한국어 글 URL을 `/en/posts/...`로 열면 404 처리되어 언어가 섞여 보이지 않음
   - 브라우저로 확인: `/ko`는 기존과 동일하게 카테고리 탭 2개 + 29개 글 정상 노출, `/en`은 카테고리 탭 없이 "No posts yet." 빈 상태로 정상 노출(아직 영어 카테고리/글이 없으므로 예상된 동작), 한국어 글을 `/en/posts/...`로 직접 접근 시 404 확인
   - **다음 단계(사용자 작업)**: Supabase 대시보드에서 `locale='en'`인 새 카테고리 생성 후 그 카테고리로 영어 AI 뉴스 글을 작성하면 `/en` 홈에 자동으로 노출됨 — 앱 코드 추가 변경 불필요
+
+### 2026-08-19
+- **관리자 로그인 + 글 수동 등록 기능(`/admin`) 신규 구현**: 지금까지 `posts` 테이블에 앱 코드로 쓰는 경로가 전혀 없어(글 작성/수정은 Supabase 대시보드 Table Editor에서 직접 해옴, `supabase-rls.sql`도 공개 SELECT 정책만 존재) 로그인한 관리자가 글을 생성/수정/삭제할 수 있는 영역을 추가함
+  - **인증**: Supabase Auth(이메일/비밀번호) + `@supabase/ssr`(신규 의존성 추가) 쿠키 세션. `src/lib/supabase/client.ts`(브라우저), `server.ts`(RSC/Route Handler, `getUser()` 확인용), `middleware.ts`(`updateSession()` 헬퍼, 세션 쿠키 갱신 담당) 3개 신설 — 기존 anon 클라이언트 `src/lib/supabase.ts`는 공개 페이지용으로 그대로 유지
+  - **DB 쓰기**: `src/lib/supabase/admin.ts` 신설 — service-role 키 클라이언트, `server-only` 패키지(신규 의존성)로 감싸 클라이언트 번들에 실수로 포함되면 빌드가 실패하도록 함. RLS 정책은 변경하지 않고(공개 SELECT만 유지) 그대로 우회하는 방식 채택 — draft(비공개) 글도 관리자 목록·수정 화면에서 조회해야 하기 때문
+  - **라우트 구조**: `/admin`은 `src/app/[locale]/**` 밖에 위치(`src/app/api`, `not-found.tsx`와 동일 패턴). `[locale]/layout.tsx`가 유일한 `<html><body>` 루트라 `src/app/admin/layout.tsx`가 자체 root layout을 가짐(ThemeProvider만 재사용, next-intl 미적용 — 관리자 UI는 한국어 고정). `(protected)` 라우트 그룹으로 `/admin/login`과 실제 관리 화면을 분리해 리다이렉트 루프 방지
+  - **이중 인증 방어**: `src/middleware.ts`에 `/admin/:path*` 분기 추가 — `updateSession()`으로 세션 갱신 후 미로그인 시 `/admin/login`으로, 로그인 상태에서 `/admin/login` 접근 시 `/admin/posts`로 리다이렉트(1차 게이트). `(protected)/layout.tsx`에서도 서버 컴포넌트 레벨로 `getUser()` 재확인(2차 방어). API route(`/api/admin/posts`, `/api/admin/posts/[id]`)도 각 요청마다 독립적으로 `getUser()` 검증 후에만 service-role 클라이언트로 insert/update/delete 수행 — 미들웨어 우회 대비 마지막 방어선. next-intl 대상 matcher에도 `admin` 제외 추가(`/((?!api|admin|_next|_vercel|.*\\..*).*)`)해 `/admin`이 `/ko/admin`으로 리다이렉트되지 않도록 함
+  - **글 작성 폼**: `src/components/admin/PostForm.tsx`(생성/수정 공용) — 제목/요약/본문(태그는 콤마 구분 입력 → 배열 변환)/카테고리(칩 버튼, 한국어·영어 그룹 분리 표시)/게시 여부 체크박스(기본값 미체크=초안, 실수로 바로 공개되는 것 방지). 본문은 새 에디터 라이브러리를 추가하지 않고 textarea + "미리보기" 탭에서 기존 글 상세 페이지와 동일한 `ReactMarkdown + remarkGfm + rehypeHighlight` 파이프라인으로 렌더링해 실제 표시와 100% 동일하게 보이도록 함
+  - API route(`src/app/api/admin/posts/route.ts`, `[id]/route.ts`)는 `src/lib/postSchema.ts`(zod)로 요청 본문을 검증한 뒤 저장하고, 성공 시 `revalidatePath`로 홈(`/ko`, `/en`)과 해당 글 상세 경로를 즉시 재검증(ISR 60초 대기 없이 바로 반영)
+  - `.env.local`에 `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY` 빈 값 플레이스홀더 추가(로컬에 이전까지 `GEMINI_API_KEY`만 존재했음)
+  - **사용자 확인/작업 필요**:
+    1. Supabase 대시보드 > Authentication > Users에서 관리자 계정 1개 직접 생성(이메일/비밀번호, "Auto Confirm User" 체크)
+    2. `.env.local`과 Vercel 프로젝트 설정에 위 세 환경변수 실제 값 채우기(Supabase 대시보드 > Settings > API)
+  - **검증**: `npx tsc --noEmit`, `next lint`, `next build`(정적 28페이지 + 신규 admin 라우트 전부 생성 확인, `/admin`·`/api/admin/posts`·`/api/admin/posts/[id]`는 예상대로 `ƒ`(Dynamic) 처리됨) 통과.
+  - **버그 수정 (브라우저 검증 중 발견)**: 사용자가 실제 Supabase 환경변수를 채운 뒤 로그인~글 등록까지 테스트하자 `POST /api/admin/posts`가 500 에러(`null value in column "slug" of relation "posts" violates not-null constraint`) — 애초 스키마 조사 때 `posts.slug` NOT NULL 컬럼을 놓쳤음(공개 쿼리들이 `select('*')`만 쓰고 slug를 참조한 적이 없어 발견 못 함). `src/app/api/admin/posts/route.ts`에 `generateSlug(title)` 헬퍼 추가(제목 기반 + `randomUUID().slice(0,8)` 접미사로 유니크 보장)해서 insert 시 함께 채우도록 수정 — 공개 라우팅은 `/posts/[id]`로 id 기반이라 slug 값 자체는 노출되지 않음
+  - **브라우저 end-to-end 검증 완료**(Chrome 자동화, dev 서버): 로그인 → 새 글 작성(제목/카테고리 칩/요약/마크다운 본문+미리보기 탭/태그/공개 체크박스) → 저장 → 홈(`/ko`) 피처드 포스트로 즉시 반영 확인 → 상세 페이지(`/ko/posts/[id]`) 렌더링 확인 → 수정(제목 변경) → 상세 페이지 즉시 반영 확인 → 삭제 → 목록에서 즉시 사라짐 + 상세 페이지 404 확인 → 로그아웃 → `/admin/posts` 재접근 시 `/admin/login`으로 리다이렉트 확인. 전 과정에서 `revalidatePath` 즉시 반영, 이중 인증 가드(middleware + `(protected)/layout.tsx`) 모두 의도대로 동작
