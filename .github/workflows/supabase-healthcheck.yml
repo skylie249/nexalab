@@ -18,9 +18,13 @@ jobs:
             echo "SUPABASE_URL 또는 SUPABASE_ANON_KEY secret이 설정되어 있지 않습니다." >&2
             exit 1
           fi
-          status=$(curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/" \
+          # 루트(/rest/v1/) 디스커버리 엔드포인트는 이 프로젝트가 쓰는 publishable 키
+          # 방식에서 401("Secret API key required")을 반환하므로, RLS로 공개 SELECT가
+          # 허용된 실제 테이블(categories)을 가볍게 조회해 활성 신호를 보낸다.
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/categories?select=id&limit=1" \
             -H "apikey: $SUPABASE_ANON_KEY")
           echo "Supabase REST endpoint responded with status $status"
-          if [ "$status" -ge 500 ]; then
+          if [ "$status" -ge 400 ]; then
             exit 1
           fi
