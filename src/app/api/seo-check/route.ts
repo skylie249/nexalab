@@ -1,7 +1,11 @@
+import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { safeFetch, type SafeFetchErrorReason } from "@/lib/safeFetch";
 import { analyze } from "@/lib/seoGeoAnalyzer";
+import { supabase } from "@/lib/supabase";
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 // dns/net(Node 전용 모듈)을 사용하는 safeFetch에 의존하므로 edge 런타임을 쓰지 않음(생략 = 기본 Node 런타임).
 export const maxDuration = 10;
@@ -51,6 +55,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "올바른 URL 형식이 아닙니다." }, { status: 400 });
     }
 
+    const urlHash = createHash("sha256").update(urlObj.toString()).digest("hex");
+
+    // 캐시 조회 실패는 치명적이지 않으므로(캐시 없이 새로 분석하면 됨) 에러가 나도 계속 진행한다.
+    const cutoff = new Date(Date.now() - CACHE_TTL_MS).toISOString();
+    const { data: cached, error: cacheReadError } = await supabase
+      .from("seo_check_cache")
+      .select("url, report_json, created_at")
+      .eq("url_hash", urlHash)
+      .gte("created_at", cutoff)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (cacheReadError) {
+      console.error("[seo-check] 캐시 조회 실패:", cacheReadError);
+    } else if (cached) {
+      return NextResponse.json({
+        url: cached.url,
+        checkedAt: cached.created_at,
+        report: cached.report_json,
+        cached: true,
+      });
+    }
+
     const htmlResult = await safeFetch(urlObj.toString(), {
       timeoutMs: 6000,
       maxBytes: 2_000_000,
@@ -95,8 +123,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "페이지를 분석하는 중 오류가 발생했습니다." }, { status: 500 });
     }
 
-    // 결과는 저장하지 않고 그대로 반환만 한다.
-    return NextResponse.json({ url: htmlResult.finalUrl, checkedAt: new Date().toISOString(), report });
+    const checkedAt = new Date().toISOString();
+
+    // 캐시 기록 실패도 치명적이지 않으므로(다음 요청이 다시 분석하면 됨) 에러가 나도 응답은 계속 진행한다.
+    const { error: cacheWriteError } = await supabase.from("seo_check_cache").insert({
+      url: htmlResult.finalUrl,
+      url_hash: urlHash,
+      seo_score: report.seo.score,
+      geo_score: report.geo.score,
+      report_json: report,
+      created_at: checkedAt,
+    });
+    if (cacheWriteError) {
+      console.error("[seo-check] 캐시 기록 실패:", cacheWriteError);
+    }
+
+    return NextResponse.json({ url: htmlResult.finalUrl, checkedAt, report, cached: false });
   } catch (err) {
     console.error("[seo-check] 처리 중 오류:", err);
     return NextResponse.json({ error: "요청 처리 중 오류가 발생했습니다." }, { status: 500 });

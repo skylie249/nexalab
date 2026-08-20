@@ -559,3 +559,19 @@ export async function POST(req: Request) {
     - 6번 표의 "알림(Push) 확장 여지" — 지침서 자체가 "지금 단계는 아님"이라고 명시
     - 옵션 B(이메일 연동 저장)로의 확장
   - **검증**: `npx tsc --noEmit`, `next lint`, `next build`(`/ko`·`/en` 양쪽 `/dashboard` 정적 생성 + ISR 확인) 통과. 브라우저(Chrome 자동화, dev 서버, `GEMINI_API_KEY` 설정된 상태로 실제 API 호출 포함) end-to-end 검증: 빈 상태(온보딩 배너 + 3개 카드 empty state + 실제 Supabase 블로그 글 노출) 확인 → 손익 계산기에서 값 입력 후 대시보드 재방문 시 카드에 반영 확인(디바운스 업서트 동작 확인) → SEO/GEO 체커로 실제 프로덕션 사이트(`nexalab.app`, llms.txt 존재해 CTA 미노출 확인)와 `google.com`(llms.txt 없어 CTA 노출 확인, 클릭 시 `?site=google.com&url=...` 쿼리로 llms.txt 생성기 프리필까지 실제 이어짐을 확인 — 지난 세션에 로컬 SSRF 차단으로 못 했던 검증을 이번에 완료) 두 건을 점검해 히스토리 2건 적재 → 대시보드에서 최신 항목이 카드에, 트렌드 섹션에 두 항목 간 SEO/GEO 점수 차이(-34점/-17점)가 정확히 계산되어 표시됨을 확인. `/en` 로케일, 다크모드 렌더링 확인. 도구 간 추천 CTA는 이번 테스트 데이터 조합(GEO 양호·순이익 양수·견적 이력 없음·매칭 블로그 글 없음)에서는 4개 규칙 모두 조건 미충족으로 섹션 자체가 숨겨지는 것까지 확인(의도된 동작). **견적서 생성기 경로(rule 2, 3)와 실제 CTA 노출 케이스는 다음 세션에서 추가 확인 권장**
+
+- **인프라 운영 체크리스트(`nexalab_infra_체크리스트.md`) 착수 — 코드로 구현 가능한 P0/P1/P2 항목만 이번 세션에서 반영**
+  - 착수 전 코드 조사 결과, 체크리스트 P0 항목 중 "Gemini 호출 최소화 설계"는 **이미 충족된 상태**임을 확인 — `/api/seo-check`(`src/app/api/seo-check/route.ts`)는 Gemini를 전혀 호출하지 않고 `cheerio` 기반 정적 규칙 분석(`src/lib/seoGeoAnalyzer.ts`)만으로 동작 중 (Gemini는 견적서 생성기·위저드에서만 사용). 별도 조치 불필요
+  - **Supabase 헬스체크 크론**(P0): `.github/workflows/supabase-healthcheck.yml` 신규 — 매일 00:00 UTC(+수동 실행) `SUPABASE_URL`/`SUPABASE_ANON_KEY` GitHub Secrets로 REST 엔드포인트에 ping. **사용자 작업 필요**: GitHub repo Settings > Secrets에 두 값 등록
+  - **GitHub Actions CI**(P2): `.github/workflows/ci.yml` 신규 — `main` 대상 PR마다 `npm ci` → `npm run lint` → `npm run build`. `.env.local` 없이도(placeholder Supabase 클라이언트 폴백 덕분에) 빌드가 성공하는 것을 로컬에서 직접 확인(`.env.local`을 임시로 치워두고 `next build` 재실행, 이후 원상 복구)했으므로 CI에 별도 시크릿 주입 없이도 통과함
+  - **`.env.example` 템플릿**(P1 환경변수 분리 항목의 코드 측 부분): 실제 키 값 없이 4개 변수명(`NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY`/`SUPABASE_SERVICE_ROLE_KEY`/`GEMINI_API_KEY`)만 정리. `.gitignore`에 `.env.local`만 등록되어 있어 이 파일은 정상적으로 커밋 추적됨을 확인
+  - **SEO/GEO 체커 결과 캐싱**(P1): 사용자가 "공유 결과 페이지 없이 내부 캐싱만"으로 범위를 확정 — `supabase-seo-check-cache.sql`(신규, `supabase-rls.sql`과 동일하게 대시보드 SQL Editor에서 수동 실행하는 방식) + `route.ts` 수정
+    - 스키마: `seo_check_cache(id, url, url_hash, seo_score, geo_score, report_json, created_at)`, `(url_hash, created_at desc)` 복합 인덱스. RLS는 anon에 INSERT/SELECT만 허용(UPDATE/DELETE 정책 없음) — 캐시 갱신은 새 행 INSERT 방식이라 기존 행을 고치는 정책 자체가 필요 없음(체크리스트 예시와 동일한 최소 권한 원칙)
+    - `route.ts`: 요청 URL(리다이렉트 반영 전, 사용자가 입력한 URL 기준)을 SHA-256 해시해 `url_hash`로 사용 — 캐시 히트 시 `safeFetch` 자체를 스킵하도록 안전 fetch보다 먼저 캐시 조회를 배치. 24시간 이내 캐시가 있으면 즉시 반환(`cached: true`), 없으면 기존 분석 로직을 그대로 실행한 뒤 결과를 새 행으로 INSERT(`cached: false`)
+    - 캐시 조회/기록 모두 Supabase 에러를 `throw`가 아니라 `{ data, error }` 구조분해로 처리(기존 `getPosts`/`getCategories` 패턴과 동일) — 캐시 테이블이 아직 없거나 일시 장애여도 분석 자체는 항상 정상 동작(best-effort)
+    - **사용자 작업 필요**: Supabase 대시보드 SQL Editor에서 `supabase-seo-check-cache.sql` 실행 — 실행 전까지는 캐시 없이 매번 새로 분석(정상 동작, 성능 이점만 없음)
+  - **이번 범위에서 하지 않은 것** (사용자가 명시적으로 보류 선택):
+    - Vercel 비동기 접수/폴링 구조 리팩터링 — 조사 결과 현재 `/api/seo-check`는 PageSpeed 같은 느린 외부 API 대신 대상 URL/robots.txt/llms.txt/sitemap.xml만 fetch하며 `maxDuration=10`으로 동작 중이라 체크리스트가 가정한 위험도보다 낮다고 판단해 보류
+    - Cloudflare Rate Limiting, SSL/TLS Full(Strict) 확인, Vercel Production/Preview/Development 환경변수 3중 분리 — 전부 각 서비스 대시보드에서만 가능한 계정 설정이라 코드로 구현 불가. 사용자에게 별도 안내(이 문서에는 기록하지 않음, 대화 응답 참고)
+    - `posts`/`categories` RLS(`supabase-rls.sql`) — 코드(SQL 파일)는 이미 존재하나, 실제 Supabase 프로젝트에 적용됐는지는 DB 접근 권한이 없어 이번 세션에서 재확인하지 못함. 대시보드에서 직접 확인 필요
+  - **검증**: `npx tsc --noEmit`, `next lint`, `next build` 통과(`.env.local` 있는 상태/없는 상태 둘 다). 로컬 dev 서버로 `/api/seo-check`에 실제 프로덕션 URL(`nexalab.app`)을 호출해 캐시 테이블이 아직 없는 상태에서도 200 응답과 정상 리포트가 반환되고, 서버 로그에 캐시 조회/기록 실패가 각각 예상대로 기록되는 것을 확인(graceful degradation 검증). **캐시 히트 시 실제로 `safeFetch`를 건너뛰고 즉시 반환되는지는 `supabase-seo-check-cache.sql`을 실행한 이후에 재확인 필요**

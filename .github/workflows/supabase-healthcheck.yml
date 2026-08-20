@@ -1,0 +1,26 @@
+name: Supabase Health Check
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # 매일 00:00 UTC — Supabase 무료 프로젝트의 7일 비활성 자동정지 방지
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "SUPABASE_URL 또는 SUPABASE_ANON_KEY secret이 설정되어 있지 않습니다." >&2
+            exit 1
+          fi
+          status=$(curl -s -o /dev/null -w "%{http_code}" "$SUPABASE_URL/rest/v1/" \
+            -H "apikey: $SUPABASE_ANON_KEY")
+          echo "Supabase REST endpoint responded with status $status"
+          if [ "$status" -ge 500 ]; then
+            exit 1
+          fi
