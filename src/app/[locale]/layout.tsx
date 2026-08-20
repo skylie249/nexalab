@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import { SITE_URL, SITE_NAME, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./layout.module.css";
 
@@ -45,7 +46,13 @@ export async function generateMetadata({
       follow: true,
       googleBot: { index: true, follow: true, "max-image-preview": "large" },
     },
-    icons: { icon: "/icon.svg" },
+    icons: { icon: "/icon.svg", apple: "/icons/apple-touch-icon.png" },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "NexaLab",
+    },
   };
 }
 
@@ -98,6 +105,7 @@ export default async function LocaleLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        <ServiceWorkerRegister />
         <NextIntlClientProvider>
           <ThemeProvider>
             <div className={styles.appContainer}>
