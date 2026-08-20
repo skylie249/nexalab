@@ -28,6 +28,7 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
+  text-wrap: balance;
 }
 
 @media (min-width: 768px) {
@@ -48,6 +49,7 @@
   color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.6;
+  text-wrap: balance;
 }
 
 .profileCard {
@@ -169,12 +171,14 @@
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.75rem;
+  text-wrap: balance;
 }
 
 .note p {
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 1.25rem;
+  text-wrap: balance;
 }
 
 .cta {

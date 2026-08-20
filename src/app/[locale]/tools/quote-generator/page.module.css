@@ -28,6 +28,7 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
+  text-wrap: balance;
 }
 
 @media (min-width: 768px) {
@@ -48,6 +49,7 @@
   color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.6;
+  text-wrap: balance;
 }
 
 .card {
@@ -388,6 +390,7 @@
   color: var(--text-secondary);
   text-align: center;
   line-height: 1.5;
+  text-wrap: balance;
 }
 
 .resultWrap {
@@ -513,4 +516,5 @@
   color: var(--text-secondary);
   line-height: 1.5;
   text-align: center;
+  text-wrap: balance;
 }

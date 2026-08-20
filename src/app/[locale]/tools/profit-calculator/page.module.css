@@ -28,6 +28,7 @@
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
+  text-wrap: balance;
 }
 
 @media (min-width: 768px) {
@@ -48,6 +49,7 @@
   color: var(--text-secondary);
   font-weight: 500;
   line-height: 1.6;
+  text-wrap: balance;
 }
 
 /* 모바일 기본값: 폼과 결과 카드를 세로로 쌓음. 데스크톱에서만 2열로 확장 */
@@ -330,6 +332,7 @@
   color: var(--text-secondary);
   text-align: center;
   line-height: 1.5;
+  text-wrap: balance;
 }
 
 .resultCard {
@@ -393,6 +396,7 @@
   color: var(--text-secondary);
   line-height: 1.5;
   text-align: center;
+  text-wrap: balance;
 }
 
 /* 비용 항목 비중: 100% 가로 스택 바 + 범례. 세그먼트 사이 2px 간격은 바 배경색이 비쳐 보이는 방식으로 구현 */
