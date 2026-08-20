@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "NexaLab.app - Tech & Business Lab",
-    "description": "A senior developer's AI application build log and tech lab"
+    "description": "See how AI can cut your workload, for free. Try practical tools like the quote generator and profit calculator right away."
   },
   "header": {
     "navDashboard": "Dashboard",
@@ -26,7 +26,7 @@
   },
   "hero": {
     "title": "The Next Story, Written by <highlight>AI</highlight>",
-    "subtitle": "A senior developer's AI application build log and tech lab",
+    "subtitle": "See how AI can cut your workload — free, right now",
     "liveSubApps": "LIVE SUB-APPS",
     "goTo": "Visit ↗",
     "harubiteDesc": "Daily meal-logging service",

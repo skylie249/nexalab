@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "NexaLab.app - Tech & Business Lab",
-    "description": "시니어 개발자의 AI 애플리케이션 빌드 로그 및 기술 실험실"
+    "description": "AI로 일 줄이는 법을 무료로 확인해보세요. 견적서·손익계산기 같은 실무 도구를 바로 써볼 수 있어요"
   },
   "header": {
     "navDashboard": "대시보드",
@@ -26,7 +26,7 @@
   },
   "hero": {
     "title": "<highlight>AI</highlight>가 써내려가는 다음 이야기",
-    "subtitle": "시니어 개발자의 AI 애플리케이션 빌드 로그 및 기술 실험실",
+    "subtitle": "AI로 일 줄이는 법, 지금 무료로 확인해보세요",
     "liveSubApps": "LIVE SUB-APPS",
     "goTo": "바로가기 ↗",
     "harubiteDesc": "하루바이트 서비스",
