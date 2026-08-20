@@ -94,6 +94,42 @@ export default async function AboutPage({
         </div>
       </section>
 
+      <section className={`${styles.storySection} glass`}>
+        <h2>{t("storyTitle")}</h2>
+        <p>{t("storyBody")}</p>
+      </section>
+
+      <section>
+        <h2 className={styles.sectionTitle}>{t("coverageTitle")}</h2>
+        <div className={styles.gridThree}>
+          <div className={`${styles.card} glass`}>
+            <h3>{t("coverageAiAppsTitle")}</h3>
+            <p>{t("coverageAiAppsDesc")}</p>
+          </div>
+          <div className={`${styles.card} glass`}>
+            <h3>{t("coverageBizTitle")}</h3>
+            <p>{t("coverageBizDesc")}</p>
+          </div>
+          <div className={`${styles.card} glass`}>
+            <h3>{t("coverageToolsTitle")}</h3>
+            <p>{t("coverageToolsDesc")}</p>
+          </div>
+        </div>
+      </section>
+
+      <section className={`${styles.audienceSection} glass`}>
+        <h2>{t("audienceTitle")}</h2>
+        <p>{t("audienceBody")}</p>
+        <div className={styles.tags}>
+          <span className={styles.tag}>{t("audienceRole1")}</span>
+          <span className={styles.tag}>{t("audienceRole2")}</span>
+          <span className={styles.tag}>{t("audienceRole3")}</span>
+          <span className={styles.tag}>{t("audienceRole4")}</span>
+        </div>
+      </section>
+
+      <p className={styles.disclosure}>🤖 {t("disclosureText")}</p>
+
       <section className={`${styles.note} glass`}>
         <h2>{t("contactTitle")}</h2>
         <p>{t("contactBody")}</p>
