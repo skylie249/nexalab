@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { INDUSTRY_OPTIONS, type Industry } from "@/lib/quotePresets";
 import { formatWon } from "@/lib/formatCurrency";
+import { saveQuoteHistory } from "@/lib/dashboardHistory";
 import styles from "./page.module.css";
 
 const ACCEPTED_FILE_TYPES = ".pdf,.docx";
@@ -201,7 +202,14 @@ export default function QuoteGeneratorClient() {
       if (!res.ok) {
         throw new Error(data.error || t("errorUnknown"));
       }
-      setQuote(data.quote as Quote);
+      const receivedQuote = data.quote as Quote;
+      setQuote(receivedQuote);
+      saveQuoteHistory({
+        industry,
+        summary: receivedQuote.summary || receivedQuote.items?.[0]?.name || "",
+        totalMin: receivedQuote.total_min,
+        totalMax: receivedQuote.total_max,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorGeneric"));
     } finally {

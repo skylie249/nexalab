@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { CATEGORY_LABELS, SCORE_DISCLAIMER_KO, SUBCATEGORY_ORDER } from "@/lib/seoGeoConfig";
 import type { AnalysisReport, CheckResult, CheckStatus } from "@/lib/seoGeoTypes";
+import { saveSeoHistory } from "@/lib/dashboardHistory";
 import styles from "./page.module.css";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -32,7 +34,19 @@ function ScoreCard({ label, score, grade }: { label: string; score: number; grad
   );
 }
 
-function CheckRow({ check }: { check: CheckResult }) {
+function CheckRow({ check, siteUrl }: { check: CheckResult; siteUrl: string }) {
+  const t = useTranslations("seoGeoChecker");
+  const showLlmsTxtCta = check.id === "geo.llms_txt.exists" && check.status === "fail";
+
+  let siteName = siteUrl;
+  if (showLlmsTxtCta) {
+    try {
+      siteName = new URL(siteUrl).hostname.replace(/^www\./, "");
+    } catch {
+      siteName = siteUrl;
+    }
+  }
+
   return (
     <li className={styles.checkRow}>
       <span className={styles.checkIcon} aria-hidden="true">
@@ -43,6 +57,14 @@ function CheckRow({ check }: { check: CheckResult }) {
         <span className={styles.checkDetail}>{check.detail}</span>
         {check.status !== "pass" && check.fixHint && (
           <span className={styles.checkFixHint}>💡 {check.fixHint}</span>
+        )}
+        {showLlmsTxtCta && (
+          <Link
+            href={`/tools/llms-txt-generator?site=${encodeURIComponent(siteName)}&url=${encodeURIComponent(siteUrl)}`}
+            className={styles.llmsTxtCta}
+          >
+            {t("llmsTxtCtaButton")}
+          </Link>
         )}
       </div>
     </li>
@@ -82,8 +104,16 @@ export default function SeoGeoCheckerClient() {
         setErrorMessage(data.error ?? t("errorGeneric"));
         return;
       }
-      setResult(data as ApiSuccess);
+      const apiResult = data as ApiSuccess;
+      setResult(apiResult);
       setStatus("success");
+      saveSeoHistory({
+        url: apiResult.url,
+        seoScore: apiResult.report.seo.score,
+        seoGrade: apiResult.report.seo.grade,
+        geoScore: apiResult.report.geo.score,
+        geoGrade: apiResult.report.geo.grade,
+      });
     } catch {
       setStatus("error");
       setErrorMessage(t("errorGeneric"));
@@ -153,7 +183,7 @@ export default function SeoGeoCheckerClient() {
               <h2 className={styles.categoryTitle}>{CATEGORY_LABELS[group.subcategory]}</h2>
               <ul className={styles.checkList}>
                 {group.items.map((check) => (
-                  <CheckRow key={check.id} check={check} />
+                  <CheckRow key={check.id} check={check} siteUrl={result.url} />
                 ))}
               </ul>
             </section>

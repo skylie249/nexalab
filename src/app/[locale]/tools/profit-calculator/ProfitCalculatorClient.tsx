@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { INDUSTRY_OPTIONS, INDUSTRY_PRESETS, isIndustry, type Industry, type IndustryPreset } from "@/lib/quotePresets";
 import { formatWon } from "@/lib/formatCurrency";
+import { saveProfitHistory } from "@/lib/dashboardHistory";
 import styles from "./page.module.css";
 
 interface CostRow {
@@ -214,6 +215,25 @@ export default function ProfitCalculatorClient() {
   const investedHoursAmount = toNumber(investedHours);
   const hasInvestedHours = investedHoursAmount > 0;
   const hourlyProfit = hasInvestedHours ? netProfit / investedHoursAmount : 0;
+
+  // 손익 계산기는 별도 "계산하기" 버튼 없이 실시간으로 값이 바뀌므로, 입력마다 히스토리를
+  // 새로 쌓지 않도록 세션당 고정 id로 업서트하고 값이 잠잠해진 뒤(1.2초) 한 번만 저장한다.
+  const sessionIdRef = useRef<string>(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `profit-session-${Date.now()}`
+  );
+
+  useEffect(() => {
+    if (!hasIncome) return;
+    const timer = setTimeout(() => {
+      saveProfitHistory(
+        { industry, income: incomeAmount, netProfit, marginRate },
+        sessionIdRef.current
+      );
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [hasIncome, industry, incomeAmount, netProfit, marginRate]);
 
   return (
     <div className={styles.layout}>

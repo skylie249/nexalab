@@ -522,3 +522,40 @@ export async function POST(req: Request) {
   - **검증**: `npx tsc --noEmit`, `next lint`, `next build`(정적 28페이지 + 신규 admin 라우트 전부 생성 확인, `/admin`·`/api/admin/posts`·`/api/admin/posts/[id]`는 예상대로 `ƒ`(Dynamic) 처리됨) 통과.
   - **버그 수정 (브라우저 검증 중 발견)**: 사용자가 실제 Supabase 환경변수를 채운 뒤 로그인~글 등록까지 테스트하자 `POST /api/admin/posts`가 500 에러(`null value in column "slug" of relation "posts" violates not-null constraint`) — 애초 스키마 조사 때 `posts.slug` NOT NULL 컬럼을 놓쳤음(공개 쿼리들이 `select('*')`만 쓰고 slug를 참조한 적이 없어 발견 못 함). `src/app/api/admin/posts/route.ts`에 `generateSlug(title)` 헬퍼 추가(제목 기반 + `randomUUID().slice(0,8)` 접미사로 유니크 보장)해서 insert 시 함께 채우도록 수정 — 공개 라우팅은 `/posts/[id]`로 id 기반이라 slug 값 자체는 노출되지 않음
   - **브라우저 end-to-end 검증 완료**(Chrome 자동화, dev 서버): 로그인 → 새 글 작성(제목/카테고리 칩/요약/마크다운 본문+미리보기 탭/태그/공개 체크박스) → 저장 → 홈(`/ko`) 피처드 포스트로 즉시 반영 확인 → 상세 페이지(`/ko/posts/[id]`) 렌더링 확인 → 수정(제목 변경) → 상세 페이지 즉시 반영 확인 → 삭제 → 목록에서 즉시 사라짐 + 상세 페이지 404 확인 → 로그아웃 → `/admin/posts` 재접근 시 `/admin/login`으로 리다이렉트 확인. 전 과정에서 `revalidatePath` 즉시 반영, 이중 인증 가드(middleware + `(protected)/layout.tsx`) 모두 의도대로 동작
+
+### 2026-08-20
+- **llms.txt 자동 생성기(`/tools/llms-txt-generator`) 신규 구현** (`nexalab_llms-txt_생성기_지침서.md` 기준) — SEO/GEO 체커에서 "llms.txt 없음" 진단을 받은 방문자가 그 자리에서 바로 만들 수 있게 하는 전환형 도구
+  - `src/lib/llmsTxtGenerator.ts`(신규, Node/DOM 의존성 없는 순수 함수): `generateLlmsTxt()`가 입력값을 지침서 4-1 템플릿(H1 사이트명 → `>` 요약 → `_Last updated_` 줄 → 카테고리별 `##` 섹션 → `## Optional` 연락처)으로 조합. `escapeMarkdown()`으로 제목/카테고리/설명의 `[`, `]`, `(`, `)`를 이스케이프하고, `normalizeUrl()`로 상대경로를 사이트 URL 기준 절대경로로 변환. 페이지가 없는 카테고리·title/url이 빈 페이지는 자동으로 결과에서 제외
+  - 지침서 4-1 템플릿에는 없지만 입력 필드 표(3번 항목)에는 있던 "마지막 업데이트일"은, 요약 아래에 `_Last updated: {날짜}_` 한 줄로 추가하는 절충안으로 구현(표준 포맷과 충돌하지 않으면서 필드를 실제로 반영)
+  - `src/app/[locale]/tools/llms-txt-generator/`: `page.tsx`(메타데이터/JSON-LD, 기존 도구 페이지들과 동일 패턴) + `LlmsTxtGeneratorClient.tsx`(입력 폼 → 생성 → 결과 화면 2단계 클라이언트 컴포넌트, 서버 호출 없이 전량 클라이언트에서 처리) + `page.module.css`
+  - 입력 폼: 사이트명/URL/한 줄 요약(200자 카운터)/핵심 콘텐츠 카테고리(콤마 구분 텍스트 — 기존 관리자 글쓰기 폼의 태그 입력 패턴 재사용)/주요 페이지 리스트(제목+URL+설명+카테고리 select, 최대 10개, 카테고리 미입력 시 추가 버튼 비활성화)/연락처 링크(선택)/마지막 업데이트일(오늘 날짜 기본값, 수정 가능). 모바일 반응형 공통 가이드대로 페이지 입력행은 768px 미만에서 1열 세로 스택, 그 이상에서 그리드 한 줄 배치
+  - 결과 화면: 생성된 텍스트를 모노스페이스 `<pre>` 미리보기로 표시, 복사하기(Clipboard API, 2초간 "✅ 복사됨" 피드백)/다운로드(`Blob` + `URL.createObjectURL`, 파일명 `llms.txt`) 버튼, 배치 안내 문구, "SEO/GEO 체커로 다시 점검하기" 링크, "입력값 수정하기"(폼으로 복귀, 값 유지)
+  - **SEO/GEO 체커 연동**: `SeoGeoCheckerClient.tsx`의 `CheckRow`에 `geo.llms_txt.exists` 체크가 `fail` 상태일 때만 노출되는 "지금 만들기 →" CTA 버튼 추가 — 점검한 URL의 hostname(`www.` 제거)을 `site`, URL 전체를 `url` 쿼리 파라미터로 실어 `/tools/llms-txt-generator`로 전달. 생성기 쪽에서 `useSearchParams()`로 읽어 사이트명/URL을 자동 프리필하고 "SEO/GEO 체커 결과에서 넘어온 값을 자동으로 채워뒀어요" 안내 노출(손익 계산기의 기존 쿼리 프리필 패턴과 동일)
+  - Header 네비게이션(데스크톱/모바일)에 "llms.txt 생성기" 링크 추가
+  - `messages/ko.json`·`messages/en.json`에 `llmsTxtGenerator` 네임스페이스 전체 번역 추가, `seoGeoChecker.llmsTxtCtaButton` 키 추가, `header.navLlmsTxtGenerator` 추가
+  - 이 기능은 지침서 6번 항목대로 서버 API 라우트나 캐싱/rate-limit이 전혀 없음 — 견적서 생성기·손익 계산기와 달리 Gemini API도 호출하지 않는 순수 클라이언트 사이드 도구
+  - **검증**: `npx tsc --noEmit`, `next lint`, `next build`(`/ko`·`/en` 양쪽 `/tools/llms-txt-generator` 정적 생성 확인) 통과. 브라우저(Chrome 자동화, dev 서버)로 폼 입력 → 생성 → 미리보기 텍스트가 템플릿 형식과 일치하는지(상대경로 페이지 URL이 절대경로로 정규화됨 포함) → 복사하기 피드백 확인. 쿼리 파라미터(`?site=&url=`)로 직접 접속해 프리필 동작 확인. `/en` 로케일과 다크모드 렌더링 확인. SEO/GEO 체커 CTA 버튼 자체는 로컬 dev 서버가 `safeFetch`의 localhost 차단 정책(SSRF 방지) 때문에 자기 자신을 점검할 수 없어 실제 클릭까지는 검증하지 못함 — 코드 로직(체크 id/상태 조건, 쿼리 구성)만 리뷰로 확인. **다음 세션에서 외부 배포 URL 대상으로 SEO/GEO 체커 → CTA 버튼 클릭 → 생성기 프리필까지 이어지는 전체 플로우 재확인 권장**
+
+- **통합 대시보드(`/dashboard`, "내 사업 건강검진표") 신규 구현** (`nexalab_통합대시보드_지침서.md` 기준) — 견적서·손익계산기·SEO/GEO체커 3개 도구의 최근 결과를 한 화면에 모아 보여주는 허브 페이지. 신규 기능 개발이 아니라 지침서 표현대로 "기존 3개 도구의 결과 데이터를 재구성"하는 작업
+  - **데이터 저장 방식**: 지침서 4번 표에서 제시한 두 옵션(A. 로컬 스토리지 / B. 이메일 연동) 중 지침서가 명시적으로 추천한 **옵션 A(로컬 스토리지)**로 구현 — 회원 시스템이 없는 현재 구조와 맞고, "다음 액션 아이템"에서도 확정 여부만 확인하라고 되어 있어 별도 확인 없이 추천안대로 진행. 옵션 B(이메일 연동 저장)는 이번 범위에서 구현하지 않음
+  - `src/lib/dashboardHistory.ts`(신규): localStorage 기반 히스토리 read/write 헬퍼. 지침서 7번 항목의 저장 키 설계(`nexalab_quote_history`, `nexalab_profit_history`, `nexalab_seo_history`)를 그대로 사용, 도구별 최근 5건만 유지. `id`가 같은 항목은 교체(업서트)하는 `pushHistoryEntry()`로 구현해 손익 계산기처럼 실시간 재계산되는 도구에서도 항목이 무한정 쌓이지 않게 함. llms.txt 생성 여부는 히스토리 배열이 아니라 `nexalab_llmstxt_generated_at` 단일 타임스탬프 플래그로 별도 관리(5번 CTA 규칙의 "llms.txt 미생성" 조건 판별용)
+  - **3개 기존 도구에 저장 훅 추가** (지침서 7번 "기존 코드 충돌 시" 항목이 선행 작업으로 지목한 부분):
+    - `QuoteGeneratorClient.tsx`: `/api/quote` 성공 응답(`setQuote` 직후)에 `saveQuoteHistory()` 호출. 견적서에는 "프로젝트명" 필드가 없어(요청서 원문에서 AI가 자유 텍스트로 분석하는 구조), AI 응답의 `summary` 필드를 카드 제목 대용으로 저장(없으면 첫 견적 항목명, 그것도 없으면 빈 문자열 → 대시보드에서 fallback 문구로 대체)
+    - `SeoGeoCheckerClient.tsx`: `/api/seo-check` 성공 응답(`setResult` 직후)에 `saveSeoHistory()` 호출 — url/SEO·GEO 점수·등급 저장
+    - `ProfitCalculatorClient.tsx`: 이 도구만 유일하게 "계산하기" 버튼이 없는 완전 실시간 계산 구조라, 매 입력마다 히스토리를 쌓지 않도록 `useRef`로 세션 고정 id를 만들고 `useEffect` + `setTimeout` 1.2초 디바운스로 값이 잠잠해진 뒤 한 번만 `saveProfitHistory(entry, sessionId)`를 업서트 저장하도록 구현(같은 세션 내 재조정은 새 항목이 아니라 갱신으로 처리)
+    - `LlmsTxtGeneratorClient.tsx`: `generateLlmsTxt()` 성공 직후 `markLlmsTxtGenerated()` 호출
+  - `src/app/[locale]/dashboard/page.tsx`(신규, 서버 컴포넌트): 메타데이터/ISR(`revalidate = 60`, 홈과 동일 전략 — "최근 블로그 글" 섹션 신선도 유지), Supabase에서 로케일 필터링된 최근 발행 글 3개(`getRecentPosts`)와 5번 CTA 규칙 중 "SEO 점수만 낮고 GEO는 양호" 항목이 연결할 후보 글(`getSeoRelatedPost`, `tags` 배열이 `SEO`/`GEO`/`SEO/GEO`와 겹치는 최신 글 1개, `.overlaps()` 사용)을 서버에서 조회해 클라이언트 컴포넌트에 props로 전달. 로컬스토리지는 서버에서 읽을 수 없으므로 이 부분만 서버가 담당하는 구조
+  - `src/app/[locale]/dashboard/DashboardClient.tsx`(신규): `useEffect`로 마운트 후 4개 로컬스토리지 소스를 읽어 state에 채움(초기값은 서버 렌더와 동일한 빈 배열/null이라 hydration mismatch 없음). 구성 섹션은 지침서 3-2 와이어프레임 그대로:
+    - 인사말 헤더(👋) → 3개 도구 카드(빈 상태/데이터 상태, 지침서 3-3 표 그대로) → 트렌드(SEO/GEO 점수·순이익이 직전 항목 대비 변화가 있을 때만, 최소 2건 이상 히스토리 필요) → 도구 간 추천 CTA(5번 규칙표 4개 조건 전부 구현, 아래 참고) → 최근 블로그 글(글이 있을 때만, 기존 `PostCard` 컴포넌트 재사용)
+    - 지침서 7번 "빈 상태 처리: 세 도구 모두 미사용 시 온보딩형 안내 화면"은 카드별 개별 empty state(3-3 표)와 별개로, 3개 모두 비어있을 때만 카드 그리드 위에 추가로 온보딩 배너를 노출하는 방식으로 두 요구사항을 함께 충족
+  - **5번 "도구 간 자동 연결 CTA" 규칙표 구현**: 4개 조건 모두 단순 조건문으로 구현(지침서가 "복잡한 알고리즘이 아니라 조건문 수준으로 충분"이라고 명시한 대로)
+    1. `latestSeo.geoScore < 60` && `llmsTxtGeneratedAt`이 없을 때 → llms.txt 생성기로 연결
+    2. `latestProfit.netProfit < 0` → 견적서 생성기로 연결
+    3. 최근 견적서(`latestQuote.createdAt`)가 7일 이상 지났을 때(로컬 타임스탬프 기준, 지침서 표현 그대로) → 손익 계산기로 연결
+    4. `latestSeo.seoScore < 60` && `latestSeo.geoScore >= 75`(B등급 이상을 "양호"로 정의) && `getSeoRelatedPost()`로 찾은 글이 있을 때만 → 해당 글로 연결. **매칭되는 글이 없으면 이 추천 자체를 노출하지 않음**(무관한 글에 억지로 연결하지 않기 위한 의도적 설계 — 지침서에 없는 판단이라 여기 기록)
+  - **PWA `start_url` 변경**: `src/app/manifest.ts`의 `start_url`을 `"/"` → `"/dashboard"`로 변경 — 지침서 6번 표가 "대시보드로 변경 추천(재방문자에게 더 유용한 진입점)"이라고 명시적으로 권장한 대로 반영. 별도 확인 절차 없이 진행(현재 실사용자가 거의 없는 단계로 판단, PWA 기능 자체가 직전 커밋에서 막 추가된 상태). Header 네비게이션(데스크톱/모바일)에도 "대시보드" 링크를 첫 번째 항목으로 추가
+  - **이번 범위에서 구현하지 않은 것** (지침서에 언급되었으나 보류):
+    - 6번 표의 "오프라인 대응"(최근 로컬 결과를 오프라인에서도 조회 가능하게) — 현재 `public/sw.js`는 네비게이션 요청에 대해 항상 네트워크 우선(오프라인 시 `offline.html`로만 대체)이라, `/dashboard` 자체를 사전 방문한 적 없는 상태에서 오프라인 진입하면 대시보드 셸이 뜨지 않음. localStorage 데이터 자체는 네트워크와 무관하게 남아있지만, 셸을 오프라인에서도 캐시하려면 서비스워커 캐싱 전략 자체를 바꿔야 해서(현재는 "블로그 글/도구 결과는 자주 바뀌므로 캐싱하지 않는다"는 의도적 설계) 이번 범위에서는 손대지 않음
+    - 6번 표의 "알림(Push) 확장 여지" — 지침서 자체가 "지금 단계는 아님"이라고 명시
+    - 옵션 B(이메일 연동 저장)로의 확장
+  - **검증**: `npx tsc --noEmit`, `next lint`, `next build`(`/ko`·`/en` 양쪽 `/dashboard` 정적 생성 + ISR 확인) 통과. 브라우저(Chrome 자동화, dev 서버, `GEMINI_API_KEY` 설정된 상태로 실제 API 호출 포함) end-to-end 검증: 빈 상태(온보딩 배너 + 3개 카드 empty state + 실제 Supabase 블로그 글 노출) 확인 → 손익 계산기에서 값 입력 후 대시보드 재방문 시 카드에 반영 확인(디바운스 업서트 동작 확인) → SEO/GEO 체커로 실제 프로덕션 사이트(`nexalab.app`, llms.txt 존재해 CTA 미노출 확인)와 `google.com`(llms.txt 없어 CTA 노출 확인, 클릭 시 `?site=google.com&url=...` 쿼리로 llms.txt 생성기 프리필까지 실제 이어짐을 확인 — 지난 세션에 로컬 SSRF 차단으로 못 했던 검증을 이번에 완료) 두 건을 점검해 히스토리 2건 적재 → 대시보드에서 최신 항목이 카드에, 트렌드 섹션에 두 항목 간 SEO/GEO 점수 차이(-34점/-17점)가 정확히 계산되어 표시됨을 확인. `/en` 로케일, 다크모드 렌더링 확인. 도구 간 추천 CTA는 이번 테스트 데이터 조합(GEO 양호·순이익 양수·견적 이력 없음·매칭 블로그 글 없음)에서는 4개 규칙 모두 조건 미충족으로 섹션 자체가 숨겨지는 것까지 확인(의도된 동작). **견적서 생성기 경로(rule 2, 3)와 실제 CTA 노출 케이스는 다음 세션에서 추가 확인 권장**

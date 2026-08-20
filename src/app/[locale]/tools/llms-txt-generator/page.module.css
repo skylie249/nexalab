@@ -1,0 +1,338 @@
+.page {
+  padding: 3rem 0 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 2.75rem;
+  }
+}
+
+.highlight {
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.6;
+  text-wrap: balance;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.field input,
+.field textarea,
+.pageRow input,
+.pageRow select {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  width: 100%;
+  min-height: 44px;
+}
+
+.field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field input:focus,
+.field textarea:focus,
+.pageRow input:focus,
+.pageRow select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.noteBox {
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+}
+
+.charCounter {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.fieldHint {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.fieldError {
+  font-size: 0.8rem;
+  color: #ef4444;
+}
+
+/* 주요 페이지 리스트 섹션 */
+.pagesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.costSectionTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.dynamicRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* 페이지 입력행: 모바일 1열 세로 스택, 데스크톱은 그리드로 한 줄 배치 */
+.pageRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+@media (min-width: 768px) {
+  .pageRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.3fr 130px 2.25rem;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+  }
+}
+
+.rowRemove {
+  flex-shrink: 0;
+  align-self: flex-end;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-height: 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+@media (min-width: 768px) {
+  .rowRemove {
+    align-self: center;
+  }
+}
+
+.rowRemove:hover {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.addRowButton {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px dashed var(--border-color);
+  min-height: 44px;
+}
+
+.addRowButton:hover:not(:disabled) {
+  border-color: var(--accent-color);
+  background-color: var(--bg-secondary);
+}
+
+.addRowButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.formNote {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.primaryButton {
+  display: block;
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border-radius: 0.75rem;
+  background-color: var(--accent-color);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  min-height: 44px;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.secondaryButton {
+  display: block;
+  text-align: center;
+  font-weight: 600;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.secondaryButton:hover {
+  border-color: var(--accent-color);
+  background-color: var(--bg-secondary);
+}
+
+/* 결과 화면 */
+.resultCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.resultTitle {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.preview {
+  width: 100%;
+  max-height: 420px;
+  overflow: auto;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.resultActionsRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .resultActionsRow {
+    flex-direction: row;
+  }
+
+  .resultActionsRow .primaryButton {
+    flex: 1;
+  }
+}
+
+.placementNote {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.resultBottomActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+@media (min-width: 480px) {
+  .resultBottomActions {
+    flex-direction: row;
+    justify-content: center;
+  }
+}

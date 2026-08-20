@@ -285,6 +285,25 @@
   line-height: 1.5;
 }
 
+.llmsTxtCta {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--accent-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.llmsTxtCta:hover {
+  background-color: var(--accent-hover);
+}
+
 .resultUrl {
   font-size: 0.85rem;
   color: var(--text-secondary);
