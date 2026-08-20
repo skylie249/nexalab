@@ -43,8 +43,8 @@ export default function ToolPromoBanner() {
             {tool.icon}
           </div>
           <div className={styles.cardInfo}>
-            <h3 className={styles.titleDesktop}>{tool.titleDesktop}</h3>
-            <h3 className={styles.titleMobile}>{tool.titleMobile}</h3>
+            <h2 className={styles.titleDesktop}>{tool.titleDesktop}</h2>
+            <h2 className={styles.titleMobile}>{tool.titleMobile}</h2>
             <p className={styles.descDesktop}>{tool.descDesktop}</p>
             <span className={styles.linkText} style={{ color: tool.color }}>
               <span className={styles.ctaDesktopText}>{tool.ctaDesktop}</span>
