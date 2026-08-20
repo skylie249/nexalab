@@ -52,6 +52,48 @@
   color: var(--bg-primary);
 }
 
+.categoryIntro {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.categoryIntroTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.categoryIntroDesc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.categoryIntroTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.categoryIntroTag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 2rem;
+  background-color: var(--bg-secondary);
+  color: var(--accent-color);
+  border: 1px solid var(--border-color);
+}
+
+.categoryIntroMeta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 .postList {
   display: flex;
   flex-direction: column;

@@ -48,7 +48,20 @@
   "home": {
     "tabAll": "ALL",
     "emptyState": "No posts yet.",
-    "uncategorized": "Uncategorized"
+    "uncategorized": "Uncategorized",
+    "categoryIntroAiAppsDesc": "A build-log series documenting what it actually takes to build things with AI",
+    "categoryIntroAiAppsCount": "{count} build logs so far",
+    "categoryIntroAiAppsTag1": "FinanceAutomation",
+    "categoryIntroAiAppsTag2": "LLMFineTuning",
+    "categoryIntroAiAppsTag3": "DesignSystems",
+    "categoryIntroAiAppsTag4": "LegacyModernization",
+    "categoryIntroAiAppsTag5": "PRDAutomation",
+    "categoryIntroBizDesc": "A corner covering business ideas and execution strategies built for the AI era",
+    "categoryIntroBizCount": "{count} business ideas so far",
+    "categoryIntroBizTag1": "BusinessModel",
+    "categoryIntroBizTag2": "MarketAnalysis",
+    "categoryIntroBizTag3": "MarketingStrategy",
+    "categoryIntroBizTag4": "NewVentures"
   },
   "about": {
     "metaTitle": "About - NexaLab.app",

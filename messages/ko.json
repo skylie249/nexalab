@@ -48,7 +48,20 @@
   "home": {
     "tabAll": "ALL",
     "emptyState": "게시글이 없습니다.",
-    "uncategorized": "Uncategorized"
+    "uncategorized": "Uncategorized",
+    "categoryIntroAiAppsDesc": "AI를 활용해 실제로 무언가를 만드는 과정을 기록하는 빌드 로그 시리즈예요",
+    "categoryIntroAiAppsCount": "총 {count}편의 빌드 로그",
+    "categoryIntroAiAppsTag1": "재무자동화",
+    "categoryIntroAiAppsTag2": "LLM파인튜닝",
+    "categoryIntroAiAppsTag3": "디자인시스템",
+    "categoryIntroAiAppsTag4": "레거시현대화",
+    "categoryIntroAiAppsTag5": "PRD자동화",
+    "categoryIntroBizDesc": "AI 시대에 통할 만한 비즈니스 아이디어와 실행 전략을 다루는 코너예요",
+    "categoryIntroBizCount": "총 {count}편의 비즈니스 아이디어",
+    "categoryIntroBizTag1": "비즈니스모델",
+    "categoryIntroBizTag2": "시장분석",
+    "categoryIntroBizTag3": "마케팅전략",
+    "categoryIntroBizTag4": "신사업기획"
   },
   "about": {
     "metaTitle": "About - NexaLab.app",

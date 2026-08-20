@@ -38,6 +38,30 @@ const CATEGORY_ICONS: Record<string, string> = {
   "biz-ideas": "💡",
 };
 
+const CATEGORY_INTRO: Record<string, { descKey: string; countKey: string; tagKeys: string[] }> = {
+  "ai-apps": {
+    descKey: "categoryIntroAiAppsDesc",
+    countKey: "categoryIntroAiAppsCount",
+    tagKeys: [
+      "categoryIntroAiAppsTag1",
+      "categoryIntroAiAppsTag2",
+      "categoryIntroAiAppsTag3",
+      "categoryIntroAiAppsTag4",
+      "categoryIntroAiAppsTag5",
+    ],
+  },
+  "biz-ideas": {
+    descKey: "categoryIntroBizDesc",
+    countKey: "categoryIntroBizCount",
+    tagKeys: [
+      "categoryIntroBizTag1",
+      "categoryIntroBizTag2",
+      "categoryIntroBizTag3",
+      "categoryIntroBizTag4",
+    ],
+  },
+};
+
 interface Category {
   id: string;
   name: string;
@@ -166,6 +190,27 @@ export default async function Home({
               </Link>
             ))}
           </div>
+
+          {activeCategory && CATEGORY_INTRO[activeCategory.slug] && (
+            <section className={`${styles.categoryIntro} glass`}>
+              <h2 className={styles.categoryIntroTitle}>
+                {CATEGORY_ICONS[activeCategory.slug] || "📁"} {activeCategory.name}
+              </h2>
+              <p className={styles.categoryIntroDesc}>
+                {t(CATEGORY_INTRO[activeCategory.slug].descKey)}
+              </p>
+              <div className={styles.categoryIntroTags}>
+                {CATEGORY_INTRO[activeCategory.slug].tagKeys.map((tagKey) => (
+                  <span key={tagKey} className={styles.categoryIntroTag}>
+                    #{t(tagKey)}
+                  </span>
+                ))}
+              </div>
+              <p className={styles.categoryIntroMeta}>
+                {t(CATEGORY_INTRO[activeCategory.slug].countKey, { count: totalCount })}
+              </p>
+            </section>
+          )}
 
           <div className={styles.postList}>
             {posts.length === 0 ? (
