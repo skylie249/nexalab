@@ -9,7 +9,7 @@ export default function Hero() {
   const subApps = [
     {
       name: "Harubite",
-      emoji: "🥪",
+      emoji: "🌱",
       desc: t("harubiteDesc"),
       url: "https://harubite.nexalab.app",
       color: "#f59e0b"
@@ -23,7 +23,7 @@ export default function Hero() {
     },
     {
       name: "HappyICT-ON",
-      emoji: "⚡",
+      emoji: "🤝",
       desc: t("happyIctOnDesc"),
       url: "https://on.nexalab.app",
       color: "#8b5cf6"

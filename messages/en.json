@@ -29,8 +29,8 @@
     "subtitle": "See how AI can cut your workload — free, right now",
     "liveSubApps": "LIVE SUB-APPS",
     "goTo": "Visit ↗",
-    "harubiteDesc": "Daily meal-logging service",
-    "venusGeckoDesc": "Reptile shop / monitoring",
+    "harubiteDesc": "Build your own language habit, one sentence a day — start now 🌱",
+    "venusGeckoDesc": "Premium crested gecko showroom — meet Venus Gecko 🦎",
     "happyIctOnDesc": "Workflow automation platform"
   },
   "toolPromoBanner": {
@@ -102,9 +102,9 @@
     "subtitle": "NexaLab doesn't stop at the blog. The AI ideas covered here get deployed and operated as real services with real users.",
     "goTo": "Visit ↗",
     "statusLabel": "Live",
-    "harubiteDesc": "A service that logs your daily meals and lets AI coach your nutritional balance",
-    "harubiteLongDesc": "Log each meal with a quick photo or note, and the AI breaks down your nutritional balance and tells you exactly what to eat next to fill the gaps. It grew out of giving up on diet-tracking apps within a few days — the goal here is cutting the friction of logging itself.",
-    "venusGeckoDesc": "A tool that uses AI to monitor a reptile shop's inventory and animal condition",
+    "harubiteDesc": "Build your own language habit, one sentence a day — start now 🌱",
+    "harubiteLongDesc": "Write and log one sentence in a foreign language every day, and AI polishes your phrasing while each entry builds into your own learning history. Instead of a heavy curriculum, it starts from the smallest possible unit — one sentence today — to help you build a habit that actually sticks.",
+    "venusGeckoDesc": "Premium crested gecko showroom — meet Venus Gecko 🦎",
     "venusGeckoLongDesc": "An operations tool for small reptile shops to track each animal's husbandry conditions, feeding history, and inventory in one screen. AI flags animals showing unusual signs first, cutting down the manual work of checking dozens of animals one by one every day.",
     "happyIctOnDesc": "An AI workflow platform that automates repetitive work",
     "happyIctOnLongDesc": "An AI workflow platform that connects everyday repetitive office tasks — sorting email, aggregating data, drafting reports — so they run automatically once a few steps are configured. Built around letting anyone assemble a workflow without writing code.",

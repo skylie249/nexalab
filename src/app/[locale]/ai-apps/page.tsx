@@ -39,7 +39,7 @@ export default async function AiAppsPage({
   const apps = [
     {
       name: "Harubite",
-      emoji: "🥪",
+      emoji: "🌱",
       desc: t("harubiteDesc"),
       longDesc: t("harubiteLongDesc"),
       url: "https://harubite.nexalab.app",
@@ -55,7 +55,7 @@ export default async function AiAppsPage({
     },
     {
       name: "HappyICT-ON",
-      emoji: "⚡",
+      emoji: "🤝",
       desc: t("happyIctOnDesc"),
       longDesc: t("happyIctOnLongDesc"),
       url: "https://on.nexalab.app",
