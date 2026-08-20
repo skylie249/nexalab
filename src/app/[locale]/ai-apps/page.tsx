@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
+import JsonLd from "@/components/JsonLd";
 import styles from "./page.module.css";
+
+const TECH_STACK = ["Next.js", "TypeScript", "Supabase", "Vercel", "Ollama / LLM"];
 
 export async function generateMetadata({
   params,
@@ -38,6 +41,7 @@ export default async function AiAppsPage({
       name: "Harubite",
       emoji: "🥪",
       desc: t("harubiteDesc"),
+      longDesc: t("harubiteLongDesc"),
       url: "https://harubite.nexalab.app",
       color: "#f59e0b",
     },
@@ -45,6 +49,7 @@ export default async function AiAppsPage({
       name: "Venus Gecko",
       emoji: "🦎",
       desc: t("venusGeckoDesc"),
+      longDesc: t("venusGeckoLongDesc"),
       url: "https://venus-gecko.nexalab.app",
       color: "#10b981",
     },
@@ -52,6 +57,7 @@ export default async function AiAppsPage({
       name: "HappyICT-ON",
       emoji: "⚡",
       desc: t("happyIctOnDesc"),
+      longDesc: t("happyIctOnLongDesc"),
       url: "https://on.nexalab.app",
       color: "#8b5cf6",
     },
@@ -59,6 +65,24 @@ export default async function AiAppsPage({
 
   return (
     <div className={styles.page}>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          url: absoluteUrl(`/${locale}/ai-apps`),
+          itemListElement: apps.map((app, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "SoftwareApplication",
+              name: app.name,
+              description: app.longDesc,
+              url: app.url,
+              applicationCategory: "BusinessApplication",
+            },
+          })),
+        }}
+      />
       <header className={styles.intro}>
         <span className={styles.eyebrow}>{t("eyebrow")}</span>
         <h1 className={styles.title}>
@@ -82,12 +106,26 @@ export default async function AiAppsPage({
               {app.emoji}
             </div>
             <div className={styles.cardInfo}>
-              <h3>{app.name}</h3>
-              <p>{app.desc}</p>
+              <div className={styles.cardTitleRow}>
+                <h3>{app.name}</h3>
+                <span className={styles.statusBadge}>{t("statusLabel")}</span>
+              </div>
+              <p className={styles.cardTagline}>{app.desc}</p>
+              <p className={styles.cardLongDesc}>{app.longDesc}</p>
               <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
             </div>
           </Link>
         ))}
+      </section>
+
+      <section className={`${styles.techSection} glass`}>
+        <h2>{t("techStackTitle")}</h2>
+        <p>{t("techStackBody")}</p>
+        <div className={styles.tags}>
+          {TECH_STACK.map((tech) => (
+            <span key={tech} className={styles.tag}>{tech}</span>
+          ))}
+        </div>
       </section>
 
       <section className={`${styles.note} glass`}>
