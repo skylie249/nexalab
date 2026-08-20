@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useTheme } from "./ThemeProvider";
 import styles from "./Header.module.css";
+
+const AI_TOOLS = [
+  { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc", isNew: false },
+  { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc", isNew: false },
+  { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc", isNew: true },
+  { href: "/tools/llms-txt-generator", titleKey: "navLlmsTxtGenerator", descKey: "aiToolsLlmsDesc", isNew: true },
+] as const;
 
 type TrigramPattern = [boolean, boolean, boolean];
 
@@ -124,6 +131,9 @@ export default function Header() {
   const pathname = usePathname();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isToolsAccordionOpen, setIsToolsAccordionOpen] = useState(false);
+  const toolsDropdownRef = useRef<HTMLLIElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -144,6 +154,25 @@ export default function Header() {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    if (!isMenuOpen) setIsToolsAccordionOpen(false);
+  }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (!isToolsOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target as Node)) {
+        setIsToolsOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isToolsOpen]);
+
+  useEffect(() => {
+    setIsToolsOpen(false);
+  }, [pathname]);
+
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
@@ -161,10 +190,32 @@ export default function Header() {
             <li><Link href="/dashboard">{t("navDashboard")}</Link></li>
             <li><Link href="/ai-apps">{t("navAiApps")}</Link></li>
             <li><Link href="/biz">{t("navBiz")}</Link></li>
-            <li><Link href="/tools/quote-generator">{t("navQuoteGenerator")}</Link></li>
-            <li><Link href="/tools/profit-calculator">{t("navProfitCalculator")}</Link></li>
-            <li><Link href="/tools/seo-geo-checker">{t("navSeoGeoChecker")}</Link></li>
-            <li><Link href="/tools/llms-txt-generator">{t("navLlmsTxtGenerator")}</Link></li>
+            <li className={styles.dropdownItem} ref={toolsDropdownRef}>
+              <button
+                type="button"
+                className={styles.dropdownTrigger}
+                onClick={() => setIsToolsOpen((prev) => !prev)}
+                aria-expanded={isToolsOpen}
+              >
+                {t("navAiTools")}
+              </button>
+              <div className={`${styles.dropdownPanel} ${isToolsOpen ? styles.dropdownPanelOpen : ""}`}>
+                {AI_TOOLS.map((tool) => (
+                  <Link
+                    key={tool.href}
+                    href={tool.href}
+                    className={styles.dropdownLink}
+                    onClick={() => setIsToolsOpen(false)}
+                  >
+                    <span className={styles.dropdownLinkTitle}>
+                      {t(tool.titleKey)}
+                      {tool.isNew && <span className={styles.newBadge}>{t("newBadge")}</span>}
+                    </span>
+                    <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
+                  </Link>
+                ))}
+              </div>
+            </li>
             <li><Link href="/about">{t("navAbout")}</Link></li>
           </ul>
         </nav>
@@ -217,10 +268,30 @@ export default function Header() {
           <li><Link href="/dashboard" onClick={closeMenu}>{t("navDashboard")}</Link></li>
           <li><Link href="/ai-apps" onClick={closeMenu}>{t("navAiApps")}</Link></li>
           <li><Link href="/biz" onClick={closeMenu}>{t("navBiz")}</Link></li>
-          <li><Link href="/tools/quote-generator" onClick={closeMenu}>{t("navQuoteGenerator")}</Link></li>
-          <li><Link href="/tools/profit-calculator" onClick={closeMenu}>{t("navProfitCalculator")}</Link></li>
-          <li><Link href="/tools/seo-geo-checker" onClick={closeMenu}>{t("navSeoGeoChecker")}</Link></li>
-          <li><Link href="/tools/llms-txt-generator" onClick={closeMenu}>{t("navLlmsTxtGenerator")}</Link></li>
+          <li className={styles.mobileAccordionItem}>
+            <button
+              type="button"
+              className={styles.mobileAccordionTrigger}
+              onClick={() => setIsToolsAccordionOpen((prev) => !prev)}
+              aria-expanded={isToolsAccordionOpen}
+            >
+              {t("navAiTools")}
+              <span className={`${styles.accordionChevron} ${isToolsAccordionOpen ? styles.accordionChevronOpen : ""}`}>▾</span>
+            </button>
+            <ul className={`${styles.mobileAccordionPanel} ${isToolsAccordionOpen ? styles.mobileAccordionPanelOpen : ""}`}>
+              {AI_TOOLS.map((tool) => (
+                <li key={tool.href}>
+                  <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
+                    <span className={styles.dropdownLinkTitle}>
+                      {t(tool.titleKey)}
+                      {tool.isNew && <span className={styles.newBadge}>{t("newBadge")}</span>}
+                    </span>
+                    <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </li>
           <li><Link href="/about" onClick={closeMenu}>{t("navAbout")}</Link></li>
         </ul>
       </nav>
