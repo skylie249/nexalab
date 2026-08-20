@@ -89,10 +89,55 @@
   color: var(--text-primary);
 }
 
-.card p {
+.cardTagline {
   font-size: 0.9rem;
-  color: var(--text-secondary);
+  font-weight: 600;
+  color: var(--text-primary);
   line-height: 1.5;
+}
+
+.cardLongDesc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.provenSection {
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.provenSection h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.provenSection p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.tag {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 2rem;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .note {

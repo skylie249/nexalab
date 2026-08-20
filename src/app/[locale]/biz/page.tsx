@@ -34,10 +34,12 @@ export default async function BizPage({
   const t = await getTranslations("biz");
 
   const ideas = [
-    { key: "idea1", emoji: "💰", title: t("idea1Title"), desc: t("idea1Desc") },
-    { key: "idea2", emoji: "🎯", title: t("idea2Title"), desc: t("idea2Desc") },
-    { key: "idea3", emoji: "🧭", title: t("idea3Title"), desc: t("idea3Desc") },
+    { key: "idea1", emoji: "💰", title: t("idea1Title"), desc: t("idea1Desc"), longDesc: t("idea1LongDesc") },
+    { key: "idea2", emoji: "🎯", title: t("idea2Title"), desc: t("idea2Desc"), longDesc: t("idea2LongDesc") },
+    { key: "idea3", emoji: "🧭", title: t("idea3Title"), desc: t("idea3Desc"), longDesc: t("idea3LongDesc") },
   ];
+
+  const provenTags = [t("provenTag1"), t("provenTag2"), t("provenTag3"), t("provenTag4"), t("provenTag5")];
 
   return (
     <div className={styles.page}>
@@ -56,9 +58,20 @@ export default async function BizPage({
           <div key={idea.key} className={`${styles.card} glass`}>
             <div className={styles.cardIcon}>{idea.emoji}</div>
             <h3>{idea.title}</h3>
-            <p>{idea.desc}</p>
+            <p className={styles.cardTagline}>{idea.desc}</p>
+            <p className={styles.cardLongDesc}>{idea.longDesc}</p>
           </div>
         ))}
+      </section>
+
+      <section className={`${styles.provenSection} glass`}>
+        <h2>{t("provenTitle")}</h2>
+        <p>{t("provenBody")}</p>
+        <div className={styles.tags}>
+          {provenTags.map((tag) => (
+            <span key={tag} className={styles.tag}>{tag}</span>
+          ))}
+        </div>
       </section>
 
       <section className={`${styles.note} glass`}>
