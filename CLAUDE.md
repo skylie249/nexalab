@@ -600,3 +600,29 @@ export async function POST(req: Request) {
   - 검증: `npx tsc --noEmit`, `next lint`, `next build`(`/ko`·`/en` 양쪽 정적 생성 확인) 통과. 브라우저(Chrome 자동화, dev 서버)로 메인 페이지·AI Apps 페이지의 "준비중" 카드를 라이트/다크 모드 모두에서 확인(배지·아이콘·설명 정상 표시, 링크 비활성화 확인) — 이 과정에서 `aiApps.techStackBody`("세 서비스 모두 배포·운영까지 혼자 진행")가 아직 배포되지 않은 Report Checker와 상충하는 것을 추가로 발견해 "각 서비스는 기획부터 개발까지 혼자 진행" 식으로 함께 수정(한/영). **모바일 실제 폭(390px) 스크린샷은 이번에도 리사이즈 도구가 반영되지 않아 검증하지 못함**(과거 세션에도 동일 이슈 기록됨) — 다만 기존 카드와 동일한 grid/flex 패턴을 그대로 재사용했으므로 깨질 가능성은 낮다고 판단. 다음 세션에서 재확인 권장
   - **후속 수정 (같은 날)**: 사용자가 Venus Gecko의 실제 서비스 성격을 정정 — "개체 상태를 AI가 모니터링하는 운영 도구"가 아니라 **파충류 샵을 홍보하는 단순 쇼룸/랜딩 사이트**임을 확인. `aiApps.venusGeckoLongDesc`(한/영)에서 AI 모니터링·재고 관리 관련 서술을 전부 제거하고 "개체·사육 환경을 소개해 분양 문의로 연결하는 홍보 사이트" 설명으로 교체
     - `biz.idea2LongDesc`("파충류 샵의 재고 관리(Venus Gecko)")에도 같은 오류가 있어 사용자에게 처리 방식을 확인 — **"Venus Gecko 언급만 제거"**로 확정. 예시 없이도 문장이 성립하도록 "시장 규모는 작지만 문제가 뚜렷한 틈새 영역을 골라 AI로 풀어내는 과정을 다룹니다"로 재작성(한/영). `biz.provenTag4`("Venus Gecko" 태그)는 AI 관련 주장이 없는 단순 실적 태그라 그대로 유지
+
+- **Next.js 15.5.23 → 16.3.1 업그레이드**
+  - React는 18 유지(Next 16 피어 의존성이 `^18.2.0`도 계속 허용해 굳이 19로 올리지 않음), `next-intl`도 이미 Next 16을 지원해 별도 조치 불필요. `package.json`/`eslint-config-next` 모두 `16.3.1`로 고정
+  - **`next lint` 제거 대응**: `package.json`의 `lint` 스크립트를 `eslint .`로 변경. `eslint.config.mjs`는 기존 `FlatCompat.extends("next/core-web-vitals", "next/typescript")` 방식이 `eslint-config-next@16`에서 "Converting circular structure to JSON" 에러로 깨져서, `eslint-config-next/core-web-vitals` · `eslint-config-next/typescript`(둘 다 네이티브 flat config 배열을 직접 export)를 바로 import하는 방식으로 교체
+  - **`middleware.ts` → `proxy.ts` 파일 컨벤션 변경 대응**: Next 16 공식 마이그레이션 문서(`node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md`)를 직접 읽고 `git mv src/middleware.ts src/proxy.ts` + 내보내는 함수명 `middleware` → `proxy`로 변경(matcher 기반 `config` export는 그대로 유지 가능, `proxy`는 Node.js 런타임 고정이라 `runtime` 설정만 금지됨 — 이 프로젝트는 애초에 설정한 적 없어 해당 없음). 관리자 인증 게이트(`/admin/:path*`)와 IP 기준 rate limiting 로직은 변경 없이 그대로 이전, dev 서버로 `/admin/posts` → `/admin/login` 리다이렉트가 여전히 동작하는 것까지 브라우저로 확인
+  - **Edge Runtime 폐기(deprecated) 경고 대응**: `src/app/[locale]/opengraph-image.tsx`·`src/app/[locale]/posts/[id]/opengraph-image.tsx`에 있던 `export const runtime = 'edge'`를 제거(Node.js 런타임이 기본이 되어도 `next/og`의 `ImageResponse`는 정상 동작)
+  - **`eslint-plugin-react-hooks` v7의 새 규칙(`react-hooks/purity`, `react-hooks/set-state-in-effect`) 대응** — `eslint-config-next@16`이 이 버전을 함께 올리면서 기존에는 통과하던 코드 4곳이 새로 에러로 걸림. 이 프로젝트는 React Compiler(`reactCompiler` 옵션·`babel-plugin-react-compiler`)를 쓰지 않지만, 그렇다고 규칙을 일괄로 꺼버리지 않고 각각 실제 원인을 보고 판단함:
+    - `ProfitCalculatorClient.tsx`: `useRef(...crypto.randomUUID() ?? Date.now())`로 세션 고정 id를 만들던 부분을 `useId()`로 교체 — 매 렌더마다 인자 표현식이 재평가되는 `useRef`보다 렌더 중 호출해도 순수한 `useId()`가 이 용도(세션당 고정 id)에 더 적합하고 규칙도 만족
+    - `DashboardClient.tsx`: 렌더 본문에서 직접 `Date.now()`를 호출해 "마지막 견적서 이후 며칠 지났는지"를 계산하던 부분을, mount 시 localStorage를 읽어오는 기존 effect에 `setNow(Date.now())`를 추가해 effect 안에서만 확정하도록 변경
+    - `Header.tsx`: "메뉴가 닫히면 아코디언도 닫기", "경로 이동 시 도구 드롭다운 닫기" 두 군데가 `useEffect(() => setState(...), [dep])` 패턴이었는데, React 공식 문서가 권장하는 "렌더 중 이전 값과 비교해 조정" 패턴(`if (dep !== prevDep) { setPrevDep(dep); setState(...) }`)으로 리팩터링 — effect 없이 같은 렌더에서 바로 반영되어 리렌더 한 번을 줄이는 부수 효과도 있음. 브라우저로 AI 도구 드롭다운 열기 → 다른 메뉴로 이동 시 정상적으로 닫히는 것 확인
+    - `ThemeProvider.tsx`·`DashboardClient.tsx`의 localStorage 하이드레이션 effect: 이 두 곳은 SSR 중에는 `localStorage`/`matchMedia` 자체가 없어 effect 없이는 근본적으로 불가능한 정당한 패턴이라 판단해 리팩터링하지 않고, `eslint-disable(-next-line) react-hooks/set-state-in-effect`로 해당 블록만 명시적으로 예외 처리(이유를 코드 주석에 남김)
+  - **Turbopack 기본 전환 대응**: `next build`가 기본으로 Turbopack을 쓰게 되면서, 그동안 webpack 번들링 문제를 피하려고 넣어둔 `serverExternalPackages: ["pdf-parse", "pdfjs-dist", "@napi-rs/canvas"]` 설정이 Turbopack에서도 여전히 유효한지가 이번 업그레이드의 가장 큰 리스크였음 — `next build` 결과 경고 없이 정상 완료되는 것으로 1차 확인했으나, **실제 PDF 업로드 동작(견적서 생성기)은 Vercel 배포 환경에서 재확인 필요**(과거 이 워크어라운드를 처음 도입했을 때도 최종 검증은 항상 실제 배포 환경에서 이뤄졌음, CLAUDE.md 2026-08-13 항목 참고)
+  - `next.config.mjs`에 `turbopack.root`를 프로젝트 디렉터리로 명시 — 상위 폴더(`AIProject/`)에 이 프로젝트와 무관한 `package-lock.json`이 있어 Turbopack이 워크스페이스 루트를 잘못 추론한다는 경고가 있었음
+  - `tsconfig.json`(`jsx: "react-jsx"`, `.next/dev/types` 포함)과 `next-env.d.ts`는 `next build`가 실행되면서 Next.js 자체가 자동으로 갱신한 것 — Next 16의 "dev/build 동시 실행" 기능(`.next/dev` 별도 출력 디렉터리)에 따른 공식 변경이라 그대로 둠
+  - **참고**: Next 16부터 `next dev` 실행 시 `CLAUDE.md`(또는 `AGENTS.md`) 파일 끝에 이 프로젝트 버전에 맞는 문서를 `node_modules/next/dist/docs/`에서 참고하라는 `<!-- BEGIN:nextjs-agent-rules -->` 블록을 자동으로 추가/유지함(Next 공식 문서가 "커밋해서 트리를 깨끗하게 유지하라"고 안내) — 이 세션에서도 실제로 그 문서를 읽고 `middleware`→`proxy` 마이그레이션 세부사항(파일명, export 이름, `runtime` 설정 금지)을 확인하는 데 사용함
+  - 검증: `npx tsc --noEmit`, `npm run lint`(신규 `eslint .`), `next build`(Turbopack, 경고 0개, 정적 페이지 수 기존과 동일) 모두 통과. dev 서버(포트 3001, 3000은 이전 세션 잔여 프로세스가 점유 중이었음)로 홈(`/ko`) 렌더링, `/admin/posts` → `/admin/login` 리다이렉트, 헤더의 "AI 도구" 드롭다운 열기/닫기(페이지 이동 시 자동 닫힘 포함) 정상 동작을 브라우저로 확인. **PDF 업로드·이메일 로그인 등 외부 서비스(Gemini/Supabase) 연동이 필요한 기능은 이번 세션에서 실제로 실행해보지 못함 — 다음 배포 후 재확인 권장**
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

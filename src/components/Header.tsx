@@ -135,6 +135,21 @@ export default function Header() {
   const [isToolsAccordionOpen, setIsToolsAccordionOpen] = useState(false);
   const toolsDropdownRef = useRef<HTMLLIElement>(null);
 
+  // 렌더 중 이전 값과 비교해 상태를 조정하는 React 권장 패턴(effect+setState 대신) —
+  // 메뉴가 닫히면 아코디언도 함께 접는다.
+  const [prevIsMenuOpen, setPrevIsMenuOpen] = useState(isMenuOpen);
+  if (isMenuOpen !== prevIsMenuOpen) {
+    setPrevIsMenuOpen(isMenuOpen);
+    if (!isMenuOpen) setIsToolsAccordionOpen(false);
+  }
+
+  // 페이지 이동 시 도구 드롭다운을 닫는다(위와 동일한 패턴).
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setIsToolsOpen(false);
+  }
+
   useEffect(() => {
     const handleScroll = () => {
       const totalScroll = document.documentElement.scrollTop;
@@ -155,10 +170,6 @@ export default function Header() {
   }, [isMenuOpen]);
 
   useEffect(() => {
-    if (!isMenuOpen) setIsToolsAccordionOpen(false);
-  }, [isMenuOpen]);
-
-  useEffect(() => {
     if (!isToolsOpen) return;
     const handlePointerDown = (event: PointerEvent) => {
       if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(event.target as Node)) {
@@ -168,10 +179,6 @@ export default function Header() {
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isToolsOpen]);
-
-  useEffect(() => {
-    setIsToolsOpen(false);
-  }, [pathname]);
 
   const closeMenu = () => setIsMenuOpen(false);
 

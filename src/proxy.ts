@@ -36,7 +36,7 @@ function getClientIp(req: NextRequest): string {
   return req.headers.get("x-real-ip") ?? "unknown";
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith("/admin")) {
     const { supabaseResponse, user } = await updateSession(req);
     const isLoginPage = req.nextUrl.pathname === "/admin/login";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { INDUSTRY_OPTIONS, INDUSTRY_PRESETS, isIndustry, type Industry, type IndustryPreset } from "@/lib/quotePresets";
@@ -218,22 +218,20 @@ export default function ProfitCalculatorClient() {
 
   // 손익 계산기는 별도 "계산하기" 버튼 없이 실시간으로 값이 바뀌므로, 입력마다 히스토리를
   // 새로 쌓지 않도록 세션당 고정 id로 업서트하고 값이 잠잠해진 뒤(1.2초) 한 번만 저장한다.
-  const sessionIdRef = useRef<string>(
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `profit-session-${Date.now()}`
-  );
+  // useId()는 렌더 중 호출해도 순수한(결정적인) 컴포넌트 인스턴스별 고정 id를 주므로
+  // crypto.randomUUID()/Date.now() 폴백보다 이 용도에 적합하다.
+  const sessionId = useId();
 
   useEffect(() => {
     if (!hasIncome) return;
     const timer = setTimeout(() => {
       saveProfitHistory(
         { industry, income: incomeAmount, netProfit, marginRate },
-        sessionIdRef.current
+        sessionId
       );
     }, 1200);
     return () => clearTimeout(timer);
-  }, [hasIncome, industry, incomeAmount, netProfit, marginRate]);
+  }, [hasIncome, industry, incomeAmount, netProfit, marginRate, sessionId]);
 
   return (
     <div className={styles.layout}>

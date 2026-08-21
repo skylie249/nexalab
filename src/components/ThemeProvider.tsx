@@ -15,10 +15,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    // Initial theme check
+    // localStorage/matchMedia는 서버 렌더 중에는 존재하지 않아 렌더 중에 읽을 수 없으므로,
+    // mount 이후 여기서만 확정할 수 있다 — effect 기반 setState가 불가피한 경우다.
+    /* eslint-disable react-hooks/set-state-in-effect */
     const savedTheme = localStorage.getItem("theme") as Theme;
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    
+
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.setAttribute("data-theme", savedTheme);
@@ -26,6 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme("dark");
       document.documentElement.setAttribute("data-theme", "dark");
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const toggleTheme = () => {

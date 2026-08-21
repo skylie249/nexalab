@@ -58,14 +58,20 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
   const [profitHistory, setProfitHistory] = useState<ProfitHistoryEntry[]>([]);
   const [seoHistory, setSeoHistory] = useState<SeoHistoryEntry[]>([]);
   const [llmsTxtGeneratedAt, setLlmsTxtGeneratedAt] = useState<string | null>(null);
+  // "지금" 시각은 렌더 중 Date.now()를 직접 호출하지 않기 위해 mount 이후 한 번만 확정한다.
+  const [now, setNow] = useState<number | null>(null);
 
   // localStorage는 서버에서 읽을 수 없어 mount 이후에만 채운다 — 초기값(빈 배열)은
   // 서버 렌더 결과와 동일하므로 hydration mismatch 없이 자연스럽게 갱신된다.
+  // (effect 기반 setState가 불가피한 경우라 아래 규칙만 이 블록에서 비활성화한다.)
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     setQuoteHistory(getQuoteHistory());
     setProfitHistory(getProfitHistory());
     setSeoHistory(getSeoHistory());
     setLlmsTxtGeneratedAt(getLlmsTxtGeneratedAt());
+    setNow(Date.now());
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const latestQuote = quoteHistory[0] ?? null;
@@ -113,8 +119,8 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
     });
   }
 
-  if (latestQuote) {
-    const daysSince = (Date.now() - new Date(latestQuote.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+  if (latestQuote && now !== null) {
+    const daysSince = (now - new Date(latestQuote.createdAt).getTime()) / (1000 * 60 * 60 * 24);
     if (daysSince >= STALE_QUOTE_DAYS) {
       recommendations.push({
         key: "quote-stale",

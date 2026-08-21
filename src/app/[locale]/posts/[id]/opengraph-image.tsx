@@ -1,8 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { createClient } from '@supabase/supabase-js';
 
-export const runtime = 'edge';
-
 export const alt = 'NexaLab 포스팅 대표 이미지';
 export const size = {
   width: 1200,
