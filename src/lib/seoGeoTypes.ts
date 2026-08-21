@@ -4,7 +4,7 @@
 import type { CheckSubcategory, Grade } from "./seoGeoConfig";
 
 export type CheckStatus = "pass" | "warn" | "fail";
-export type CheckGroup = "seo" | "geo";
+export type CheckGroup = "seo" | "geo" | "a11y";
 
 export interface CheckResult {
   id: string;
@@ -28,4 +28,5 @@ export interface AnalysisReport {
   checks: CheckResult[];
   seo: ScoreResult;
   geo: ScoreResult;
+  a11y: ScoreResult;
 }

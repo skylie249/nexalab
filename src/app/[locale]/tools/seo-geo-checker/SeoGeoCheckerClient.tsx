@@ -3,10 +3,22 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { CATEGORY_LABELS, SCORE_DISCLAIMER_KO, SUBCATEGORY_ORDER } from "@/lib/seoGeoConfig";
+import {
+  A11Y_SCORE_DISCLAIMER_KO,
+  CATEGORY_LABELS,
+  SCORE_DISCLAIMER_KO,
+  SUBCATEGORY_ORDER,
+} from "@/lib/seoGeoConfig";
 import type { AnalysisReport, CheckResult, CheckStatus } from "@/lib/seoGeoTypes";
 import { saveSeoHistory } from "@/lib/dashboardHistory";
 import styles from "./page.module.css";
+
+const MANUAL_CHECKLIST_KEYS = [
+  "a11yManualItem1",
+  "a11yManualItem2",
+  "a11yManualItem3",
+  "a11yManualItem4",
+] as const;
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -68,6 +80,32 @@ function CheckRow({ check, siteUrl }: { check: CheckResult; siteUrl: string }) {
         )}
       </div>
     </li>
+  );
+}
+
+function ManualChecklist() {
+  const t = useTranslations("seoGeoChecker");
+  const [checked, setChecked] = useState<boolean[]>(() => MANUAL_CHECKLIST_KEYS.map(() => false));
+
+  function toggle(index: number) {
+    setChecked((prev) => prev.map((v, i) => (i === index ? !v : v)));
+  }
+
+  return (
+    <section className={styles.categorySection}>
+      <h2 className={styles.categoryTitle}>{t("a11yManualChecklistTitle")}</h2>
+      <p className={styles.checkDetail}>{t("a11yManualChecklistNote")}</p>
+      <ul className={styles.manualChecklist}>
+        {MANUAL_CHECKLIST_KEYS.map((key, index) => (
+          <li key={key}>
+            <label className={styles.manualChecklistItem}>
+              <input type="checkbox" checked={checked[index]} onChange={() => toggle(index)} />
+              <span className={checked[index] ? styles.manualChecklistDone : undefined}>{t(key)}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 
@@ -133,6 +171,10 @@ export default function SeoGeoCheckerClient() {
       })).filter((group) => group.items.length > 0)
     : [];
 
+  // 응답 캐시가 이번 배포 이전(a11y 항목 추가 전)에 만들어졌을 수 있어 report.a11y가 없을 수 있음 — 방어적으로 처리.
+  const a11y = result?.report.a11y;
+  const criticalA11yIssues = result ? result.report.checks.filter((c) => c.group === "a11y" && c.status === "fail") : [];
+
   return (
     <div className={styles.container}>
       <form className={`${styles.card} glass`} onSubmit={handleSubmit}>
@@ -162,21 +204,34 @@ export default function SeoGeoCheckerClient() {
           <div className={styles.scoreGrid}>
             <ScoreCard label={t("seoScoreLabel")} score={result.report.seo.score} grade={result.report.seo.grade} />
             <ScoreCard label={t("geoScoreLabel")} score={result.report.geo.score} grade={result.report.geo.grade} />
+            {a11y && <ScoreCard label={t("a11yScoreLabel")} score={a11y.score} grade={a11y.grade} />}
           </div>
 
           <p className={styles.disclaimer}>{SCORE_DISCLAIMER_KO}</p>
+          {a11y && <p className={styles.disclaimer}>{A11Y_SCORE_DISCLAIMER_KO}</p>}
 
           <div className={styles.summaryBadges}>
             <span className={`${styles.badge} ${styles.badgePass}`}>
-              ✅ {t("passLabel")} {result.report.seo.pass + result.report.geo.pass}
+              ✅ {t("passLabel")} {result.report.seo.pass + result.report.geo.pass + (a11y?.pass ?? 0)}
             </span>
             <span className={`${styles.badge} ${styles.badgeWarn}`}>
-              ⚠️ {t("warnLabel")} {result.report.seo.warn + result.report.geo.warn}
+              ⚠️ {t("warnLabel")} {result.report.seo.warn + result.report.geo.warn + (a11y?.warn ?? 0)}
             </span>
             <span className={`${styles.badge} ${styles.badgeFail}`}>
-              ❌ {t("failLabel")} {result.report.seo.fail + result.report.geo.fail}
+              ❌ {t("failLabel")} {result.report.seo.fail + result.report.geo.fail + (a11y?.fail ?? 0)}
             </span>
           </div>
+
+          {criticalA11yIssues.length > 0 && (
+            <section className={`${styles.categorySection} ${styles.criticalSection}`}>
+              <h2 className={styles.categoryTitle}>🚨 {t("a11yCriticalTitle")}</h2>
+              <ul className={styles.checkList}>
+                {criticalA11yIssues.map((check) => (
+                  <CheckRow key={`critical-${check.id}`} check={check} siteUrl={result.url} />
+                ))}
+              </ul>
+            </section>
+          )}
 
           {groupedChecks.map((group) => (
             <section key={group.subcategory} className={styles.categorySection}>
@@ -188,6 +243,8 @@ export default function SeoGeoCheckerClient() {
               </ul>
             </section>
           ))}
+
+          {a11y && <ManualChecklist />}
 
           <button type="button" className={styles.restartButton} onClick={handleRestart}>
             {t("restartButton")}

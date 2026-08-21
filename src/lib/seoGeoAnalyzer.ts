@@ -1,5 +1,7 @@
 import * as cheerio from "cheerio";
 import {
+  A11Y_GENERIC_LINK_TEXTS,
+  A11Y_MISSING_WARN_RATIO,
   AI_CRAWLER_BOTS,
   ALT_MISSING_WARN_RATIO,
   DESC_LEN,
@@ -130,23 +132,26 @@ function checkH1Count($: cheerio.CheerioAPI): CheckResult {
   };
 }
 
-// 문서 순서대로 헤딩 레벨을 순회하며 "직전 헤딩보다 2단계 이상 건너뛰는 곳"만 실패로 판정.
-// 얕아지는 것(h3 -> h2)은 항상 정상. 첫 헤딩이 h1이 아닌 문제는 위 H1 개수 체크가 별도로 담당하므로
-// 여기서는 중복 체크하지 않음(prevLevel === 0일 때는 건너뛰지 않음으로 간주).
-function checkHeadingHierarchy($: cheerio.CheerioAPI): CheckResult {
-  const levels = $("h1,h2,h3,h4,h5,h6")
+function getHeadingLevels($: cheerio.CheerioAPI): number[] {
+  return $("h1,h2,h3,h4,h5,h6")
     .map((_, el) => Number(String($(el).prop("tagName")).slice(1)))
     .get();
+}
 
-  let skipped = false;
+// 문서 순서대로 헤딩 레벨을 순회하며 "직전 헤딩보다 2단계 이상 건너뛰는 곳"이 있는지만 판정.
+// 얕아지는 것(h3 -> h2)은 항상 정상. 첫 헤딩이 h1이 아닌 문제는 h1 개수 체크가 별도로 담당하므로
+// 여기서는 중복 체크하지 않음(prevLevel === 0일 때는 건너뛰지 않음으로 간주).
+function hasHeadingSkip(levels: number[]): boolean {
   let prevLevel = 0;
   for (const level of levels) {
-    if (prevLevel > 0 && level > prevLevel + 1) {
-      skipped = true;
-      break;
-    }
+    if (prevLevel > 0 && level > prevLevel + 1) return true;
     prevLevel = level;
   }
+  return false;
+}
+
+function checkHeadingHierarchy($: cheerio.CheerioAPI): CheckResult {
+  const skipped = hasHeadingSkip(getHeadingLevels($));
 
   return {
     id: "seo.structure.heading_hierarchy",
@@ -408,6 +413,286 @@ function checkLlmsTxt(llmsTxt: AnalysisInput["llmsTxt"]): CheckResult[] {
   return results;
 }
 
+// ── 접근성(A11y) — 정적 분석으로 판별 가능한 항목만 (nexalab_웹접근성_점검기_지침서.md 3-1 "하" 난이도 8개) ──
+
+function checkAltTextA11y($: cheerio.CheerioAPI): CheckResult {
+  const images = $("img");
+  const total = images.length;
+  if (total === 0) {
+    return {
+      id: "a11y.alt_text.images",
+      group: "a11y",
+      subcategory: "a11y_alt_text",
+      status: "pass",
+      title: "이미지 대체 텍스트",
+      detail: "페이지에 이미지가 없습니다.",
+    };
+  }
+  let missing = 0;
+  images.each((_, el) => {
+    const alt = $(el).attr("alt");
+    if (!alt || !alt.trim()) missing += 1;
+  });
+  const ratio = missing / total;
+  const status: CheckStatus = ratio === 0 ? "pass" : ratio <= ALT_MISSING_WARN_RATIO ? "warn" : "fail";
+  return {
+    id: "a11y.alt_text.images",
+    group: "a11y",
+    subcategory: "a11y_alt_text",
+    status,
+    title: "이미지 대체 텍스트",
+    detail: `이미지 ${total}개 중 ${missing}개(${Math.round(ratio * 100)}%)에 alt 텍스트가 없습니다.`,
+    fixHint:
+      status === "pass"
+        ? undefined
+        : "시각장애인 사용자는 alt가 없는 이미지의 내용을 전혀 알 수 없습니다. <img alt=\"상품명 - 파란색 후드티\">처럼 내용을 설명하는 alt 속성을 추가하세요.",
+  };
+}
+
+function checkHtmlLangA11y($: cheerio.CheerioAPI): CheckResult {
+  const lang = $("html").attr("lang")?.trim();
+  return {
+    id: "a11y.document_structure.html_lang",
+    group: "a11y",
+    subcategory: "a11y_document_structure",
+    status: lang ? "pass" : "fail",
+    title: "html lang 속성",
+    detail: lang ? `<html lang="${lang}">로 설정되어 있습니다.` : "<html> 태그에 lang 속성이 없습니다.",
+    fixHint: lang
+      ? undefined
+      : "스크린리더가 올바른 언어로 읽도록 <html lang=\"ko\">처럼 문서 언어를 명시하세요.",
+  };
+}
+
+function checkPageTitleA11y($: cheerio.CheerioAPI): CheckResult {
+  const title = $("title").first().text().trim();
+  return {
+    id: "a11y.document_structure.title_exists",
+    group: "a11y",
+    subcategory: "a11y_document_structure",
+    status: title ? "pass" : "fail",
+    title: "페이지 제목(title)",
+    detail: title ? "title 태그가 존재합니다." : "title 태그가 없거나 비어 있습니다.",
+    fixHint: title
+      ? undefined
+      : "스크린리더 사용자는 title로 현재 페이지를 구분합니다. <title>에 페이지를 설명하는 제목을 추가하세요.",
+  };
+}
+
+function checkHeadingA11y($: cheerio.CheerioAPI): CheckResult {
+  const levels = getHeadingLevels($);
+  const h1Count = levels.filter((l) => l === 1).length;
+  const skipped = hasHeadingSkip(levels);
+
+  let status: CheckStatus = "pass";
+  let detail = "H1이 1개 존재하고 헤딩 단계가 순서대로 구성되어 있습니다.";
+  let fixHint: string | undefined;
+
+  if (h1Count === 0) {
+    status = "fail";
+    detail = "H1 태그가 없습니다.";
+    fixHint = "스크린리더 사용자는 H1을 페이지의 주제로 인식하고 탐색합니다. 페이지당 H1을 정확히 1개 추가하세요.";
+  } else if (h1Count > 1 || skipped) {
+    status = "warn";
+    detail =
+      h1Count > 1
+        ? `H1 태그가 ${h1Count}개 발견됐습니다 (권장 1개).`
+        : "헤딩 단계를 건너뛰는 곳이 있습니다 (예: h2 다음에 h4).";
+    fixHint = "스크린리더는 헤딩 목록으로 문서 구조를 파악하므로, H1은 1개만 두고 h1→h2→h3 순서를 건너뛰지 마세요.";
+  }
+
+  return {
+    id: "a11y.heading.hierarchy",
+    group: "a11y",
+    subcategory: "a11y_heading",
+    status,
+    title: "헤딩 계층 구조",
+    detail,
+    fixHint,
+  };
+}
+
+const A11Y_LABELABLE_SELECTOR = 'input:not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]), select, textarea';
+
+function checkFormLabelsA11y($: cheerio.CheerioAPI): CheckResult {
+  const fields = $(A11Y_LABELABLE_SELECTOR);
+  const total = fields.length;
+  if (total === 0) {
+    return {
+      id: "a11y.form_labels.fields",
+      group: "a11y",
+      subcategory: "a11y_form_labels",
+      status: "pass",
+      title: "폼 요소 라벨",
+      detail: "페이지에 입력 폼 요소가 없습니다.",
+    };
+  }
+
+  let missing = 0;
+  fields.each((_, el) => {
+    const $el = $(el);
+    const id = $el.attr("id");
+    const hasFor = Boolean(id && $(`label[for="${id}"]`).length > 0);
+    const hasWrappingLabel = $el.closest("label").length > 0;
+    const hasAriaLabel = Boolean($el.attr("aria-label")?.trim());
+    const hasAriaLabelledby = Boolean($el.attr("aria-labelledby")?.trim());
+    if (!hasFor && !hasWrappingLabel && !hasAriaLabel && !hasAriaLabelledby) missing += 1;
+  });
+
+  const ratio = missing / total;
+  const status: CheckStatus = ratio === 0 ? "pass" : ratio <= A11Y_MISSING_WARN_RATIO ? "warn" : "fail";
+  return {
+    id: "a11y.form_labels.fields",
+    group: "a11y",
+    subcategory: "a11y_form_labels",
+    status,
+    title: "폼 요소 라벨",
+    detail: `입력 요소 ${total}개 중 ${missing}개가 label/aria-label과 연결되어 있지 않습니다.`,
+    fixHint:
+      status === "pass"
+        ? undefined
+        : "라벨이 없으면 스크린리더 사용자는 이 입력창이 무엇을 위한 것인지 알 수 없습니다. <label for=\"id\">와 input의 id를 연결하거나 aria-label을 추가하세요.",
+  };
+}
+
+function checkLinkTextA11y($: cheerio.CheerioAPI): CheckResult {
+  const links = $("a[href]");
+  const total = links.length;
+  if (total === 0) {
+    return {
+      id: "a11y.link_text.generic",
+      group: "a11y",
+      subcategory: "a11y_link_text",
+      status: "pass",
+      title: "링크 텍스트",
+      detail: "페이지에 링크가 없습니다.",
+    };
+  }
+
+  const genericSet = new Set(A11Y_GENERIC_LINK_TEXTS);
+  let flagged = 0;
+  links.each((_, el) => {
+    const $el = $(el);
+    const ariaLabel = $el.attr("aria-label")?.trim();
+    if (ariaLabel) return; // aria-label이 있으면 접근 가능한 이름이 별도로 있으므로 통과
+    const text = $el.text().trim().toLowerCase().replace(/[.!?…"'()]/g, "");
+    if (!text || genericSet.has(text)) flagged += 1;
+  });
+
+  const ratio = flagged / total;
+  const status: CheckStatus = flagged === 0 ? "pass" : ratio <= A11Y_MISSING_WARN_RATIO ? "warn" : "fail";
+  return {
+    id: "a11y.link_text.generic",
+    group: "a11y",
+    subcategory: "a11y_link_text",
+    status,
+    title: "링크 텍스트",
+    detail:
+      flagged === 0
+        ? "맥락 없는 링크 텍스트가 발견되지 않았습니다."
+        : `"여기를 클릭", "더보기" 등 맥락 없는 링크 텍스트가 ${flagged}곳에서 발견됐습니다.`,
+    fixHint:
+      flagged === 0
+        ? undefined
+        : "스크린리더 사용자는 링크만 모아서 듣는 경우가 많습니다. \"2026년 마케팅 리포트 다운로드\"처럼 목적어를 포함한 텍스트로 바꾸세요.",
+  };
+}
+
+function checkMultimediaA11y($: cheerio.CheerioAPI): CheckResult {
+  const media = $("video, audio");
+  const total = media.length;
+  if (total === 0) {
+    return {
+      id: "a11y.multimedia.captions",
+      group: "a11y",
+      subcategory: "a11y_multimedia",
+      status: "pass",
+      title: "멀티미디어 자막",
+      detail: "페이지에 video/audio 요소가 없습니다.",
+    };
+  }
+
+  let missing = 0;
+  media.each((_, el) => {
+    const hasCaptionTrack = $(el).find('track[kind="captions"], track[kind="subtitles"]').length > 0;
+    if (!hasCaptionTrack) missing += 1;
+  });
+
+  return {
+    id: "a11y.multimedia.captions",
+    group: "a11y",
+    subcategory: "a11y_multimedia",
+    status: missing === 0 ? "pass" : "warn",
+    title: "멀티미디어 자막",
+    detail:
+      missing === 0
+        ? "모든 video/audio 요소에 자막 트랙이 있습니다."
+        : `video/audio 요소 ${total}개 중 ${missing}개에 자막 트랙(track)이 없습니다.`,
+    fixHint:
+      missing === 0
+        ? undefined
+        : "청각장애인 사용자를 위해 <video> 안에 <track kind=\"captions\" src=\"...\">로 자막을 추가하세요. (음성이 없는 배경 영상이라면 해당 없음)",
+  };
+}
+
+function checkResponsiveZoomA11y($: cheerio.CheerioAPI): CheckResult {
+  const content = $('meta[name="viewport"]').attr("content") ?? "";
+  const blocksZoom = /user-scalable\s*=\s*no/i.test(content) || /maximum-scale\s*=\s*1(\.0*)?(?![0-9])/i.test(content);
+  return {
+    id: "a11y.responsive.zoom",
+    group: "a11y",
+    subcategory: "a11y_responsive",
+    status: blocksZoom ? "fail" : "pass",
+    title: "확대(Pinch Zoom) 차단 여부",
+    detail: blocksZoom
+      ? "viewport meta 태그가 user-scalable=no 또는 maximum-scale=1로 확대를 차단하고 있습니다."
+      : "확대를 차단하는 viewport 설정이 없습니다.",
+    fixHint: blocksZoom
+      ? "저시력 사용자는 화면을 확대해서 봅니다. viewport meta에서 user-scalable=no와 maximum-scale 제한을 제거하세요."
+      : undefined,
+  };
+}
+
+function checkAutoplayA11y($: cheerio.CheerioAPI): CheckResult {
+  const obsoleteCount = $("marquee, blink").length;
+  if (obsoleteCount > 0) {
+    return {
+      id: "a11y.autoplay.motion",
+      group: "a11y",
+      subcategory: "a11y_autoplay",
+      status: "fail",
+      title: "자동 재생·애니메이션",
+      detail: `<marquee>/<blink> 등 자동으로 움직이는 폐기된 태그가 ${obsoleteCount}개 발견됐습니다.`,
+      fixHint: "멈출 수 없는 자동 움직임은 주의력에 영향을 줍니다. marquee/blink 태그 사용을 중단하세요.",
+    };
+  }
+
+  const unmutedAutoplay = $("video[autoplay]:not([muted]), audio[autoplay]:not([muted])");
+  if (unmutedAutoplay.length === 0) {
+    return {
+      id: "a11y.autoplay.motion",
+      group: "a11y",
+      subcategory: "a11y_autoplay",
+      status: "pass",
+      title: "자동 재생·애니메이션",
+      detail: "음소거되지 않은 상태로 자동 재생되는 미디어가 없습니다.",
+    };
+  }
+
+  const hasControls = unmutedAutoplay.filter((_, el) => $(el).attr("controls") !== undefined).length === unmutedAutoplay.length;
+  return {
+    id: "a11y.autoplay.motion",
+    group: "a11y",
+    subcategory: "a11y_autoplay",
+    status: hasControls ? "warn" : "fail",
+    title: "자동 재생·애니메이션",
+    detail: `음소거되지 않은 상태로 자동 재생되는 video/audio가 ${unmutedAutoplay.length}개 있습니다.`,
+    fixHint: hasControls
+      ? "자동 재생 소리는 스크린리더 음성 출력과 겹쳐 혼란을 줄 수 있습니다. 재생/정지 컨트롤이 눈에 잘 띄는지 확인하세요."
+      : "자동 재생 소리를 즉시 멈출 수 있는 controls 속성을 추가하거나, muted로 설정하세요.",
+  };
+}
+
 // ── 점수 산출 ─────────────────────────────────────────────────────────────
 
 function computeScore(checks: CheckResult[], group: CheckGroup): ScoreResult {
@@ -438,6 +723,15 @@ export function analyze(input: AnalysisInput): AnalysisReport {
     checkMixedContent($, input.finalUrl),
     ...checkAiCrawlers(input.robotsTxt),
     ...checkLlmsTxt(input.llmsTxt),
+    checkAltTextA11y($),
+    checkHtmlLangA11y($),
+    checkPageTitleA11y($),
+    checkHeadingA11y($),
+    checkFormLabelsA11y($),
+    checkLinkTextA11y($),
+    checkMultimediaA11y($),
+    checkResponsiveZoomA11y($),
+    checkAutoplayA11y($),
   ];
 
   // 렌더링 순서를 SUBCATEGORY_ORDER와 맞춰 안정적으로 정렬(그룹 내 상대 순서는 유지 — stable sort)
@@ -448,5 +742,6 @@ export function analyze(input: AnalysisInput): AnalysisReport {
     checks,
     seo: computeScore(checks, "seo"),
     geo: computeScore(checks, "geo"),
+    a11y: computeScore(checks, "a11y"),
   };
 }

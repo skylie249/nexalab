@@ -325,3 +325,44 @@
   border-color: var(--accent-color);
   background-color: var(--bg-secondary);
 }
+
+/* 접근성 치명적 문제 섹션: 다른 카테고리 섹션과 같은 레이아웃이되 붉은 강조 테두리로 최상단 고정 노출 */
+.criticalSection {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #ef4444;
+  background-color: color-mix(in srgb, #ef4444 6%, transparent);
+}
+
+.manualChecklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.manualChecklistItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.manualChecklistItem input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.manualChecklistDone {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
