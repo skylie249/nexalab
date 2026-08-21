@@ -39,7 +39,7 @@ export default async function BizPage({
     { key: "idea3", emoji: "🧭", title: t("idea3Title"), desc: t("idea3Desc"), longDesc: t("idea3LongDesc") },
   ];
 
-  const provenTags = [t("provenTag1"), t("provenTag2"), t("provenTag3"), t("provenTag4"), t("provenTag5")];
+  const provenTags = [t("provenTag1"), t("provenTag2"), t("provenTag3"), t("provenTag4")];
 
   return (
     <div className={styles.page}>

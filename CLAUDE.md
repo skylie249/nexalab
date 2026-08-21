@@ -8,7 +8,7 @@
 - **타겟 독자**: 25~35세 직장인 및 1인 사업가
 - **기존 구조**:
   - 블로그 카테고리: AI Apps / Biz
-  - Live Sub-Apps: Harubite(하루바이트), Venus Gecko(파충류 샵/모니터링), HappyICT-ON(워크플로우 플랫폼)
+  - Live Sub-Apps: Harubite(하루바이트, 외국어 습관), Venus Gecko(크레스티드 게코 분양 샵 홍보 사이트 — AI 모니터링 도구 아님, 2026-08-21 정정). Report 점검기(웹사이트 리포트 자동 점검)는 개발 중 — 카드/AI Apps에 "준비중" 배지로 노출
   - 다크모드 지원됨
 
 ## 진행 상황 로그
@@ -588,3 +588,15 @@ export async function POST(req: Request) {
     - **근본 원인**: Bot Fight 모드는 페이지 내비게이션엔 적합하지만, `fetch()`/XHR로 호출되는 JSON API 엔드포인트에는 구조적으로 안 맞음 — 챌린지를 풀려면 브라우저가 페이지를 다시 렌더링해야 하는데 API 호출은 그 경로가 없어 그대로 실패함(Cloudflare 자체가 502 형태로 응답). 무료 플랜은 "특정 경로만 챌린지 예외 처리"하는 세분화 기능(Super Bot Fight Mode)이 없어 부분적 완화가 불가능
     - **조치**: 사용자가 Bot Fight 모드를 끔 → 재검증: curl 2연속 호출(`cached:false` → `cached:true`, `checkedAt` 동일값 확인 — SEO/GEO 체커 캐싱이 실제로도 정상 작동함을 이번에 처음 실사용 환경에서 확인) + 실제 Chrome 브라우저로 `/tools/seo-geo-checker`에서 `nexalab.app` 점검 실행해 SEO 88점(B)/GEO 100점(A) 결과 화면까지 정상 렌더링 확인
     - **향후 참고**: 이 프로젝트에서 Cloudflare 봇 방어 기능을 다시 켤 일이 생기면, Bot Fight 모드(사이트 전역 적용, 무료)는 `/api/*` JSON 엔드포인트를 함께 깨뜨리므로 절대 그대로 켜지 말 것. 유료 Super Bot Fight Mode의 경로별 예외 규칙을 쓰거나, `/api/*`는 애초에 앱 자체 rate limiting(`src/middleware.ts`)에만 맡기고 Cloudflare 봇 방어는 정적 페이지 경로에만 적용하는 식으로 설계할 것
+
+### 2026-08-21
+- **메인 페이지/AI Apps 서브앱 카드 문구·이모지 정비 + HappyICT-ON → Report 점검기(개발 중) 교체**
+  - `nexalab_메인카드_지침서_1.md` 기준으로 하루바이트·베누스게코 카드 설명(짧은/긴 설명 모두, 한/영)과 아이콘 이모지(하루바이트 🌱, 해피ICT-ON 🤝)를 확정 카피로 교체 (별도 커밋으로 선행 완료)
+  - 이번 세션: **HappyICT-ON을 서비스 라인업에서 제거하고 그 자리에 신규 서비스 "Report Checker(리포트 점검기)"를 "준비중" 배지로 미리 노출** — 실제 서비스는 아직 구축 중이라는 사용자 확인에 따라, 노출 방식은 두 옵션(A. 준비중 배지로 미리 노출 / B. 이번엔 카드 추가 없이 HappyICT-ON만 제거) 중 **A안**으로 진행. 카드 문구/URL/이모지/색상은 확정된 값이 없어 임시 플레이스홀더로 작성함(desc: "웹사이트 리포트 자동 점검 도구, 현재 개발 중", 이모지 🔍, 색상 `#3b82f6`) — **실제 서비스 URL과 최종 카피가 정해지면 `Hero.tsx`/`ai-apps/page.tsx`의 `url`/`reportCheckerDesc`/`reportCheckerLongDesc`를 교체하고 `comingSoon` 플래그를 제거해야 함**
+  - 구현: `subApps`/`apps` 배열 항목에 `comingSoon: true`, `url: null` 필드 추가 → 카드가 `comingSoon`이면 `<Link>` 대신 `<div>`로 렌더링(클릭 불가), "바로가기" 링크 텍스트 숨김, 대신 상태 배지에 "준비중"/"Coming Soon" 표시(운영중 배지와 같은 자리, 회색 톤의 별도 스타일 `comingSoonBadge`). `Hero.tsx`는 원래 상태 배지 UI 자체가 없어 `ai-apps/page.tsx`의 `cardTitleRow`/`statusBadge` 패턴을 그대로 가져와 신규 추가
+  - `ai-apps/page.tsx`의 JSON-LD(`ItemList`)에서는 `comingSoon` 항목을 `filter`로 제외 — 아직 실제 URL이 없는 서비스를 `SoftwareApplication`으로 검색엔진에 노출하지 않기 위함
+  - **연쇄 수정**: `messages/ko.json`·`en.json`의 `aiApps.metaDescription`(3종 → 2종 소개로 문구 변경), `biz.idea2LongDesc`(HappyICT-ON 괄호 예시 제거), `biz.provenTag5`(HappyICT-ON 태그 삭제, `biz/page.tsx`의 `provenTags` 배열도 4개로 축소) — Report 점검기는 아직 "직접 실행·검증한 것"이 아니고 "AI × 니치 시장" 사례로 단정하기도 이르다고 판단해 이 두 곳에는 새 서비스를 추가하지 않고 기존 HappyICT-ON 언급만 제거함(사용자에게 별도 확인은 하지 않음, 문서에 판단 근거만 기록)
+  - `public/llms.txt`의 `AI Apps` 섹션 설명도 갱신: HappyICT-ON 언급 제거 + 이전부터 stale하게 남아있던 하루바이트 설명("식단 기록 + 영양 코칭")을 현재 실제 서비스(외국어 습관) 기준으로 함께 수정
+  - 검증: `npx tsc --noEmit`, `next lint`, `next build`(`/ko`·`/en` 양쪽 정적 생성 확인) 통과. 브라우저(Chrome 자동화, dev 서버)로 메인 페이지·AI Apps 페이지의 "준비중" 카드를 라이트/다크 모드 모두에서 확인(배지·아이콘·설명 정상 표시, 링크 비활성화 확인) — 이 과정에서 `aiApps.techStackBody`("세 서비스 모두 배포·운영까지 혼자 진행")가 아직 배포되지 않은 Report Checker와 상충하는 것을 추가로 발견해 "각 서비스는 기획부터 개발까지 혼자 진행" 식으로 함께 수정(한/영). **모바일 실제 폭(390px) 스크린샷은 이번에도 리사이즈 도구가 반영되지 않아 검증하지 못함**(과거 세션에도 동일 이슈 기록됨) — 다만 기존 카드와 동일한 grid/flex 패턴을 그대로 재사용했으므로 깨질 가능성은 낮다고 판단. 다음 세션에서 재확인 권장
+  - **후속 수정 (같은 날)**: 사용자가 Venus Gecko의 실제 서비스 성격을 정정 — "개체 상태를 AI가 모니터링하는 운영 도구"가 아니라 **파충류 샵을 홍보하는 단순 쇼룸/랜딩 사이트**임을 확인. `aiApps.venusGeckoLongDesc`(한/영)에서 AI 모니터링·재고 관리 관련 서술을 전부 제거하고 "개체·사육 환경을 소개해 분양 문의로 연결하는 홍보 사이트" 설명으로 교체
+    - `biz.idea2LongDesc`("파충류 샵의 재고 관리(Venus Gecko)")에도 같은 오류가 있어 사용자에게 처리 방식을 확인 — **"Venus Gecko 언급만 제거"**로 확정. 예시 없이도 문장이 성립하도록 "시장 규모는 작지만 문제가 뚜렷한 틈새 영역을 골라 AI로 풀어내는 과정을 다룹니다"로 재작성(한/영). `biz.provenTag4`("Venus Gecko" 태그)는 AI 관련 주장이 없는 단순 실적 태그라 그대로 유지

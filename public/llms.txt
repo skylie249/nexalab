@@ -7,7 +7,7 @@
 - [Project Profit Calculator](https://www.nexalab.app/en/tools/profit-calculator): Enter a contract/quote amount plus labor, outsourcing, and other costs to instantly get net profit, margin rate, and effective hourly rate. Free, no login, nothing entered is stored.
 
 ## Blog
-- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (daily meal logging + AI nutrition coaching), Venus Gecko (AI-based reptile shop inventory/monitoring), and HappyICT-ON (AI workflow automation platform). Covers model selection, prompt design, deployment, and troubleshooting.
+- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback) and Venus Gecko (AI-based reptile shop inventory/monitoring). Covers model selection, prompt design, deployment, and troubleshooting.
 - [Biz](https://www.nexalab.app/en/biz): Notes on turning tech experiments into sustainable, revenue-generating businesses — monetization experiments, AI applied to niche markets, and solo-developer decision-making.
 
 ## About

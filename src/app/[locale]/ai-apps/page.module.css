@@ -122,6 +122,27 @@
   background-color: #10b981;
 }
 
+.comingSoonBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.cardDisabled {
+  cursor: default;
+}
+
+.cardDisabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .cardTagline {
   font-size: 0.9rem;
   font-weight: 600;
