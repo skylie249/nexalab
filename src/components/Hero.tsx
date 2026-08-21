@@ -20,14 +20,6 @@ export default function Hero() {
       desc: t("venusGeckoDesc"),
       url: "https://venus-gecko.nexalab.app",
       color: "#10b981"
-    },
-    {
-      name: "Report Checker",
-      emoji: "🔍",
-      desc: t("reportCheckerDesc"),
-      url: null,
-      color: "#3b82f6",
-      comingSoon: true
     }
   ];
 
@@ -56,23 +48,12 @@ export default function Hero() {
                 <div className={styles.cardInfo}>
                   <div className={styles.cardTitleRow}>
                     <h3>{app.name}</h3>
-                    {app.comingSoon && <span className={styles.comingSoonBadge}>{t("comingSoonLabel")}</span>}
                   </div>
                   <p>{app.desc}</p>
-                  {!app.comingSoon && (
-                    <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
-                  )}
+                  <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
                 </div>
               </>
             );
-
-            if (app.comingSoon || !app.url) {
-              return (
-                <div key={app.name} className={`${styles.card} ${styles.cardDisabled} glass`}>
-                  {cardContent}
-                </div>
-              );
-            }
 
             return (
               <Link key={app.name} href={app.url} target="_blank" rel="noopener noreferrer" className={`${styles.card} glass`}>

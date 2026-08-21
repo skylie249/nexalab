@@ -1,0 +1,430 @@
+.page {
+  padding: 3rem 0 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 2.75rem;
+  }
+}
+
+.highlight {
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.6;
+  text-wrap: balance;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.card {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.resultCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.textArea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.textArea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.textCounter {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-align: right;
+  margin-top: 0.4rem;
+}
+
+.submitButton {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 0.5rem;
+  background-color: var(--accent-color);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-height: 44px;
+  transition: opacity 0.2s ease;
+}
+
+.submitButton:hover {
+  opacity: 0.9;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+}
+
+.formNote {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+  text-wrap: balance;
+  margin-top: 0.5rem;
+}
+
+.errorBox {
+  font-size: 0.85rem;
+  color: #ef4444;
+  background-color: var(--bg-secondary);
+  border: 1px solid #ef4444;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  line-height: 1.5;
+  margin-top: 1rem;
+}
+
+/* 점수 카드: 손익 계산기·SEO/GEO 체커와 동일한 auto-fit 패턴 재사용 */
+.scoreGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.scoreCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.scoreLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.scoreValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.scoreValue {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--accent-color);
+}
+
+.scoreGrade {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-color);
+}
+
+.disclaimer {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.summaryBadges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.badgePass {
+  color: #22c55e;
+}
+
+.badgeWarn {
+  color: #f59e0b;
+}
+
+.badgeFail {
+  color: #ef4444;
+}
+
+.categorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.categoryTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkRow {
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.6rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.checkBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.checkTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.checkDetail {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.checkFixHint {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  line-height: 1.5;
+}
+
+.beforeAfter {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+}
+
+.beforeAfterSummary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--accent-color);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.beforeAfterLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.beforeAfterText {
+  color: var(--text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.restartButton {
+  align-self: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.restartButton:hover {
+  border-color: var(--accent-color);
+  background-color: var(--bg-secondary);
+}
+
+/* AI 리라이팅 섹션 */
+.rewriteSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.rewritePrompt {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.rewriteButton {
+  padding: 0.75rem 1.4rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-height: 44px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.rewriteButton:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+}
+
+.rewriteButton:disabled {
+  opacity: 0.6;
+}
+
+.rewriteResult {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: left;
+}
+
+.rewriteKeyChangesTitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.keyChangeList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+/* Before/After 비교: 모바일 1열 스택, 768px 이상에서 2열 배치 */
+.rewriteCompare {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .rewriteCompare {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.rewriteColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.9rem;
+  border-radius: 0.6rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.rewriteColumnTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.rewriteColumnText {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.rewriteDisclaimer {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}

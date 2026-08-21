@@ -1,0 +1,66 @@
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { Locale } from "@/i18n/routing";
+import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
+import JsonLd from "@/components/JsonLd";
+import styles from "./page.module.css";
+import ReportCheckerClient from "./ReportCheckerClient";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "reportChecker" });
+  const title = t("metaTitle");
+  const description = t("metaDescription");
+
+  return {
+    title,
+    description,
+    alternates: buildAlternates(locale as Locale, "/tools/report-checker"),
+    openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/tools/report-checker" }),
+    twitter: buildTwitter({ title, description, locale: locale as Locale }),
+  };
+}
+
+function toolJsonLd(locale: Locale, name: string, description: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name,
+    description,
+    url: absoluteUrl(`/${locale}/tools/report-checker`),
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Any (web browser)",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  };
+}
+
+export default async function ReportCheckerPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("reportChecker");
+
+  return (
+    <div className={styles.page}>
+      <JsonLd data={toolJsonLd(locale as Locale, t("metaTitle"), t("metaDescription"))} />
+      <header className={styles.intro}>
+        <span className={styles.eyebrow}>{t("eyebrow")}</span>
+        <h1 className={styles.title}>
+          {t.rich("title", {
+            highlight: (chunks) => <span className={styles.highlight}>{chunks}</span>,
+          })}
+        </h1>
+        <p className={styles.subtitle}>{t("subtitle")}</p>
+      </header>
+
+      <ReportCheckerClient />
+    </div>
+  );
+}

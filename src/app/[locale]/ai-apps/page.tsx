@@ -53,15 +53,6 @@ export default async function AiAppsPage({
       url: "https://venus-gecko.nexalab.app",
       color: "#10b981",
     },
-    {
-      name: "Report Checker",
-      emoji: "🔍",
-      desc: t("reportCheckerDesc"),
-      longDesc: t("reportCheckerLongDesc"),
-      url: null,
-      color: "#3b82f6",
-      comingSoon: true,
-    },
   ];
 
   return (
@@ -71,19 +62,17 @@ export default async function AiAppsPage({
           "@context": "https://schema.org",
           "@type": "ItemList",
           url: absoluteUrl(`/${locale}/ai-apps`),
-          itemListElement: apps
-            .filter((app) => !app.comingSoon)
-            .map((app, index) => ({
-              "@type": "ListItem",
-              position: index + 1,
-              item: {
-                "@type": "SoftwareApplication",
-                name: app.name,
-                description: app.longDesc,
-                url: app.url,
-                applicationCategory: "BusinessApplication",
-              },
-            })),
+          itemListElement: apps.map((app, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "SoftwareApplication",
+              name: app.name,
+              description: app.longDesc,
+              url: app.url,
+              applicationCategory: "BusinessApplication",
+            },
+          })),
         }}
       />
       <header className={styles.intro}>
@@ -106,26 +95,14 @@ export default async function AiAppsPage({
               <div className={styles.cardInfo}>
                 <div className={styles.cardTitleRow}>
                   <h3>{app.name}</h3>
-                  <span className={app.comingSoon ? styles.comingSoonBadge : styles.statusBadge}>
-                    {app.comingSoon ? t("comingSoonLabel") : t("statusLabel")}
-                  </span>
+                  <span className={styles.statusBadge}>{t("statusLabel")}</span>
                 </div>
                 <p className={styles.cardTagline}>{app.desc}</p>
                 <p className={styles.cardLongDesc}>{app.longDesc}</p>
-                {!app.comingSoon && (
-                  <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
-                )}
+                <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
               </div>
             </>
           );
-
-          if (app.comingSoon || !app.url) {
-            return (
-              <div key={app.name} className={`${styles.card} ${styles.cardDisabled} glass`}>
-                {cardContent}
-              </div>
-            );
-          }
 
           return (
             <Link

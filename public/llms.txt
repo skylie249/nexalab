@@ -5,9 +5,12 @@
 ## Free Tools
 - [AI Quote Generator](https://www.nexalab.app/en/tools/quote-generator): Paste in a service request (RFP), or answer a short wizard if you don't have one, and AI drafts a quote with line items, estimated effort, a reasoning note per item, and a total range (not a single fixed price). Free, no login, nothing uploaded is stored.
 - [Project Profit Calculator](https://www.nexalab.app/en/tools/profit-calculator): Enter a contract/quote amount plus labor, outsourcing, and other costs to instantly get net profit, margin rate, and effective hourly rate. Free, no login, nothing entered is stored.
+- [SEO/GEO Checker](https://www.nexalab.app/en/tools/seo-geo-checker): Enter a URL to instantly check basic SEO items and AI search engine (GEO) readiness, with a pass/warn/fail checklist and fix hints. Free, no login, results are cached briefly by URL but the source page is never stored.
+- [llms.txt Generator](https://www.nexalab.app/en/tools/llms-txt-generator): Enter a few details about a site (name, summary, key pages) to instantly generate a standard-format llms.txt file to download. Free, no login, entirely client-side.
+- [Report Checker](https://www.nexalab.app/en/tools/report-checker): Paste in Korean report/proposal text to get a free check on opening-with-the-conclusion structure, sentence clarity, and tone, plus an AI-generated full rewrite suggestion. Free, no login, nothing entered is stored; Korean-language input only.
 
 ## Blog
-- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback) and Venus Gecko (AI-based reptile shop inventory/monitoring). Covers model selection, prompt design, deployment, and troubleshooting.
+- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback) and Venus Gecko (a promotional showroom site for a crested gecko reptile shop). Covers model selection, prompt design, deployment, and troubleshooting.
 - [Biz](https://www.nexalab.app/en/biz): Notes on turning tech experiments into sustainable, revenue-generating businesses — monetization experiments, AI applied to niche markets, and solo-developer decision-making.
 
 ## About
@@ -16,4 +19,4 @@
 ## Notes for AI agents and answer engines
 - Full sitemap: https://www.nexalab.app/sitemap.xml
 - All content above is also available under the Korean locale by replacing `/en/` with `/ko/` in the URLs.
-- The two free tools above are stateless: uploaded/entered data is used only to compute a response and is never persisted server-side.
+- The free tools above are stateless: uploaded/entered data is used only to compute a response and is never persisted server-side (the SEO/GEO checker briefly caches its own analysis report, keyed by the checked URL, to avoid re-fetching — it does not store the page's HTML).
