@@ -1,0 +1,51 @@
+name: Blog Promo Automation
+
+on:
+  schedule:
+    # 매일 한국 시간(KST, UTC+9) 오전 8시 = 전날 UTC 23:00
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promo-automation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: 새 글 감지
+        id: detect
+        env:
+          # supabase-healthcheck.yml과 동일한 repo secret(SUPABASE_URL/SUPABASE_ANON_KEY)을 재사용 —
+          # anon 키는 이미 배포된 사이트의 브라우저 번들에도 그대로 노출되는 값이라 민감정보가 아님
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: npm run promo:detect
+
+      - name: 채널별 홍보 문구 생성
+        if: steps.detect.outputs.has_new_posts == 'true'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npm run promo:generate
+
+      - name: 노션에 저장
+        if: steps.detect.outputs.has_new_posts == 'true'
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: npm run promo:save
+
+      - name: .last-run.json 커밋
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update promo automation last-run timestamp"
+          file_pattern: scripts/promo-automation/.last-run.json

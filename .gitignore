@@ -2,6 +2,10 @@ node_modules
 .env.local
 .next
 *.tsbuildinfo
+
+# 블로그 홍보 자동화 스크립트의 실행 간 임시 상태(detect-new-posts.ts <-> generate-copy.ts <->
+# save-to-notion.ts 데이터 전달용) — .last-run.json과 달리 커밋 대상이 아님
+scripts/promo-automation/.state/
 Flag_of_South_Korea.svg
 icons8-한국-이모티콘-48.png
 icons8-한국-이모티콘-48.svg
