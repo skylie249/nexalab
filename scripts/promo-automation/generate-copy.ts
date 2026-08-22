@@ -42,12 +42,16 @@ function buildPrompt(post: DetectedPost): string {
 3. facebookCopy (페이스북 그룹용): 150자 내외, 소상공인/자영업자 그룹에 어울리는 경험 공유 톤(예: "~해봤는데 괜찮더라구요")`;
 }
 
-function stripJsonFence(raw: string): string {
-  return raw
-    .trim()
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/```\s*$/i, "")
-    .trim();
+// responseMimeType: "application/json"를 지정해도 코드펜스나 JSON 뒤에 부가 설명이 붙어 나오는
+// 경우가 실제로 관측되어(예: 영문 글 처리 중 JSON 뒤에 후행 텍스트가 붙어 JSON.parse가 실패),
+// 첫 "{"부터 마지막 "}"까지만 잘라내는 방식으로 방어한다(lib/reportCheckerGemini.ts와 동일한 패턴).
+function extractJson(raw: string): unknown {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error("응답에서 JSON을 찾을 수 없습니다.");
+  }
+  return JSON.parse(raw.slice(start, end + 1));
 }
 
 function sleep(ms: number): Promise<void> {
@@ -61,7 +65,7 @@ async function generateOne(
   try {
     const result = await model.generateContent(buildPrompt(post));
     const raw = result.response.text();
-    const parsed = JSON.parse(stripJsonFence(raw)) as Partial<{
+    const parsed = extractJson(raw) as Partial<{
       naverCopy: string;
       kakaoCopy: string;
       facebookCopy: string;

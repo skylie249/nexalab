@@ -709,6 +709,16 @@ export async function POST(req: Request) {
     2. GitHub repo Settings > Secrets에 `GEMINI_API_KEY`(기존 서비스 쿼터와 분리 권장), `NOTION_API_KEY`, `NOTION_DATABASE_ID` 등록 — `SUPABASE_URL`/`SUPABASE_ANON_KEY`는 이미 등록되어 있어 추가 불필요
     3. **`save-to-notion.ts`의 실제 노션 저장 동작은 다음 세션에서 위 시크릿 등록 후 `npm run promo:test` 또는 워크플로우 수동 실행(`workflow_dispatch`)으로 end-to-end 재확인 권장**
 
+- **블로그 홍보 자동화 후속: `npm run promo:test` 실제 실행으로 발견한 버그 2건 수정 + 노션 저장까지 end-to-end 검증 완료**
+  - **버그 1 (코드) — Gemini JSON 파싱 실패**: 영문 글(#5, "Guardrails for Agents...") 처리 중 `Unexpected non-whitespace character after JSON` 에러로 실패. `responseMimeType: "application/json"`을 지정해도 응답에 후행 텍스트가 붙는 경우가 실제로 관측됨 — 단순 코드펜스 제거(`stripJsonFence`)로는 못 잡는 케이스. `lib/reportCheckerGemini.ts`가 이미 쓰는 패턴대로 "첫 `{`부터 마지막 `}`까지만 추출"하는 `extractJson()`으로 교체해 해결(`generate-copy.ts`)
+  - **버그 2 (설정) — NOTION_DATABASE_ID 값 자체가 잘못됨**: 사용자가 처음 넣은 값은 데이터베이스 URL의 `?v=...` 뷰 ID였고(노션 뷰 ID는 API로 조회 불가), 이후 `/p/...` 페이지 ID로 바꿔봐도 여전히 실패 — 두 값 모두 실제 API가 쓰는 ID와 다름. `notion.search()`로 이 Integration이 실제 접근 가능한 객체 목록을 직접 조회해 제목이 "블로그 홍보 문구 관리"로 일치하는 `data_source` 객체를 찾아 진짜 유효한 ID(`3c463e2359078021876c000b7d7c5be8`)를 확보 — 이 데이터베이스는 `database_parent: {type: "workspace"}` 구조라 별도의 "database" 오브젝트 자체가 없어(Notion 2025-09-03 API의 새 모델), `databases.retrieve()`가 항상 object_not_found로 실패하는 케이스였음
+    - `save-to-notion.ts`의 `resolveTarget()`(구 `resolveDataSourceId()`)을 database_id 우선 시도 → 실패 시 data_source_id로 폴백하는 이중 경로로 재작성해 이런 케이스에서도 동작하도록 일반화. `pages.create()`의 `parent`도 어느 경로로 해결됐는지에 따라 `{database_id}`/`{data_source_id}`를 동적으로 선택
+    - `.env.local`의 `NOTION_DATABASE_ID`를 위에서 확인한 유효 값으로 갱신(로컬 전용, 커밋 안 됨)
+  - **버그 3 (설정) — 노션 데이터베이스 속성명이 지침서 스펙과 다름**: 실 저장 시도에서 `"글 제목 is expected to be rich_text. 네이버 문구 is not a property that exists."` 검증 에러 발생. `dataSources.retrieve()`로 실제 속성 목록을 조회해 확인한 결과: (1) Notion 필수 title 속성의 실제 이름이 "글 제목"이 아니라 **"문구"**였고 "글 제목"은 별도로 만들어진 rich_text 컬럼이었음, (2) "네이버 문구"가 아니라 공백 없는 **"네이버문구"**였음. 사용자에게 노션 컬럼명을 다시 맞추라고 요구하는 대신, 코드(`PROP` 매핑)를 실제 스키마에 맞게 조정하는 쪽을 택함 — `title`은 "문구"에 쓰고, 기존에 남겨둔 "글 제목"(rich_text) 컬럼에도 같은 제목 텍스트를 중복 기록(`titleDisplay`)해 노션 보기 화면에서도 자연스럽게 보이도록 함
+  - **검증**: 수정 후 `npx tsc --noEmit`/`npm run lint` 통과. `npm run promo:test`(전체 파이프라인)를 다시 돌려 문구 생성 11/11 성공 확인 → 저장 단계에서 실제로 노션 데이터베이스에 11개 행이 정상 생성되는 것까지 최초로 확인(`.last-run.json`이 실행 타임스탬프로 정상 갱신됨). 이어서 `npm run promo:detect`로 재실행 시 새 글 0건(정상 스킵) 확인, `npm run promo:save`를 같은 데이터로 재실행해 URL 중복 체크로 11건 전부 "이미 저장됨, 스킵" 처리되는 것까지 확인 — 재시도/중복방지 설계가 실제로도 의도대로 동작함을 검증
+  - **사용자 작업 필요**: GitHub repo secret의 `NOTION_DATABASE_ID`도 로컬과 동일한 값(`3c463e2359078021876c000b7d7c5be8`)으로 등록/수정 필요 — 처음 등록했던 값이 있다면 위 버그 2와 같은 이유로 잘못된 값일 가능성이 높음
+  - 검증 과정에서 사용한 `scripts/promo-automation/notion-diagnose.ts`(Integration 접근 가능 객체 조회, 속성 스키마 확인용 1회성 스크립트)는 확인 후 삭제, 커밋되지 않음
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
