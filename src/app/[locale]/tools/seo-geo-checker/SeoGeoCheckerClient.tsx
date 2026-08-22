@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   A11Y_SCORE_DISCLAIMER_KO,
@@ -11,6 +11,9 @@ import {
 } from "@/lib/seoGeoConfig";
 import type { AnalysisReport, CheckResult, CheckStatus } from "@/lib/seoGeoTypes";
 import { saveSeoHistory } from "@/lib/dashboardHistory";
+import { absoluteUrl } from "@/lib/seo";
+import type { Locale } from "@/i18n/routing";
+import KakaoShareButton from "@/components/KakaoShareButton";
 import styles from "./page.module.css";
 
 const MANUAL_CHECKLIST_KEYS = [
@@ -111,6 +114,7 @@ function ManualChecklist() {
 
 export default function SeoGeoCheckerClient() {
   const t = useTranslations("seoGeoChecker");
+  const locale = useLocale() as Locale;
   const [url, setUrl] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ApiSuccess | null>(null);
@@ -221,6 +225,27 @@ export default function SeoGeoCheckerClient() {
               ❌ {t("failLabel")} {result.report.seo.fail + result.report.geo.fail + (a11y?.fail ?? 0)}
             </span>
           </div>
+
+          <KakaoShareButton
+            label={t("kakaoShareButton")}
+            copiedMessage={t("kakaoShareCopied")}
+            cardTitle={t("kakaoShareCardTitle", { title: result.url })}
+            cardDescription={t("kakaoShareCardDescription", {
+              seoScore: result.report.seo.score,
+              geoScore: result.report.geo.score,
+            })}
+            buttonTitle={t("kakaoShareCardButton")}
+            buttonUrl={absoluteUrl(`/${locale}/tools/seo-geo-checker`)}
+            resultUrl={window.location.href}
+            imageUrl={absoluteUrl(`/${locale}/opengraph-image`)}
+            onShareClick={() =>
+              window.gtag?.("event", "kakao_share_click", {
+                tool: "seo_geo_checker",
+                seo_score: result.report.seo.score,
+                geo_score: result.report.geo.score,
+              })
+            }
+          />
 
           {criticalA11yIssues.length > 0 && (
             <section className={`${styles.categorySection} ${styles.criticalSection}`}>

@@ -289,7 +289,12 @@
     "a11yManualItem1": "스크린리더로 실제 읽어봤을 때 논리적인 순서로 읽히나요?",
     "a11yManualItem2": "이미지의 alt 텍스트가 형식적(\"image.jpg\")이 아니라 실제 내용을 설명하나요?",
     "a11yManualItem3": "애니메이션/팝업에 \"닫기\" 버튼이 키보드(ESC 등)로도 닫히나요?",
-    "a11yManualItem4": "색상만으로 정보를 구분하고 있지는 않나요? (예: \"빨간 글씨 = 필수\" 외에 별도 표시가 없는 경우)"
+    "a11yManualItem4": "색상만으로 정보를 구분하고 있지는 않나요? (예: \"빨간 글씨 = 필수\" 외에 별도 표시가 없는 경우)",
+    "kakaoShareButton": "카카오톡으로 공유하기",
+    "kakaoShareCardTitle": "{title} SEO·GEO 진단 결과",
+    "kakaoShareCardDescription": "SEO {seoScore}점 · GEO {geoScore}점 — 우리 사이트, AI 검색엔진이 읽을 수 있을까요?",
+    "kakaoShareCardButton": "내 사이트도 무료로 진단하기",
+    "kakaoShareCopied": "링크가 복사됐어요"
   },
   "llmsTxtGenerator": {
     "metaTitle": "llms.txt 자동 생성기 - NexaLab.app",
@@ -366,7 +371,12 @@
     "rewriteDisclaimer": "참고용 제안이며 최종 검토와 책임은 작성자에게 있습니다.",
     "beforeAfterSummary": "수정 예시 보기",
     "beforeLabel": "Before",
-    "afterLabel": "After"
+    "afterLabel": "After",
+    "kakaoShareButton": "카카오톡으로 공유하기",
+    "kakaoShareCardTitle": "보고서·기획서 다듬기 진단 결과",
+    "kakaoShareCardDescription": "종합 점수 {overallScore}점({overallGrade}) — 내 보고서, 임원한테 바로 올려도 될까요?",
+    "kakaoShareCardButton": "내 보고서도 무료로 진단하기",
+    "kakaoShareCopied": "링크가 복사됐어요"
   },
   "dashboard": {
     "metaTitle": "내 사업 건강검진표 - NexaLab.app",

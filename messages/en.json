@@ -289,7 +289,12 @@
     "a11yManualItem1": "When read aloud by a screen reader, does the content follow a logical order?",
     "a11yManualItem2": "Do image alt texts describe the actual content, rather than being generic (e.g. \"image.jpg\")?",
     "a11yManualItem3": "Can animations/popups be closed with the keyboard (e.g. Esc), not just a mouse?",
-    "a11yManualItem4": "Is information conveyed by color alone? (e.g. \"red text = required\" with no other indicator)"
+    "a11yManualItem4": "Is information conveyed by color alone? (e.g. \"red text = required\" with no other indicator)",
+    "kakaoShareButton": "Share on KakaoTalk",
+    "kakaoShareCardTitle": "{title} SEO/GEO diagnosis results",
+    "kakaoShareCardDescription": "SEO {seoScore} · GEO {geoScore} — can AI search engines actually read your site?",
+    "kakaoShareCardButton": "Check my site for free too",
+    "kakaoShareCopied": "Link copied"
   },
   "llmsTxtGenerator": {
     "metaTitle": "Free llms.txt Generator - NexaLab.app",
@@ -366,7 +371,12 @@
     "rewriteDisclaimer": "This is a reference suggestion only — final review and responsibility rest with the author.",
     "beforeAfterSummary": "See fix example",
     "beforeLabel": "Before",
-    "afterLabel": "After"
+    "afterLabel": "After",
+    "kakaoShareButton": "Share on KakaoTalk",
+    "kakaoShareCardTitle": "Report checker diagnosis results",
+    "kakaoShareCardDescription": "Overall score {overallScore} ({overallGrade}) — is your report ready for your exec's desk?",
+    "kakaoShareCardButton": "Check my report for free too",
+    "kakaoShareCopied": "Link copied"
   },
   "dashboard": {
     "metaTitle": "My Business Health Check - NexaLab.app",

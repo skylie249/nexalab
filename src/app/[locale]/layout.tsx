@@ -10,6 +10,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import KakaoInit from "@/components/KakaoInit";
 import { SITE_URL, SITE_NAME, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./layout.module.css";
 
@@ -116,6 +117,7 @@ export default async function LocaleLayout({
             gtag('config', 'G-VD5HTETDVH');
           `}
         </Script>
+        <KakaoInit />
       </head>
       <body suppressHydrationWarning>
         <ServiceWorkerRegister />

@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CATEGORY_LABELS, CATEGORY_ORDER, MAX_TEXT_LENGTH, MIN_TEXT_LENGTH, SCORE_DISCLAIMER_KO } from "@/lib/reportCheckerConfig";
 import type { CheckResult, CheckStatus, ReportResult } from "@/lib/reportCheckerTypes";
+import { absoluteUrl } from "@/lib/seo";
+import type { Locale } from "@/i18n/routing";
+import KakaoShareButton from "@/components/KakaoShareButton";
 import styles from "./page.module.css";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -67,6 +70,7 @@ function CheckRow({ check }: { check: CheckResult }) {
 
 export default function ReportCheckerClient() {
   const t = useTranslations("reportChecker");
+  const locale = useLocale() as Locale;
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ApiSuccess | null>(null);
@@ -200,6 +204,26 @@ export default function ReportCheckerClient() {
             <span className={`${styles.badge} ${styles.badgeWarn}`}>⚠️ {t("warnLabel")} {result.result.warn}</span>
             <span className={`${styles.badge} ${styles.badgeFail}`}>❌ {t("failLabel")} {result.result.fail}</span>
           </div>
+
+          <KakaoShareButton
+            label={t("kakaoShareButton")}
+            copiedMessage={t("kakaoShareCopied")}
+            cardTitle={t("kakaoShareCardTitle")}
+            cardDescription={t("kakaoShareCardDescription", {
+              overallScore: result.result.overallScore,
+              overallGrade: result.result.overallGrade,
+            })}
+            buttonTitle={t("kakaoShareCardButton")}
+            buttonUrl={absoluteUrl(`/${locale}/tools/report-checker`)}
+            resultUrl={window.location.href}
+            imageUrl={absoluteUrl(`/${locale}/opengraph-image`)}
+            onShareClick={() =>
+              window.gtag?.("event", "kakao_share_click", {
+                tool: "report_checker",
+                overall_score: result.result.overallScore,
+              })
+            }
+          />
 
           {groupedChecks.map((group) => (
             <section key={group.category} className={styles.categorySection}>
