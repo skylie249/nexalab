@@ -353,6 +353,8 @@
     "passLabel": "통과",
     "warnLabel": "개선 필요",
     "failLabel": "실패",
+    "tldrLabel": "🤖 AI 한 줄 요약",
+    "structureTypeLabel": "구조 판정",
     "restartButton": "← 다른 텍스트 점검하기",
     "rewritePrompt": "💡 이 보고서, 이렇게 바꿔보면 어때요?",
     "rewriteButton": "AI 전체 리라이팅 제안 보기",

@@ -2,6 +2,8 @@ export type CheckStatus = "pass" | "warn" | "fail";
 
 export type ReportCategory = "structure" | "clarity" | "tone" | "readability";
 
+export type StructureType = "두괄식" | "미괄식" | "혼합형" | "판단불가";
+
 export interface BeforeAfter {
   before: string;
   after: string;
@@ -34,4 +36,8 @@ export interface ReportResult {
   pass: number;
   warn: number;
   fail: number;
+  // 카테고리 점수에는 반영되지 않는 AI 참고 정보(report-checker-expansion-guide.md 2번)
+  structureType?: StructureType;
+  structureReason?: string;
+  tldrSummary?: string;
 }

@@ -353,6 +353,8 @@
     "passLabel": "Pass",
     "warnLabel": "Needs work",
     "failLabel": "Fail",
+    "tldrLabel": "🤖 AI TL;DR",
+    "structureTypeLabel": "Structure verdict",
     "restartButton": "← Check another text",
     "rewritePrompt": "💡 Want to see how this could read instead?",
     "rewriteButton": "See AI's full rewrite suggestion",

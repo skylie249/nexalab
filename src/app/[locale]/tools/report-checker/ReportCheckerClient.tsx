@@ -188,6 +188,13 @@ export default function ReportCheckerClient() {
 
           <p className={styles.disclaimer}>{SCORE_DISCLAIMER_KO}</p>
 
+          {result.result.tldrSummary && (
+            <div className={styles.tldrBox}>
+              <span className={styles.tldrLabel}>{t("tldrLabel")}</span>
+              <p className={styles.tldrText}>{result.result.tldrSummary}</p>
+            </div>
+          )}
+
           <div className={styles.summaryBadges}>
             <span className={`${styles.badge} ${styles.badgePass}`}>✅ {t("passLabel")} {result.result.pass}</span>
             <span className={`${styles.badge} ${styles.badgeWarn}`}>⚠️ {t("warnLabel")} {result.result.warn}</span>
@@ -196,7 +203,17 @@ export default function ReportCheckerClient() {
 
           {groupedChecks.map((group) => (
             <section key={group.category} className={styles.categorySection}>
-              <h2 className={styles.categoryTitle}>{CATEGORY_LABELS[group.category]}</h2>
+              <div className={styles.categoryHeaderRow}>
+                <h2 className={styles.categoryTitle}>{CATEGORY_LABELS[group.category]}</h2>
+                {group.category === "structure" && result.result.structureType && (
+                  <span className={styles.structureTypeBadge}>
+                    {t("structureTypeLabel")}: {result.result.structureType}
+                  </span>
+                )}
+              </div>
+              {group.category === "structure" && result.result.structureReason && (
+                <p className={styles.structureReason}>{result.result.structureReason}</p>
+              )}
               <ul className={styles.checkList}>
                 {group.items.map((check) => (
                   <CheckRow key={check.id} check={check} />

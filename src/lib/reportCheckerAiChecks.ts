@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { callGemini, GeminiParseError } from "@/lib/reportCheckerGemini";
-import type { CheckResult, ReportCategory } from "@/lib/reportCheckerTypes";
+import type { CheckResult, ReportCategory, StructureType } from "@/lib/reportCheckerTypes";
 
 interface AiCheckMeta {
   category: ReportCategory;
@@ -18,6 +18,8 @@ const AI_CHECK_META: Record<string, AiCheckMeta> = {
 };
 
 const AI_CHECK_IDS = Object.keys(AI_CHECK_META) as [string, ...string[]];
+
+const STRUCTURE_TYPES = ["두괄식", "미괄식", "혼합형", "판단불가"] as const;
 
 const GEMINI_RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -37,8 +39,11 @@ const GEMINI_RESPONSE_SCHEMA = {
         required: ["id", "status", "detail"],
       },
     },
+    structureType: { type: "STRING" },
+    structureReason: { type: "STRING" },
+    tldrSummary: { type: "STRING" },
   },
-  required: ["checks"],
+  required: ["checks", "structureType", "structureReason", "tldrSummary"],
 };
 
 const AiCheckItemSchema = z.object({
@@ -52,6 +57,11 @@ const AiCheckItemSchema = z.object({
 
 const AiChecksResponseSchema = z.object({
   checks: z.array(AiCheckItemSchema),
+  // 카테고리 점수와 무관한 참고용 필드(report-checker-expansion-guide.md 2번) — 모델이 누락해도
+  // 요청 전체를 실패시키지 않도록 optional로 두고, 형식이 안 맞으면 조용히 undefined로 둔다.
+  structureType: z.enum(STRUCTURE_TYPES).optional(),
+  structureReason: z.string().optional(),
+  tldrSummary: z.string().optional(),
 });
 
 const RUBRIC_PROMPT = `당신은 한국 기업 보고서·기획서를 심사하는 엄격한 채점관입니다.
@@ -94,16 +104,29 @@ const RUBRIC_PROMPT = `당신은 한국 기업 보고서·기획서를 심사하
    - warn: 나열식 문장이 일부 있어 불릿으로 바꾸면 좋을 부분이 보임
    - fail: 여러 항목을 쉼표로 길게 나열한 문장이 반복되어 목록화가 시급함
 
+[추가 출력 필드 — checks 배열과 별개로 최상위에 포함, 서로 절대 혼동하지 말 것]
+- structureType: 문서 전체의 두괄식 여부만 판단 — "두괄식" | "미괄식" | "혼합형" | "판단불가" 중 하나
+- structureReason: structureType을 그렇게 판단한 근거만 1문장으로 (예: "핵심 결론이 마지막 문단에야 등장함"). 문서 내용 요약을 여기 쓰지 마라.
+- tldrSummary: structureType/structureReason과 무관하게, 문서의 주제와 핵심 내용만 40자 이내 한 문장으로 요약 (점수에는 반영되지 않는 참고용 요약). 두괄식 여부나 구조에 대한 언급을 여기 쓰지 마라.
+
 [출력 규칙]
 - 반드시 위 7개 id를 모두 포함한 JSON으로 응답하라 (누락 금지).
 - detail은 한국어로 1문장, 왜 그렇게 판정했는지 텍스트에서 근거를 들어 설명하라.
 - status가 warn 또는 fail이면 fix_hint(한 문장, 실무자가 바로 적용 가능한 조언)를 채워라.
 - before/after는 실제 원문에서 발췌·수정한 예시만 사용하고, 원문에 없는 내용을 지어내지 마라.
+- checks 배열과 함께 structureType, structureReason, tldrSummary 3개 필드를 모두 최상위에 빠짐없이 포함하라. 이 중 하나라도 비우면 안 된다.
 
 [분석할 보고서 원문]
 `;
 
-export async function runAiChecks(text: string): Promise<CheckResult[]> {
+export interface AiChecksResult {
+  checks: CheckResult[];
+  structureType?: StructureType;
+  structureReason?: string;
+  tldrSummary?: string;
+}
+
+export async function runAiChecks(text: string): Promise<AiChecksResult> {
   const prompt = `${RUBRIC_PROMPT}${text}`;
   const parsed = await callGemini(prompt, GEMINI_RESPONSE_SCHEMA);
 
@@ -112,7 +135,7 @@ export async function runAiChecks(text: string): Promise<CheckResult[]> {
     throw new GeminiParseError("AI 응답이 예상한 형식과 다릅니다.");
   }
 
-  return result.data.checks
+  const checks = result.data.checks
     .filter((item) => item.id in AI_CHECK_META)
     .map((item) => {
       const meta = AI_CHECK_META[item.id];
@@ -129,4 +152,11 @@ export async function runAiChecks(text: string): Promise<CheckResult[]> {
       }
       return check;
     });
+
+  return {
+    checks,
+    structureType: result.data.structureType,
+    structureReason: result.data.structureReason,
+    tldrSummary: result.data.tldrSummary,
+  };
 }

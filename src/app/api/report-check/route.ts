@@ -32,8 +32,12 @@ export async function POST(req: NextRequest) {
   const ruleChecks = runRuleChecks(text);
 
   try {
-    const aiChecks = await runAiChecks(text);
-    const result = computeReportResult([...ruleChecks, ...aiChecks]);
+    const aiResult = await runAiChecks(text);
+    const result = computeReportResult([...ruleChecks, ...aiResult.checks], {
+      structureType: aiResult.structureType,
+      structureReason: aiResult.structureReason,
+      tldrSummary: aiResult.tldrSummary,
+    });
     return NextResponse.json({ result, checkedAt: new Date().toISOString() });
   } catch (err) {
     console.error("[report-check] AI 분석 실패:", err instanceof Error ? err.message : err, `(길이: ${text.length}자)`);

@@ -2,6 +2,7 @@ import type { CheckResult } from "@/lib/reportCheckerTypes";
 import {
   CONJUNCTION_MAX_PER_PARAGRAPH,
   CONJUNCTION_WORDS,
+  DOCUMENT_LENGTH_GUIDELINES,
   KEYWORD_REPETITION_MIN_LENGTH,
   KEYWORD_REPETITION_THRESHOLD,
   LONG_SENTENCE_LEN,
@@ -10,7 +11,13 @@ import {
   PARAGRAPH_MAX_LINES,
   PASSIVE_VERBOSE_PATTERNS,
   SENTENCE_LEN_RECOMMEND,
+  UNSUPPORTED_CLAIM_PATTERNS,
+  VAGUE_EXPRESSION_CHARS_PER_ALLOWANCE,
+  VAGUE_EXPRESSIONS,
 } from "@/lib/reportCheckerConfig";
+
+// 수치 근거 존재 여부만 확인하는 패턴("타당성"은 판단하지 않음) — checkUnsupportedClaims 전용
+const NUMERIC_EVIDENCE_PATTERN = /\d+(\.\d+)?\s*(%|퍼센트|건|개|원|명|배|시간|일|주|개월|년)/g;
 
 const STOPWORDS = new Set([
   "있습니다",
@@ -246,6 +253,84 @@ export function checkSubheadingStructure(text: string): CheckResult {
   };
 }
 
+export function checkVagueExpressions(text: string): CheckResult {
+  const matched = VAGUE_EXPRESSIONS.filter((expr) => text.includes(expr));
+  const total = matched.reduce((sum, expr) => sum + countOccurrences(text, expr), 0);
+  const allowance = Math.max(1, Math.round(text.length / VAGUE_EXPRESSION_CHARS_PER_ALLOWANCE));
+
+  let status: CheckResult["status"] = "pass";
+  if (total > allowance * 2) status = "fail";
+  else if (total > allowance) status = "warn";
+
+  return {
+    id: "clarity.vague_expressions",
+    category: "clarity",
+    title: "모호한 책임 회피 표현",
+    detail:
+      total > 0
+        ? `"${matched.slice(0, 3).join("」, 「")}" 같은 모호한 표현이 총 ${total}회 발견됐어요 (문서 길이 대비 권장 ${allowance}회 이내).`
+        : "모호한 책임 회피성 표현이 발견되지 않았어요.",
+    status,
+    fixHint:
+      status !== "pass"
+        ? "'향후', '적절히' 같은 모호한 표현 대신 구체적인 시기·기준·수치로 바꿔보세요."
+        : undefined,
+  };
+}
+
+export function checkUnsupportedClaims(text: string): CheckResult {
+  const numericMatches = (text.match(NUMERIC_EVIDENCE_PATTERN) ?? []).length;
+  const unsupportedClaims = UNSUPPORTED_CLAIM_PATTERNS.filter((pattern) => text.includes(pattern));
+
+  // 근거 타당성은 판단하지 않는 존재 여부 체크라, 발견돼도 fail로는 만들지 않고
+  // "개선 제안" 수준의 warn까지만 사용한다(지침서 1-4 스코프 제한).
+  const status: CheckResult["status"] = unsupportedClaims.length > 0 ? "warn" : "pass";
+
+  return {
+    id: "clarity.unsupported_claims",
+    category: "clarity",
+    title: "숫자·데이터 근거 표현",
+    detail:
+      unsupportedClaims.length > 0
+        ? `"${unsupportedClaims.slice(0, 3).join("」, 「")}" 처럼 구체적 수치 없이 강조만 하는 표현이 있어요 (문서 내 수치 근거 ${numericMatches}건 확인).`
+        : `문서 내 수치·데이터 근거 표현이 ${numericMatches}건 확인됐어요.`,
+    status,
+    fixHint:
+      status !== "pass"
+        ? `"크게 증가" 대신 "23% 증가"처럼 구체적인 숫자로 바꾸면 설득력이 높아져요.`
+        : undefined,
+  };
+}
+
+export function checkDocumentLength(text: string, docType: string = "기본값"): CheckResult {
+  const charCount = text.replace(/\s/g, "").length;
+  const guideline = DOCUMENT_LENGTH_GUIDELINES[docType] ?? DOCUMENT_LENGTH_GUIDELINES["기본값"];
+
+  let status: CheckResult["status"] = "pass";
+  let label: "적정" | "과다" | "부족" = "적정";
+  if (charCount < guideline.min) {
+    label = "부족";
+    status = charCount < guideline.min * 0.5 ? "fail" : "warn";
+  } else if (charCount > guideline.max) {
+    label = "과다";
+    status = charCount > guideline.max * 2 ? "fail" : "warn";
+  }
+
+  return {
+    id: "readability.document_length",
+    category: "readability",
+    title: "문서 길이 적정성",
+    detail: `현재 ${charCount}자(공백 제외) — ${docType} 권장 범위 ${guideline.min}~${guideline.max}자 기준 ${label}`,
+    status,
+    fixHint:
+      status !== "pass"
+        ? label === "과다"
+          ? "핵심만 남기고 부연 설명을 줄여보세요."
+          : "배경·근거·기대효과 등을 보강해 내용을 조금 더 채워보세요."
+        : undefined,
+  };
+}
+
 export function runRuleChecks(text: string): CheckResult[] {
   return [
     checkAvgSentenceLength(text),
@@ -256,5 +341,8 @@ export function runRuleChecks(text: string): CheckResult[] {
     checkOldExpressions(text),
     checkKeywordRepetition(text),
     checkSubheadingStructure(text),
+    checkVagueExpressions(text),
+    checkUnsupportedClaims(text),
+    checkDocumentLength(text),
   ];
 }

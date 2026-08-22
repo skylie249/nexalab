@@ -1,4 +1,10 @@
-import type { CategoryScore, CheckResult, ReportCategory, ReportResult } from "@/lib/reportCheckerTypes";
+import type {
+  CategoryScore,
+  CheckResult,
+  ReportCategory,
+  ReportResult,
+  StructureType,
+} from "@/lib/reportCheckerTypes";
 import { CATEGORY_ORDER, CATEGORY_WEIGHTS, scoreToGrade } from "@/lib/reportCheckerConfig";
 
 function scoreCategory(category: ReportCategory, checks: CheckResult[]): CategoryScore {
@@ -18,7 +24,13 @@ function scoreCategory(category: ReportCategory, checks: CheckResult[]): Categor
   };
 }
 
-export function computeReportResult(checks: CheckResult[]): ReportResult {
+interface ComputeReportResultMeta {
+  structureType?: StructureType;
+  structureReason?: string;
+  tldrSummary?: string;
+}
+
+export function computeReportResult(checks: CheckResult[], meta?: ComputeReportResultMeta): ReportResult {
   const categories = CATEGORY_ORDER.map((category) => scoreCategory(category, checks));
 
   const overallScore = Math.round(
@@ -33,5 +45,8 @@ export function computeReportResult(checks: CheckResult[]): ReportResult {
     pass: checks.filter((c) => c.status === "pass").length,
     warn: checks.filter((c) => c.status === "warn").length,
     fail: checks.filter((c) => c.status === "fail").length,
+    structureType: meta?.structureType,
+    structureReason: meta?.structureReason,
+    tldrSummary: meta?.tldrSummary,
   };
 }
