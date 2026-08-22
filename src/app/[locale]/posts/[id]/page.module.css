@@ -52,7 +52,7 @@
 }
 
 .articleContent a {
-  color: var(--accent-color);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 4px;
 }

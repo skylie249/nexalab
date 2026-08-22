@@ -44,6 +44,7 @@ export default async function AiAppsPage({
       longDesc: t("harubiteLongDesc"),
       url: "https://harubite.nexalab.app",
       color: "#f59e0b",
+      textColor: "var(--harubite-text)",
     },
     {
       name: "Venus Gecko",
@@ -52,6 +53,7 @@ export default async function AiAppsPage({
       longDesc: t("venusGeckoLongDesc"),
       url: "https://venus-gecko.nexalab.app",
       color: "#10b981",
+      textColor: "var(--venusgecko-text)",
     },
   ];
 
@@ -94,12 +96,12 @@ export default async function AiAppsPage({
               </div>
               <div className={styles.cardInfo}>
                 <div className={styles.cardTitleRow}>
-                  <h3>{app.name}</h3>
+                  <h2>{app.name}</h2>
                   <span className={styles.statusBadge}>{t("statusLabel")}</span>
                 </div>
                 <p className={styles.cardTagline}>{app.desc}</p>
                 <p className={styles.cardLongDesc}>{app.longDesc}</p>
-                <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
+                <span className={styles.linkText} style={{ color: app.textColor }}>{t("goTo")}</span>
               </div>
             </>
           );

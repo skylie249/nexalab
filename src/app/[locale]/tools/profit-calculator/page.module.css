@@ -17,7 +17,7 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 1rem;
 }
 
@@ -105,7 +105,7 @@
 
 .noteBox {
   font-size: 0.85rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
@@ -316,7 +316,7 @@
   align-self: flex-start;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-text);
   padding: 0.5rem 0.9rem;
   border-radius: 0.5rem;
   border: 1px dashed var(--border-color);
@@ -384,7 +384,7 @@
 }
 
 .metricCardPrimary .metricValue {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .negative {
@@ -427,10 +427,14 @@
   transition: filter 0.15s ease;
 }
 
-.breakdownSegment:hover,
+.breakdownSegment:hover {
+  filter: brightness(1.1);
+}
+
 .breakdownSegment:focus-visible {
   filter: brightness(1.1);
   outline: none;
+  box-shadow: 0 0 0 3px var(--accent-color);
 }
 
 .breakdownTooltip {

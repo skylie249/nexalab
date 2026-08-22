@@ -20,6 +20,7 @@ import {
   contrastRatio,
   parseColor,
   requiredContrastRatio,
+  type RgbaColor,
 } from "./colorContrast";
 import {
   findFocusRuleDeclarations,
@@ -920,6 +921,9 @@ function effectiveColorAndFont(
   return { color, fontSizePx, bold };
 }
 
+// rgba(...) 반투명 배경(예: 상태 배지의 옅은 색 배경)은 그 자체로 최종 렌더링 색이 아니라 뒤에
+// 겹쳐진 조상 배경 위에 얹힌 결과다. 불투명한 배경을 만나거나 조상이 끝날 때까지(마지막엔 흰색
+// 기본값) 계속 조상을 타고 올라가 레이어를 모은 뒤, 바깥쪽부터 안쪽 순서로 알파 합성한다.
 function effectiveBackground(
   $: cheerio.CheerioAPI,
   el: ReturnType<cheerio.CheerioAPI>[number],
@@ -927,18 +931,30 @@ function effectiveBackground(
   rootVars: Record<string, string>,
   cache: Map<typeof el, ResolvedStyle>
 ): string | undefined {
+  const layers: RgbaColor[] = [];
   let current: typeof el | undefined = el;
   let hops = 0;
   while (current && hops < 30) {
     const s = resolveElementStyle($, current, index, rootVars, cache);
     if (s.backgroundColor) {
       const parsed = parseColor(s.backgroundColor);
-      if (parsed && parsed.a > 0) return s.backgroundColor;
+      if (parsed && parsed.a > 0) {
+        layers.push(parsed);
+        if (parsed.a >= 1) break; // 완전히 불투명하면 더 위 조상을 볼 필요 없음
+      }
     }
     current = $(current).parent().get(0);
     hops++;
   }
-  return undefined;
+  if (layers.length === 0) return undefined;
+
+  const outermost = layers[layers.length - 1];
+  let composited: RgbaColor =
+    outermost.a >= 1 ? outermost : compositeOverBackground(outermost, { r: 255, g: 255, b: 255, a: 1 });
+  for (let i = layers.length - 2; i >= 0; i--) {
+    composited = compositeOverBackground(layers[i], composited);
+  }
+  return `rgb(${Math.round(composited.r)} ${Math.round(composited.g)} ${Math.round(composited.b)})`;
 }
 
 function checkColorContrastA11y($: cheerio.CheerioAPI, cssSources: string[]): CheckResult {

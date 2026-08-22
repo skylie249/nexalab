@@ -17,7 +17,7 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--accent-color);
+  color: var(--accent-text);
   margin-bottom: 1rem;
 }
 
@@ -127,7 +127,7 @@
 }
 
 .backLink:hover {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .choiceGrid {
@@ -245,7 +245,7 @@
 
 .noteBox {
   font-size: 0.85rem;
-  color: var(--accent-color);
+  color: var(--accent-text);
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
@@ -342,7 +342,7 @@
   flex-shrink: 0;
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-text);
   padding: 0.35rem 0.6rem;
   border-radius: 0.4rem;
   border: 1px solid var(--border-color);
@@ -377,7 +377,7 @@
   display: block;
   margin: 0 auto;
   font-weight: 600;
-  color: var(--accent-color);
+  color: var(--accent-text);
   font-size: 0.9rem;
 }
 
@@ -467,7 +467,7 @@
 .totalAmount {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .risks {
@@ -499,7 +499,7 @@
   content: "•";
   position: absolute;
   left: 0;
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .resultActions {

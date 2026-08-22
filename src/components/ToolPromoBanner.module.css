@@ -91,11 +91,6 @@
   font-weight: 600;
   margin-top: 0.25rem;
   display: inline-block;
-  opacity: 0.8;
-}
-
-.card:hover .linkText {
-  opacity: 1;
 }
 
 .ctaDesktopText {

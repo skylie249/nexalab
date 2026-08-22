@@ -12,14 +12,16 @@ export default function Hero() {
       emoji: "🌱",
       desc: t("harubiteDesc"),
       url: "https://harubite.nexalab.app",
-      color: "#f59e0b"
+      color: "#f59e0b",
+      textColor: "var(--harubite-text)"
     },
     {
       name: "Venus Gecko",
       emoji: "🦎",
       desc: t("venusGeckoDesc"),
       url: "https://venus-gecko.nexalab.app",
-      color: "#10b981"
+      color: "#10b981",
+      textColor: "var(--venusgecko-text)"
     }
   ];
 
@@ -50,7 +52,7 @@ export default function Hero() {
                     <h3>{app.name}</h3>
                   </div>
                   <p>{app.desc}</p>
-                  <span className={styles.linkText} style={{ color: app.color }}>{t("goTo")}</span>
+                  <span className={styles.linkText} style={{ color: app.textColor }}>{t("goTo")}</span>
                 </div>
               </>
             );

@@ -11,6 +11,7 @@ export default function ToolPromoBanner() {
       href: "/tools/quote-generator",
       icon: "🧾",
       color: "#3b82f6",
+      textColor: "var(--accent-text)",
       titleDesktop: t("quoteTitleDesktop"),
       titleMobile: t("quoteTitleMobile"),
       descDesktop: t("quoteDescDesktop"),
@@ -22,6 +23,7 @@ export default function ToolPromoBanner() {
       href: "/tools/profit-calculator",
       icon: "📊",
       color: "#8b5cf6",
+      textColor: "var(--tool-purple-text)",
       titleDesktop: t("profitTitleDesktop"),
       titleMobile: t("profitTitleMobile"),
       descDesktop: t("profitDescDesktop"),
@@ -46,7 +48,7 @@ export default function ToolPromoBanner() {
             <h2 className={styles.titleDesktop}>{tool.titleDesktop}</h2>
             <h2 className={styles.titleMobile}>{tool.titleMobile}</h2>
             <p className={styles.descDesktop}>{tool.descDesktop}</p>
-            <span className={styles.linkText} style={{ color: tool.color }}>
+            <span className={styles.linkText} style={{ color: tool.textColor }}>
               <span className={styles.ctaDesktopText}>{tool.ctaDesktop}</span>
               <span className={styles.ctaMobileText}>{tool.ctaMobile}</span>
             </span>

@@ -57,7 +57,7 @@ export default async function BizPage({
         {ideas.map((idea) => (
           <div key={idea.key} className={`${styles.card} glass`}>
             <div className={styles.cardIcon}>{idea.emoji}</div>
-            <h3>{idea.title}</h3>
+            <h2>{idea.title}</h2>
             <p className={styles.cardTagline}>{idea.desc}</p>
             <p className={styles.cardLongDesc}>{idea.longDesc}</p>
           </div>

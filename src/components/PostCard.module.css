@@ -30,7 +30,7 @@
 }
 
 .category {
-  color: var(--accent-color);
+  color: var(--accent-text);
   font-weight: 600;
 }
 

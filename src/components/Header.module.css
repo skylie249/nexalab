@@ -29,7 +29,7 @@
 }
 
 .appExt {
-  color: var(--accent-color);
+  color: var(--accent-text);
   font-size: 1.2rem;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .navList a:hover {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .dropdownItem {
@@ -72,7 +72,7 @@
 
 .dropdownTrigger:hover,
 .dropdownItem:hover .dropdownTrigger {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .dropdownPanel {
@@ -297,7 +297,7 @@
 }
 
 .mobileNavList a:hover {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .mobileAccordionItem {
@@ -321,7 +321,7 @@
 }
 
 .mobileAccordionTrigger:hover {
-  color: var(--accent-color);
+  color: var(--accent-text);
 }
 
 .accordionChevron {
