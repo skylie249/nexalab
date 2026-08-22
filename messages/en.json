@@ -110,7 +110,7 @@
   },
   "biz": {
     "metaTitle": "Biz - NexaLab.app",
-    "metaDescription": "From AdSense monetization experiments to tackling niche markets like reptile shops and workflow automation, to surviving as a solo developer — NexaLab's business record, built and tested firsthand.",
+    "metaDescription": "From AdSense monetization experiments to tackling niche markets like workflow automation, to surviving as a solo developer — NexaLab's business record, built and tested firsthand.",
     "eyebrow": "Biz",
     "title": "Turning code into <highlight>business</highlight>",
     "subtitle": "A well-built app and a well-run business are two different things. NexaLab documents the trial and error of turning tech experiments into sustainable services.",
@@ -118,7 +118,7 @@
     "idea1Desc": "Attempts (and results) at turning a side project into real revenue via AdSense, subscriptions, API sales, and more",
     "idea1LongDesc": "From running Google AdSense to using free utilities (like the AI quote generator and profit calculator) to draw and convert traffic — these are experiments I've actually run, results included. Not a highlight reel, but the real numbers you run into along the way: ad approval reviews, early traffic, conversion rates.",
     "idea2Title": "AI × niche markets",
-    "idea2Desc": "How to tackle small-but-clear-problem markets — like reptile shops or workflow automation — with AI",
+    "idea2Desc": "How to tackle small-but-clear-problem markets — like workflow automation — with AI",
     "idea2LongDesc": "Picking markets that are small but have a clear problem, and solving them with AI. The focus is validating whether you can find real users without competing head-on with big platforms.",
     "idea3Title": "Surviving as a solo developer",
     "idea3Desc": "The decisions and priorities a developer faces when handling planning, development, and operations alone",
