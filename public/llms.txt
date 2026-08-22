@@ -10,7 +10,7 @@
 - [Report Checker](https://www.nexalab.app/en/tools/report-checker): Paste in Korean report/proposal text to get a free check on opening-with-the-conclusion structure, sentence clarity, and tone, plus an AI-generated full rewrite suggestion. Free, no login, nothing entered is stored; Korean-language input only.
 
 ## Blog
-- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback) and Venus Gecko (a promotional showroom site for a crested gecko reptile shop). Covers model selection, prompt design, deployment, and troubleshooting.
+- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback). Covers model selection, prompt design, deployment, and troubleshooting.
 - [Biz](https://www.nexalab.app/en/biz): Notes on turning tech experiments into sustainable, revenue-generating businesses — monetization experiments, AI applied to niche markets, and solo-developer decision-making.
 
 ## About

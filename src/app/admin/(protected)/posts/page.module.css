@@ -72,7 +72,7 @@
 
 .statusPublished {
   background-color: rgba(34, 197, 94, 0.15);
-  color: var(--venusgecko-text);
+  color: var(--success-text);
 }
 
 .statusDraft {

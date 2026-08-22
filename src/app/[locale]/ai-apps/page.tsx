@@ -46,15 +46,6 @@ export default async function AiAppsPage({
       color: "#f59e0b",
       textColor: "var(--harubite-text)",
     },
-    {
-      name: "Venus Gecko",
-      emoji: "🦎",
-      desc: t("venusGeckoDesc"),
-      longDesc: t("venusGeckoLongDesc"),
-      url: "https://venus-gecko.nexalab.app",
-      color: "#10b981",
-      textColor: "var(--venusgecko-text)",
-    },
   ];
 
   return (

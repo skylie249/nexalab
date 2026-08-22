@@ -28,12 +28,7 @@
   },
   "hero": {
     "title": "The Next Story, Written by <highlight>AI</highlight>",
-    "subtitle": "See how AI can cut your workload — free, right now",
-    "liveSubApps": "LIVE SUB-APPS",
-    "goTo": "Visit ↗",
-    "harubiteDesc": "Build your own language habit, one sentence a day — start now 🌱",
-    "venusGeckoDesc": "Premium crested gecko showroom — meet Venus Gecko 🦎",
-    "comingSoonLabel": "Coming Soon"
+    "subtitle": "See how AI can cut your workload — free, right now"
   },
   "toolPromoBanner": {
     "quoteTitleDesktop": "Ever sent a quote, only to realize you left something out?",
@@ -98,7 +93,7 @@
   },
   "aiApps": {
     "metaTitle": "AI Apps - NexaLab.app",
-    "metaDescription": "AI-powered sub-applications NexaLab plans, builds, and operates solo for real users — Harubite and Venus Gecko.",
+    "metaDescription": "AI-powered sub-applications NexaLab plans, builds, and operates solo for real users — Harubite.",
     "eyebrow": "AI Apps",
     "title": "From idea to <highlight>real service</highlight>",
     "subtitle": "NexaLab doesn't stop at the blog. The AI ideas covered here get deployed and operated as real services with real users.",
@@ -107,8 +102,6 @@
     "comingSoonLabel": "Coming Soon",
     "harubiteDesc": "Build your own language habit, one sentence a day — start now 🌱",
     "harubiteLongDesc": "Write and log one sentence in a foreign language every day, and AI polishes your phrasing while each entry builds into your own learning history. Instead of a heavy curriculum, it starts from the smallest possible unit — one sentence today — to help you build a habit that actually sticks.",
-    "venusGeckoDesc": "Premium crested gecko showroom — meet Venus Gecko 🦎",
-    "venusGeckoLongDesc": "A promotional website for a small reptile shop specializing in crested geckos. It showcases the shop's animals and husbandry setup like an online showroom, so visitors can browse ahead of time and reach out with adoption inquiries.",
     "techStackTitle": "Tech I usually build with",
     "techStackBody": "Each service is planned and built solo, on top of the stack below.",
     "noteTitle": "What this category covers",
@@ -135,7 +128,6 @@
     "provenTag1": "Google AdSense",
     "provenTag2": "AI Quote Generator",
     "provenTag3": "Profit Calculator",
-    "provenTag4": "Venus Gecko",
     "noteTitle": "What this category covers",
     "noteBody": "Posts on monetization, market validation, and operations are gathered under the <strong>Biz</strong> tab on the home feed.",
     "cta": "Back to home →"

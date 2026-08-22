@@ -116,7 +116,7 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
             </span>
           </div>
           <div style={{ fontSize: 18, color: '#64748b', display: 'flex' }}>
-            harubite · venus · on
+            nexalab.app
           </div>
         </div>
       </div>

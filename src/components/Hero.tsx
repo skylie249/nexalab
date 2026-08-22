@@ -1,29 +1,9 @@
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
 import ToolPromoBanner from "./ToolPromoBanner";
 import styles from "./Hero.module.css";
 
 export default function Hero() {
   const t = useTranslations("hero");
-
-  const subApps = [
-    {
-      name: "Harubite",
-      emoji: "🌱",
-      desc: t("harubiteDesc"),
-      url: "https://harubite.nexalab.app",
-      color: "#f59e0b",
-      textColor: "var(--harubite-text)"
-    },
-    {
-      name: "Venus Gecko",
-      emoji: "🦎",
-      desc: t("venusGeckoDesc"),
-      url: "https://venus-gecko.nexalab.app",
-      color: "#10b981",
-      textColor: "var(--venusgecko-text)"
-    }
-  ];
 
   return (
     <section className={styles.hero}>
@@ -37,34 +17,6 @@ export default function Hero() {
       </div>
 
       <ToolPromoBanner />
-
-      <div className={styles.appsSection}>
-        <h2 className={styles.appsTitle}>{t("liveSubApps")}</h2>
-        <div className={styles.cards}>
-          {subApps.map((app) => {
-            const cardContent = (
-              <>
-                <div className={styles.cardIcon} style={{ backgroundColor: `${app.color}20` }}>
-                  {app.emoji}
-                </div>
-                <div className={styles.cardInfo}>
-                  <div className={styles.cardTitleRow}>
-                    <h3>{app.name}</h3>
-                  </div>
-                  <p>{app.desc}</p>
-                  <span className={styles.linkText} style={{ color: app.textColor }}>{t("goTo")}</span>
-                </div>
-              </>
-            );
-
-            return (
-              <Link key={app.name} href={app.url} target="_blank" rel="noopener noreferrer" className={`${styles.card} glass`}>
-                {cardContent}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
     </section>
   );
 }

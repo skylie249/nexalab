@@ -17,12 +17,14 @@
   --accent-text: #2563eb;
   /* ToolPromoBanner의 손익 계산기 카드 전용 보라색 텍스트 — accent-text와 같은 이유로 라이트/다크 분리 */
   --tool-purple-text: #7c3aed;
-  /* Hero의 Live Sub-Apps 카드(Harubite/Venus Gecko) 브랜드 색상 텍스트 — 같은 이유로 라이트/다크 분리.
+  /* Live Sub-Apps 카드(Harubite) 브랜드 색상 텍스트 — 같은 이유로 라이트/다크 분리.
      라이트에서는 흰 카드 배경 기준으로 어둡게, 다크에서는 원래 브랜드색이 이미 어두운 배경에서 충분히
      밝아 그대로 재사용(아이콘 배경 틴트(`${app.color}20`)는 텍스트가 아니라 대비 요건 대상이 아니므로
      원래 밝은 브랜드색을 그대로 유지). */
   --harubite-text: #b45309;
-  --venusgecko-text: #047857;
+  /* "운영중"/"게시됨" 등 성공(success) 상태 배지 전용 텍스트 색상 — 반투명 에메랄드 배경 위에서
+     WCAG AA 대비를 만족하도록 라이트/다크 분리 */
+  --success-text: #047857;
   --border-color: #e2e8f0;
   
   --glass-bg: rgba(255, 255, 255, 0.7);
@@ -49,7 +51,7 @@
   --accent-text: #60a5fa;
   --tool-purple-text: #a78bfa;
   --harubite-text: #f59e0b;
-  --venusgecko-text: #10b981;
+  --success-text: #10b981;
   --border-color: #334155;
   
   --glass-bg: rgba(30, 41, 59, 0.7);

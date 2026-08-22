@@ -56,12 +56,9 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .card {
@@ -111,7 +108,7 @@
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background-color: rgba(16, 185, 129, 0.15);
-  color: var(--venusgecko-text);
+  color: var(--success-text);
 }
 
 .statusBadge::before {
