@@ -17,7 +17,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # @supabase/supabase-js(2.112.x)의 realtime-js가 Node 22+의 네이티브 WebSocket을 요구해서
+          # Node 20에서는 createClient() 호출 자체가 "native WebSocket not found" 에러로 즉시 실패함
+          # (workflow_dispatch 수동 실행에서 실제로 재현되어 확인함, 2026-08-22)
+          node-version: "22"
           cache: "npm"
 
       - run: npm ci
