@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { safeFetch, type SafeFetchErrorReason } from "@/lib/safeFetch";
-import { analyze } from "@/lib/seoGeoAnalyzer";
+import { analyze, extractStylesheetUrls } from "@/lib/seoGeoAnalyzer";
 import { supabase } from "@/lib/supabase";
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -101,10 +101,15 @@ export async function POST(req: NextRequest) {
     }
 
     const origin = new URL(htmlResult.finalUrl).origin;
-    const [robotsResult, llmsResult, sitemapResult] = await Promise.all([
+    // 색상 대비 체크(a11y)가 참고할 외부 스타일시트 — 최대 3개까지 best-effort로 함께 fetch.
+    const stylesheetUrls = extractStylesheetUrls(htmlResult.body, htmlResult.finalUrl);
+    const [robotsResult, llmsResult, sitemapResult, ...cssResults] = await Promise.all([
       safeFetch(`${origin}/robots.txt`, { timeoutMs: 3000, maxBytes: 200_000 }),
       safeFetch(`${origin}/llms.txt`, { timeoutMs: 3000, maxBytes: 200_000 }),
       safeFetch(`${origin}/sitemap.xml`, { timeoutMs: 3000, maxBytes: 5_000 }),
+      ...stylesheetUrls.map((cssUrl) =>
+        safeFetch(cssUrl, { timeoutMs: 3000, maxBytes: 400_000, accept: "text/css,*/*;q=0.5" })
+      ),
     ]);
 
     // robots.txt/llms.txt/sitemap.xml은 best-effort 확인 대상 — 404/타임아웃/차단은
@@ -114,10 +119,12 @@ export async function POST(req: NextRequest) {
     const llmsTxt =
       llmsResult.ok && llmsResult.status < 400 ? { found: true, text: llmsResult.body } : { found: false, text: null };
     const sitemapFound = sitemapResult.ok && sitemapResult.status < 400;
+    // 스타일시트도 best-effort — 실패한 항목은 그냥 제외(색상 대비 체크가 알아서 "정보 부족"으로 처리).
+    const externalCss = cssResults.filter((r) => r.ok).map((r) => r.body);
 
     let report;
     try {
-      report = analyze({ html: htmlResult.body, finalUrl: htmlResult.finalUrl, robotsTxt, llmsTxt, sitemapFound });
+      report = analyze({ html: htmlResult.body, finalUrl: htmlResult.finalUrl, robotsTxt, llmsTxt, sitemapFound, externalCss });
     } catch (err) {
       console.error("[seo-check] 분석 실패:", err);
       return NextResponse.json({ error: "페이지를 분석하는 중 오류가 발생했습니다." }, { status: 500 });

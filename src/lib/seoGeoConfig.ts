@@ -28,9 +28,13 @@ export type CheckSubcategory =
   | "ai_crawlers"
   | "llms_txt"
   | "a11y_alt_text"
+  | "a11y_color_contrast"
   | "a11y_document_structure"
   | "a11y_heading"
   | "a11y_form_labels"
+  | "a11y_keyboard"
+  | "a11y_focus"
+  | "a11y_aria"
   | "a11y_link_text"
   | "a11y_multimedia"
   | "a11y_responsive"
@@ -45,9 +49,13 @@ export const SUBCATEGORY_ORDER: CheckSubcategory[] = [
   "ai_crawlers",
   "llms_txt",
   "a11y_alt_text",
+  "a11y_color_contrast",
   "a11y_document_structure",
   "a11y_heading",
   "a11y_form_labels",
+  "a11y_keyboard",
+  "a11y_focus",
+  "a11y_aria",
   "a11y_link_text",
   "a11y_multimedia",
   "a11y_responsive",
@@ -63,9 +71,13 @@ export const CATEGORY_LABELS: Record<CheckSubcategory, string> = {
   ai_crawlers: "AI 크롤러 접근성",
   llms_txt: "llms.txt",
   a11y_alt_text: "대체 텍스트",
+  a11y_color_contrast: "색상 대비",
   a11y_document_structure: "문서 구조",
   a11y_heading: "헤딩 계층",
   a11y_form_labels: "폼 라벨",
+  a11y_keyboard: "키보드 접근성",
+  a11y_focus: "포커스 표시",
+  a11y_aria: "ARIA 사용",
   a11y_link_text: "링크 텍스트",
   a11y_multimedia: "멀티미디어 자막",
   a11y_responsive: "반응형·확대",
@@ -99,6 +111,54 @@ export const A11Y_GENERIC_LINK_TEXTS = [
   "learn more",
   "more",
   "details",
+];
+
+// WAI-ARIA 1.2 role 목록(추상 역할 제외 — roletype/widget/structure 등은 직접 사용하면 안 되는
+// 분류용 역할이라 유효 목록에서 뺌). role="..."에 이 목록에 없는 값이 오면 오타/존재하지 않는
+// role로 판정한다.
+export const ARIA_VALID_ROLES = [
+  "alert", "alertdialog", "application", "article", "banner", "blockquote", "button",
+  "caption", "cell", "checkbox", "code", "columnheader", "combobox", "comment", "complementary",
+  "contentinfo", "definition", "deletion", "dialog", "directory", "document", "emphasis",
+  "feed", "figure", "form", "generic", "grid", "gridcell", "group", "heading", "img",
+  "insertion", "link", "list", "listbox", "listitem", "log", "main", "mark", "marquee",
+  "math", "menu", "menubar", "menuitem", "menuitemcheckbox", "menuitemradio", "meter",
+  "navigation", "none", "note", "option", "paragraph", "presentation", "progressbar",
+  "radio", "radiogroup", "region", "row", "rowgroup", "rowheader", "scrollbar", "search",
+  "searchbox", "separator", "slider", "spinbutton", "status", "strong", "subscript",
+  "suggestion", "superscript", "switch", "tab", "table", "tablist", "tabpanel", "term",
+  "textbox", "time", "timer", "toolbar", "tooltip", "tree", "treegrid", "treeitem",
+];
+
+// 표준 aria-* 속성 전체 목록. 이 목록에 없는 aria-*는 존재하지 않는(오타) 속성으로 간주 —
+// custom aria-* 확장은 스펙상 존재하지 않으므로 오탐 위험이 낮다.
+export const ARIA_VALID_ATTRIBUTES = [
+  "aria-activedescendant", "aria-atomic", "aria-autocomplete", "aria-braillelabel",
+  "aria-brailleroledescription", "aria-busy", "aria-checked", "aria-colcount",
+  "aria-colindex", "aria-colindextext", "aria-colspan", "aria-controls", "aria-current",
+  "aria-describedby", "aria-description", "aria-details", "aria-disabled", "aria-dropeffect",
+  "aria-errormessage", "aria-expanded", "aria-flowto", "aria-grabbed", "aria-haspopup",
+  "aria-hidden", "aria-invalid", "aria-keyshortcuts", "aria-label", "aria-labelledby",
+  "aria-level", "aria-live", "aria-modal", "aria-multiline", "aria-multiselectable",
+  "aria-orientation", "aria-owns", "aria-placeholder", "aria-posinset", "aria-pressed",
+  "aria-readonly", "aria-relevant", "aria-required", "aria-roledescription", "aria-rowcount",
+  "aria-rowindex", "aria-rowindextext", "aria-rowspan", "aria-selected", "aria-setsize",
+  "aria-sort", "aria-valuemax", "aria-valuemin", "aria-valuenow", "aria-valuetext",
+];
+
+// 값이 true/false(일부는 mixed 포함) 중 하나여야 하는 대표적인 aria-* 속성 — 오타로 인한
+// 잘못된 값(예: aria-hidden="1", aria-expanded="yes")을 잡기 위한 최소 검증 대상.
+export const ARIA_TRISTATE_ATTRIBUTES = ["aria-checked", "aria-pressed"];
+export const ARIA_BOOLEAN_ATTRIBUTES = [
+  "aria-hidden", "aria-expanded", "aria-disabled", "aria-selected", "aria-required",
+  "aria-readonly", "aria-multiline", "aria-multiselectable", "aria-grabbed", "aria-busy",
+  "aria-atomic", "aria-modal",
+];
+
+// 브라우저가 기본적으로 키보드 조작(Tab 이동 + Enter/Space 활성화)을 지원하는 태그 —
+// 이 태그가 아니면서 onclick만 있고 키보드 이벤트가 없으면 키보드 사용자가 조작할 수 없다(WCAG 2.1.1).
+export const A11Y_NATIVE_INTERACTIVE_TAGS = [
+  "a", "button", "input", "select", "textarea", "area", "summary", "audio", "video",
 ];
 
 export type Grade = "A" | "B" | "C" | "D" | "F";

@@ -2,14 +2,35 @@ import * as cheerio from "cheerio";
 import {
   A11Y_GENERIC_LINK_TEXTS,
   A11Y_MISSING_WARN_RATIO,
+  A11Y_NATIVE_INTERACTIVE_TAGS,
   AI_CRAWLER_BOTS,
   ALT_MISSING_WARN_RATIO,
+  ARIA_BOOLEAN_ATTRIBUTES,
+  ARIA_TRISTATE_ATTRIBUTES,
+  ARIA_VALID_ATTRIBUTES,
+  ARIA_VALID_ROLES,
   DESC_LEN,
   GRADE_THRESHOLDS,
   SUBCATEGORY_ORDER,
   TITLE_LEN,
 } from "./seoGeoConfig";
 import type { AnalysisReport, CheckGroup, CheckResult, CheckStatus, ScoreResult } from "./seoGeoTypes";
+import {
+  compositeOverBackground,
+  contrastRatio,
+  parseColor,
+  requiredContrastRatio,
+} from "./colorContrast";
+import {
+  findFocusRuleDeclarations,
+  matchesSelector,
+  parseCss,
+  parseSimpleSelector,
+  resolveVar,
+  splitCssValueTokens,
+  type CssRule,
+  type SimpleSelector,
+} from "./cssStaticParser";
 
 export type { AnalysisReport, CheckGroup, CheckResult, CheckStatus, ScoreResult };
 
@@ -19,6 +40,25 @@ export interface AnalysisInput {
   robotsTxt: { found: boolean; text: string | null };
   llmsTxt: { found: boolean; text: string | null };
   sitemapFound?: boolean;
+  externalCss?: string[];
+}
+
+// HTML head의 <link rel="stylesheet" href>를 절대 URL로 추출 — 색상 대비 체크가 참고할
+// 외부 스타일시트를 API 라우트에서 미리 fetch할 수 있도록 함(analyze() 자체는 네트워크 호출을 하지 않음).
+export function extractStylesheetUrls(html: string, baseUrl: string, limit = 3): string[] {
+  const $ = cheerio.load(html);
+  const urls: string[] = [];
+  $('link[rel="stylesheet"]').each((_, el) => {
+    if (urls.length >= limit) return false;
+    const href = $(el).attr("href")?.trim();
+    if (!href) return;
+    try {
+      urls.push(new URL(href, baseUrl).toString());
+    } catch {
+      // 잘못된 href는 무시
+    }
+  });
+  return urls;
 }
 
 // ── 메타데이터 ────────────────────────────────────────────────────────────
@@ -693,6 +733,505 @@ function checkAutoplayA11y($: cheerio.CheerioAPI): CheckResult {
   };
 }
 
+// ── 접근성(A11y) — 색상 대비 (nexalab_웹접근성_점검기_지침서.md v1.1) ──────────
+//
+// 실제 브라우저의 getComputedStyle 없이, fetch로 받아온 HTML의 <style> 블록 + 외부
+// 스타일시트(같은 요청에서 최대 3개까지 fetch, route.ts에서 전달) 텍스트만으로 색상을
+// "최대한 추정"하는 근사치 체크임. 한계:
+//   - CSS-in-JS(런타임 삽입) 스타일, :hover 등 상태 의존 스타일은 잡히지 않음
+//   - @media(다크모드 등) 내부는 조건부라 전부 스킵 → 항상 "기본(라이트) 상태" 기준
+//   - 콤비네이터가 있는 선택자(자손/의사클래스 등)는 매칭하지 않음
+// 위 한계로 실제로 확인 가능한 요소가 적으면(5개 미만) fail이 아니라 "정보 부족" warn으로
+// 처리해 오탐(거짓 pass/fail)을 피한다.
+
+const A11Y_CONTRAST_MAX_ELEMENTS = 500; // Vercel 연산 시간 보호를 위한 샘플링 상한(지침서 5번 유의사항)
+const A11Y_CONTRAST_MIN_SAMPLES = 5;
+const A11Y_DEFAULT_FONT_SIZE_PX = 16;
+const A11Y_DEFAULT_TEXT_COLOR = "#000000"; // 브라우저 기본 텍스트색
+const A11Y_DEFAULT_BG_COLOR = "#ffffff"; // 브라우저 기본 캔버스색
+
+interface ResolvedStyle {
+  color?: string;
+  backgroundColor?: string;
+  fontSizePx?: number;
+  bold?: boolean;
+}
+
+interface RuleEntry {
+  rule: CssRule;
+  simple: SimpleSelector;
+}
+
+interface RuleIndex {
+  byId: Map<string, RuleEntry[]>;
+  byClass: Map<string, RuleEntry[]>;
+  byTag: Map<string, RuleEntry[]>;
+  universal: RuleEntry[];
+}
+
+function buildRuleIndex(sources: string[]): { index: RuleIndex; rootVars: Record<string, string> } {
+  const index: RuleIndex = { byId: new Map(), byClass: new Map(), byTag: new Map(), universal: [] };
+  const rootVars: Record<string, string> = {};
+  let orderBase = 0;
+
+  const push = (map: Map<string, RuleEntry[]>, key: string, entry: RuleEntry) => {
+    const list = map.get(key);
+    if (list) list.push(entry);
+    else map.set(key, [entry]);
+  };
+
+  for (const source of sources) {
+    if (!source) continue;
+    const parsed = parseCss(source);
+    Object.assign(rootVars, parsed.rootVars); // 나중 소스가 우선 (외부CSS → <style> 순으로 전달됨)
+    for (const rule of parsed.rules) {
+      const simple = parseSimpleSelector(rule.selector);
+      if (!simple) continue;
+      const entry: RuleEntry = { rule: { ...rule, order: orderBase + rule.order }, simple };
+      if (simple.id) push(index.byId, simple.id, entry);
+      for (const c of simple.classes) push(index.byClass, c, entry);
+      if (simple.tag) push(index.byTag, simple.tag, entry);
+      if (!simple.id && simple.classes.length === 0 && !simple.tag) index.universal.push(entry);
+    }
+    orderBase += 100000; // 소스 간 순서를 절대 순서로 유지
+  }
+
+  return { index, rootVars };
+}
+
+function candidateRulesFor(index: RuleIndex, tagName: string, classList: string[], elId: string | undefined): RuleEntry[] {
+  const seen = new Set<RuleEntry>();
+  const out: RuleEntry[] = [];
+  const consider = (list: RuleEntry[] | undefined) => {
+    if (!list) return;
+    for (const entry of list) {
+      if (seen.has(entry)) continue;
+      seen.add(entry);
+      out.push(entry);
+    }
+  };
+  if (elId) consider(index.byId.get(elId));
+  for (const c of classList) consider(index.byClass.get(c));
+  consider(index.byTag.get(tagName));
+  consider(index.universal);
+  return out;
+}
+
+function parseFontSizePx(value: string): number | null {
+  const v = value.trim();
+  const px = v.match(/^(-?[\d.]+)px$/);
+  if (px) return parseFloat(px[1]);
+  const rem = v.match(/^(-?[\d.]+)rem$/);
+  if (rem) return parseFloat(rem[1]) * 16; // 루트 폰트 크기 16px 가정(근사)
+  const em = v.match(/^(-?[\d.]+)em$/);
+  if (em) return parseFloat(em[1]) * 16; // 상속 em 체인은 계산하지 않고 16px 기준 근사
+  const pt = v.match(/^(-?[\d.]+)pt$/);
+  if (pt) return parseFloat(pt[1]) * (96 / 72);
+  return null;
+}
+
+function isBoldValue(value: string): boolean {
+  const v = value.trim().toLowerCase();
+  if (v === "bold" || v === "bolder") return true;
+  const num = parseInt(v, 10);
+  return !Number.isNaN(num) && num >= 700;
+}
+
+function extractColorFromShorthand(value: string): string | null {
+  for (const token of splitCssValueTokens(value)) {
+    if (token === "none") continue;
+    if (parseColor(token)) return token;
+  }
+  return null;
+}
+
+function resolveElementStyle(
+  $: cheerio.CheerioAPI,
+  el: ReturnType<cheerio.CheerioAPI>[number],
+  index: RuleIndex,
+  rootVars: Record<string, string>,
+  cache: Map<typeof el, ResolvedStyle>
+): ResolvedStyle {
+  const cached = cache.get(el);
+  if (cached) return cached;
+
+  const $el = $(el);
+  const tagName = String($el.prop("tagName") ?? "").toLowerCase();
+  const classList = ($el.attr("class") ?? "").split(/\s+/).filter(Boolean);
+  const elId = $el.attr("id");
+
+  const matched = candidateRulesFor(index, tagName, classList, elId).filter(({ simple }) =>
+    matchesSelector(simple, tagName, classList, elId)
+  );
+  matched.sort((a, b) => a.simple.specificity - b.simple.specificity || a.rule.order - b.rule.order);
+
+  const decls: Record<string, string> = {};
+  for (const { rule } of matched) Object.assign(decls, rule.declarations);
+
+  const inlineStyle = $el.attr("style");
+  if (inlineStyle) Object.assign(decls, parseCss(`x{${inlineStyle}}`).rules[0]?.declarations ?? {});
+
+  const style: ResolvedStyle = {};
+  if (decls.color) {
+    const resolved = resolveVar(decls.color, rootVars);
+    if (parseColor(resolved)) style.color = resolved;
+  }
+  if (decls["background-color"]) {
+    const resolved = resolveVar(decls["background-color"], rootVars);
+    if (parseColor(resolved)) style.backgroundColor = resolved;
+  } else if (decls.background) {
+    const resolved = resolveVar(decls.background, rootVars);
+    const token = extractColorFromShorthand(resolved);
+    if (token) style.backgroundColor = token;
+  }
+  if (decls["font-size"]) {
+    const px = parseFontSizePx(resolveVar(decls["font-size"], rootVars));
+    if (px !== null) style.fontSizePx = px;
+  }
+  if (decls["font-weight"]) {
+    style.bold = isBoldValue(resolveVar(decls["font-weight"], rootVars));
+  }
+
+  cache.set(el, style);
+  return style;
+}
+
+function effectiveColorAndFont(
+  $: cheerio.CheerioAPI,
+  el: ReturnType<cheerio.CheerioAPI>[number],
+  index: RuleIndex,
+  rootVars: Record<string, string>,
+  cache: Map<typeof el, ResolvedStyle>
+): { color?: string; fontSizePx?: number; bold?: boolean } {
+  let color: string | undefined;
+  let fontSizePx: number | undefined;
+  let bold: boolean | undefined;
+  let current: typeof el | undefined = el;
+  let hops = 0;
+  while (current && hops < 30) {
+    const s = resolveElementStyle($, current, index, rootVars, cache);
+    if (color === undefined && s.color) color = s.color;
+    if (fontSizePx === undefined && s.fontSizePx !== undefined) fontSizePx = s.fontSizePx;
+    if (bold === undefined && s.bold !== undefined) bold = s.bold;
+    if (color !== undefined && fontSizePx !== undefined && bold !== undefined) break;
+    current = $(current).parent().get(0);
+    hops++;
+  }
+  return { color, fontSizePx, bold };
+}
+
+function effectiveBackground(
+  $: cheerio.CheerioAPI,
+  el: ReturnType<cheerio.CheerioAPI>[number],
+  index: RuleIndex,
+  rootVars: Record<string, string>,
+  cache: Map<typeof el, ResolvedStyle>
+): string | undefined {
+  let current: typeof el | undefined = el;
+  let hops = 0;
+  while (current && hops < 30) {
+    const s = resolveElementStyle($, current, index, rootVars, cache);
+    if (s.backgroundColor) {
+      const parsed = parseColor(s.backgroundColor);
+      if (parsed && parsed.a > 0) return s.backgroundColor;
+    }
+    current = $(current).parent().get(0);
+    hops++;
+  }
+  return undefined;
+}
+
+function checkColorContrastA11y($: cheerio.CheerioAPI, cssSources: string[]): CheckResult {
+  const styleBlocks = $("style")
+    .map((_, el) => $(el).text())
+    .get();
+  const { index, rootVars } = buildRuleIndex([...cssSources, ...styleBlocks]);
+
+  const hasAnyRule =
+    index.byId.size > 0 || index.byClass.size > 0 || index.byTag.size > 0 || index.universal.length > 0;
+  if (!hasAnyRule) {
+    return {
+      id: "a11y.color_contrast.text",
+      group: "a11y",
+      subcategory: "a11y_color_contrast",
+      status: "warn",
+      title: "텍스트 색상 대비",
+      detail:
+        "정적 분석으로 색상 정보를 추출하지 못해 대비를 계산할 수 없습니다 (외부 스타일시트 접근 실패, CSS-in-JS 방식 등이 원인일 수 있습니다).",
+      fixHint: "브라우저 개발자 도구의 색상 대비 검사 기능이나 WAVE 확장 프로그램으로 직접 확인해보세요.",
+    };
+  }
+
+  const cache = new Map<ReturnType<typeof $>[number], ResolvedStyle>();
+  const candidates: ReturnType<typeof $>[number][] = [];
+  const skipTags = new Set(["script", "style", "noscript", "svg", "path", "template"]);
+  $("body")
+    .find("*")
+    .each((_, el) => {
+      if (candidates.length >= A11Y_CONTRAST_MAX_ELEMENTS) return false;
+      const tag = String($(el).prop("tagName") ?? "").toLowerCase();
+      if (skipTags.has(tag)) return;
+      const ownText = $(el)
+        .contents()
+        .filter((__, node) => node.type === "text")
+        .text()
+        .trim();
+      if (ownText) candidates.push(el);
+    });
+
+  let resolvedCount = 0;
+  let failingCount = 0;
+  const examples: string[] = [];
+
+  for (const el of candidates) {
+    const { color, fontSizePx, bold } = effectiveColorAndFont($, el, index, rootVars, cache);
+    const bg = effectiveBackground($, el, index, rootVars, cache);
+    if (color === undefined && bg === undefined) continue; // 둘 다 CSS로 확인 못 했으면 기본값 추정은 하지 않음
+
+    const fgParsed = parseColor(color ?? A11Y_DEFAULT_TEXT_COLOR);
+    const bgParsed = parseColor(bg ?? A11Y_DEFAULT_BG_COLOR);
+    if (!fgParsed || !bgParsed) continue;
+
+    resolvedCount += 1;
+    const opaqueFg = compositeOverBackground(fgParsed, bgParsed);
+    const ratio = contrastRatio(opaqueFg, bgParsed);
+    const required = requiredContrastRatio(fontSizePx ?? A11Y_DEFAULT_FONT_SIZE_PX, bold ?? false);
+    if (ratio < required) {
+      failingCount += 1;
+      if (examples.length < 3) {
+        const text = $(el).text().trim().slice(0, 20);
+        examples.push(`"${text}" (${ratio.toFixed(1)}:1, 기준 ${required}:1)`);
+      }
+    }
+  }
+
+  if (resolvedCount < A11Y_CONTRAST_MIN_SAMPLES) {
+    return {
+      id: "a11y.color_contrast.text",
+      group: "a11y",
+      subcategory: "a11y_color_contrast",
+      status: "warn",
+      title: "텍스트 색상 대비",
+      detail: `정적 분석으로 색상을 확인할 수 있는 텍스트가 충분하지 않아(${resolvedCount}개) 대비를 정확히 판단하기 어렵습니다.`,
+      fixHint: "브라우저 개발자 도구의 색상 대비 검사 기능이나 WAVE 확장 프로그램으로 직접 확인해보세요.",
+    };
+  }
+
+  const ratio = failingCount / resolvedCount;
+  const status: CheckStatus = failingCount === 0 ? "pass" : ratio <= A11Y_MISSING_WARN_RATIO ? "warn" : "fail";
+  return {
+    id: "a11y.color_contrast.text",
+    group: "a11y",
+    subcategory: "a11y_color_contrast",
+    status,
+    title: "텍스트 색상 대비",
+    detail:
+      failingCount === 0
+        ? `정적 분석으로 확인한 텍스트 ${resolvedCount}곳 모두 WCAG 대비 기준을 충족합니다.`
+        : `정적 분석으로 확인한 텍스트 ${resolvedCount}곳 중 ${failingCount}곳(${Math.round(ratio * 100)}%)이 대비 기준(본문 4.5:1, 큰 텍스트 3:1)에 못 미칩니다. 예: ${examples.join(", ")}`,
+    fixHint:
+      failingCount === 0
+        ? undefined
+        : "저시력 사용자나 밝은 화면에서는 대비가 낮은 글씨가 거의 안 보일 수 있습니다. 텍스트와 배경의 명도 차이를 늘리세요 (예: 회색 텍스트 #999999를 흰 배경에 쓴다면 #595959 이하로 조정).",
+  };
+}
+
+// ── 접근성(A11y) — 키보드 접근성 (nexalab_웹접근성_점검기_지침서.md v1.2) ──────────
+//
+// onclick 속성이 정적 HTML에 직접 박혀 있는 경우만 탐지 가능. React 등 프레임워크가
+// JS로 붙이는 이벤트 핸들러(JSX onClick 등)는 렌더링된 HTML에 흔적이 남지 않아 이
+// 정적 분석으로는 확인할 수 없다 — 이 한계를 detail에 항상 명시한다.
+
+function checkKeyboardAccessA11y($: cheerio.CheerioAPI): CheckResult {
+  const onclickEls = $("[onclick]");
+  const nonNative = onclickEls.filter((_, el) => {
+    const tag = String($(el).prop("tagName") ?? "").toLowerCase();
+    return !A11Y_NATIVE_INTERACTIVE_TAGS.includes(tag);
+  });
+
+  const limitationNote =
+    "(참고: React 등 프레임워크가 자바스크립트로 붙이는 이벤트는 정적 분석으로 확인할 수 없어, 정적 HTML의 onclick 속성만 점검합니다.)";
+
+  if (nonNative.length === 0) {
+    return {
+      id: "a11y.keyboard.onclick_only",
+      group: "a11y",
+      subcategory: "a11y_keyboard",
+      status: "pass",
+      title: "키보드 접근성(정적 onclick)",
+      detail: `정적 HTML에서 키보드 지원 없이 클릭 이벤트만 있는 요소가 발견되지 않았습니다. ${limitationNote}`,
+    };
+  }
+
+  let flagged = 0;
+  const examples: string[] = [];
+  nonNative.each((_, el) => {
+    const $el = $(el);
+    const hasKeyHandler = ["onkeydown", "onkeypress", "onkeyup"].some((attr) => $el.attr(attr) !== undefined);
+    if (hasKeyHandler) return;
+    flagged += 1;
+    if (examples.length < 3) {
+      const tag = String($el.prop("tagName") ?? "").toLowerCase();
+      const text = $el.text().trim().slice(0, 20);
+      examples.push(text ? `<${tag}> "${text}"` : `<${tag}>`);
+    }
+  });
+
+  const total = nonNative.length;
+  const ratio = flagged / total;
+  const status: CheckStatus = flagged === 0 ? "pass" : ratio <= A11Y_MISSING_WARN_RATIO ? "warn" : "fail";
+  return {
+    id: "a11y.keyboard.onclick_only",
+    group: "a11y",
+    subcategory: "a11y_keyboard",
+    status,
+    title: "키보드 접근성(정적 onclick)",
+    detail:
+      flagged === 0
+        ? `정적 HTML의 클릭 가능 요소 ${total}개 모두 키보드 이벤트가 함께 있습니다. ${limitationNote}`
+        : `버튼/링크가 아닌 요소 중 onclick만 있고 키보드 이벤트(onkeydown 등)가 없는 요소가 ${flagged}개 발견됐습니다 (예: ${examples.join(", ")}). ${limitationNote}`,
+    fixHint:
+      flagged === 0
+        ? undefined
+        : "키보드만 쓰는 사용자는 마우스 클릭 요소를 조작할 수 없습니다. 가능하면 <button>/<a>로 바꾸거나, tabindex=\"0\"과 keydown(Enter/Space) 핸들러를 함께 추가하세요.",
+  };
+}
+
+// ── 접근성(A11y) — 포커스 표시 (v1.2) ──────────────────────────────────────
+//
+// <style> + 외부 CSS 텍스트에서 ":focus" 계열 선택자를 가진 규칙만 뽑아, outline을
+// none/0으로 지우면서 box-shadow/border/background 등 대체 시각 표시가 같은 규칙 안에
+// 없는 경우만 문제로 본다. @media 내부(예: prefers-reduced-motion 조건부 스타일)는
+// scanCssBlocks() 설계상 통째로 스킵되므로 이 체크에서도 확인 대상에서 자연히 빠진다.
+
+const OUTLINE_NONE_VALUES = new Set(["none", "0", "0px"]);
+const ALTERNATIVE_FOCUS_PROPS = ["box-shadow", "border", "border-color", "border-width", "border-style", "background", "background-color"];
+
+function checkFocusOutlineA11y($: cheerio.CheerioAPI, cssSources: string[]): CheckResult {
+  const styleBlocks = $("style")
+    .map((_, el) => $(el).text())
+    .get();
+  const focusRules = [...cssSources, ...styleBlocks].flatMap((css) => findFocusRuleDeclarations(css));
+
+  if (focusRules.length === 0) {
+    return {
+      id: "a11y.focus.outline_removed",
+      group: "a11y",
+      subcategory: "a11y_focus",
+      status: "warn",
+      title: "포커스 표시(outline)",
+      detail: "정적 분석으로 :focus 관련 CSS 규칙을 찾지 못해 포커스 표시 여부를 확인할 수 없습니다.",
+      fixHint: "브라우저에서 Tab 키로 이동하며 포커스가 시각적으로 표시되는지 직접 확인해보세요.",
+    };
+  }
+
+  let flagged = 0;
+  const examples: string[] = [];
+  for (const { selector, declarations } of focusRules) {
+    const outlineValue = (declarations.outline ?? declarations["outline-style"] ?? declarations["outline-width"] ?? "")
+      .trim()
+      .toLowerCase();
+    if (!OUTLINE_NONE_VALUES.has(outlineValue)) continue;
+    const hasAlternative = ALTERNATIVE_FOCUS_PROPS.some((prop) => declarations[prop] !== undefined);
+    if (hasAlternative) continue;
+    flagged += 1;
+    if (examples.length < 3) examples.push(selector.trim().slice(0, 40));
+  }
+
+  const status: CheckStatus = flagged === 0 ? "pass" : "fail";
+  return {
+    id: "a11y.focus.outline_removed",
+    group: "a11y",
+    subcategory: "a11y_focus",
+    status,
+    title: "포커스 표시(outline)",
+    detail:
+      flagged === 0
+        ? `:focus 관련 CSS 규칙 ${focusRules.length}개를 확인했고, 대체 스타일 없이 outline을 지우는 규칙은 없습니다.`
+        : `outline을 none/0으로 지우면서 다른 시각적 표시(box-shadow 등)가 없는 :focus 규칙이 ${flagged}개 발견됐습니다 (예: ${examples.join(", ")}).`,
+    fixHint:
+      flagged === 0
+        ? undefined
+        : "outline: none만 두면 키보드 사용자가 현재 포커스 위치를 알 수 없습니다. outline을 유지하거나 box-shadow 등 눈에 띄는 대체 스타일을 함께 지정하세요.",
+  };
+}
+
+// ── 접근성(A11y) — ARIA 오사용 (v1.2) ──────────────────────────────────────
+
+function checkAriaMisuseA11y($: cheerio.CheerioAPI): CheckResult {
+  let total = 0;
+  let flagged = 0;
+  const examples: string[] = [];
+
+  const addExample = (text: string) => {
+    if (examples.length < 3) examples.push(text);
+  };
+
+  $("[role]").each((_, el) => {
+    total += 1;
+    const roleValue = $(el).attr("role")?.trim() ?? "";
+    const tokens = roleValue.split(/\s+/).filter(Boolean);
+    const valid = tokens.some((t) => ARIA_VALID_ROLES.includes(t.toLowerCase()));
+    if (!valid && tokens.length > 0) {
+      flagged += 1;
+      addExample(`role="${roleValue}"(존재하지 않는 role)`);
+    }
+  });
+
+  $("*").each((_, el) => {
+    const attribs = $(el).attr() ?? {};
+    for (const name of Object.keys(attribs)) {
+      const lower = name.toLowerCase();
+      if (!lower.startsWith("aria-")) continue;
+      total += 1;
+      if (!ARIA_VALID_ATTRIBUTES.includes(lower)) {
+        flagged += 1;
+        addExample(`${name}(존재하지 않는 속성)`);
+        continue;
+      }
+      const value = attribs[name]?.trim().toLowerCase() ?? "";
+      const allowedValues = ARIA_TRISTATE_ATTRIBUTES.includes(lower)
+        ? ["true", "false", "mixed"]
+        : ARIA_BOOLEAN_ATTRIBUTES.includes(lower)
+          ? ["true", "false"]
+          : null;
+      if (allowedValues && value && !allowedValues.includes(value)) {
+        flagged += 1;
+        addExample(`${name}="${value}"(${allowedValues.join("/")}만 허용)`);
+      }
+    }
+  });
+
+  if (total === 0) {
+    return {
+      id: "a11y.aria.misuse",
+      group: "a11y",
+      subcategory: "a11y_aria",
+      status: "pass",
+      title: "ARIA 속성 사용",
+      detail: "페이지에 role 또는 aria-* 속성이 없습니다.",
+    };
+  }
+
+  const ratio = flagged / total;
+  const status: CheckStatus = flagged === 0 ? "pass" : ratio <= A11Y_MISSING_WARN_RATIO ? "warn" : "fail";
+  return {
+    id: "a11y.aria.misuse",
+    group: "a11y",
+    subcategory: "a11y_aria",
+    status,
+    title: "ARIA 속성 사용",
+    detail:
+      flagged === 0
+        ? `role/aria-* 속성 ${total}개 모두 올바르게 사용되고 있습니다.`
+        : `role/aria-* 속성 ${total}개 중 ${flagged}개에서 존재하지 않는 값이 발견됐습니다 (예: ${examples.join(", ")}).`,
+    fixHint:
+      flagged === 0
+        ? undefined
+        : "스크린리더는 잘못된 role/aria-* 값을 무시하거나 오작동할 수 있습니다. 오탈자를 확인하고 WAI-ARIA 스펙에 정의된 값으로 수정하세요.",
+  };
+}
+
 // ── 점수 산출 ─────────────────────────────────────────────────────────────
 
 function computeScore(checks: CheckResult[], group: CheckGroup): ScoreResult {
@@ -724,10 +1263,14 @@ export function analyze(input: AnalysisInput): AnalysisReport {
     ...checkAiCrawlers(input.robotsTxt),
     ...checkLlmsTxt(input.llmsTxt),
     checkAltTextA11y($),
+    checkColorContrastA11y($, input.externalCss ?? []),
     checkHtmlLangA11y($),
     checkPageTitleA11y($),
     checkHeadingA11y($),
     checkFormLabelsA11y($),
+    checkKeyboardAccessA11y($),
+    checkFocusOutlineA11y($, input.externalCss ?? []),
+    checkAriaMisuseA11y($),
     checkLinkTextA11y($),
     checkMultimediaA11y($),
     checkResponsiveZoomA11y($),
