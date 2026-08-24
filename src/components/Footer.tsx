@@ -16,7 +16,7 @@ export default function Footer() {
             <span className={styles.divider}>|</span>
             <Link href="/privacy">Privacy Policy</Link>
             <span className={styles.divider}>|</span>
-            <Link href="mailto:kimhg249@gmail.com">Contact</Link>
+            <Link href="/contact">Contact</Link>
           </div>
         </div>
         <div className={styles.bottomSection}>
