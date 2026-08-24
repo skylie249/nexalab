@@ -2,6 +2,9 @@ import "./loadEnv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { readState, writeState, DETECTED_POSTS_STATE_PATH, GENERATED_COPY_STATE_PATH } from "./state";
 import type { DetectedPost, DetectedPostsState, GeneratedCopyState, GenerateResult } from "./types";
+// src/lib은 Next.js 서버 코드 전용 디렉토리이지만 openrouter.ts는 순수 fetch 기반이라
+// 이 스크립트(tsx 실행)에서도 상대 경로로 그대로 재사용 가능
+import { callOpenRouter } from "../../src/lib/openrouter";
 
 // api/quote/route.ts, lib/reportCheckerGemini.ts와 동일한 모델을 재사용(프로젝트 컨벤션 통일)
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
@@ -66,57 +69,71 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function buildResult(post: DetectedPost, raw: string): GenerateResult {
+  const parsed = extractJson(raw) as Partial<{
+    naverTitle: string;
+    naverCopy: string;
+    kakaoTitle: string;
+    kakaoCopy: string;
+    facebookTitle: string;
+    facebookCopy: string;
+  }>;
+
+  if (
+    !parsed.naverTitle ||
+    !parsed.naverCopy ||
+    !parsed.kakaoTitle ||
+    !parsed.kakaoCopy ||
+    !parsed.facebookTitle ||
+    !parsed.facebookCopy
+  ) {
+    throw new Error(
+      "응답 JSON에 필수 필드(naverTitle/naverCopy/kakaoTitle/kakaoCopy/facebookTitle/facebookCopy)가 없습니다."
+    );
+  }
+
+  return {
+    post,
+    status: "ok",
+    copy: {
+      postTitle: post.title,
+      postUrl: post.url,
+      naverCopy: `${parsed.naverTitle}${TITLE_BODY_SEPARATOR}${parsed.naverCopy}`,
+      kakaoCopy: `${parsed.kakaoTitle}${TITLE_BODY_SEPARATOR}${parsed.kakaoCopy}`,
+      facebookCopy: `${parsed.facebookTitle}${TITLE_BODY_SEPARATOR}${parsed.facebookCopy}`,
+    },
+  };
+}
+
 async function generateOne(
   model: ReturnType<GoogleGenerativeAI["getGenerativeModel"]>,
   post: DetectedPost
 ): Promise<GenerateResult> {
   try {
     const result = await model.generateContent(buildPrompt(post));
-    const raw = result.response.text();
-    const parsed = extractJson(raw) as Partial<{
-      naverTitle: string;
-      naverCopy: string;
-      kakaoTitle: string;
-      kakaoCopy: string;
-      facebookTitle: string;
-      facebookCopy: string;
-    }>;
-
-    if (
-      !parsed.naverTitle ||
-      !parsed.naverCopy ||
-      !parsed.kakaoTitle ||
-      !parsed.kakaoCopy ||
-      !parsed.facebookTitle ||
-      !parsed.facebookCopy
-    ) {
-      throw new Error(
-        "응답 JSON에 필수 필드(naverTitle/naverCopy/kakaoTitle/kakaoCopy/facebookTitle/facebookCopy)가 없습니다."
-      );
-    }
-
-    return {
-      post,
-      status: "ok",
-      copy: {
-        postTitle: post.title,
-        postUrl: post.url,
-        naverCopy: `${parsed.naverTitle}${TITLE_BODY_SEPARATOR}${parsed.naverCopy}`,
-        kakaoCopy: `${parsed.kakaoTitle}${TITLE_BODY_SEPARATOR}${parsed.kakaoCopy}`,
-        facebookCopy: `${parsed.facebookTitle}${TITLE_BODY_SEPARATOR}${parsed.facebookCopy}`,
-      },
-    };
+    return buildResult(post, result.response.text());
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const isRateLimited = /429|quota|rate limit/i.test(message);
+
     if (isRateLimited) {
-      console.error(
-        `[generate-copy] "${post.title}" — 429(rate limit) 발생, 다음 실행에 재시도됩니다: ${message}`
+      console.warn(
+        `[generate-copy] "${post.title}" — Gemini 429(rate limit), OpenRouter 폴백으로 재시도합니다.`
       );
-    } else {
-      console.error(`[generate-copy] "${post.title}" 생성 실패, 스킵합니다: ${message}`);
+      try {
+        const raw = await callOpenRouter(buildPrompt(post), { systemInstruction: SYSTEM_INSTRUCTION });
+        return buildResult(post, raw);
+      } catch (fallbackErr) {
+        const fallbackMessage = fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr);
+        console.error(
+          `[generate-copy] "${post.title}" — OpenRouter 폴백도 실패, 다음 실행에 재시도됩니다: ${fallbackMessage}`
+        );
+        return { post, status: "failed", error: fallbackMessage, isRateLimited: true };
+      }
     }
-    return { post, status: "failed", error: message, isRateLimited };
+
+    console.error(`[generate-copy] "${post.title}" 생성 실패, 스킵합니다: ${message}`);
+    return { post, status: "failed", error: message, isRateLimited: false };
   }
 }
 

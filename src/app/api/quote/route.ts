@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { INDUSTRY_PRESETS, isIndustry, type IndustryPreset } from "@/lib/quotePresets";
 import { extractTextFromFile } from "@/lib/extractText";
 import { QuoteSchema, type Quote } from "@/lib/quoteSchema";
+import { callOpenRouter, appendJsonSchemaHint } from "@/lib/openrouter";
 
 // 무료/저비용 운영을 위해 Gemini Flash Lite 사용. 필요 시 모델명만 교체하면 됩니다.
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
@@ -42,6 +43,40 @@ interface GeminiGenerateContentResponse {
     content?: { parts?: { text?: string }[] };
     finishReason?: string;
   }[];
+}
+
+class GeminiRateLimitError extends Error {}
+
+async function callGeminiQuote(prompt: string, apiKey: string): Promise<string> {
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const geminiRes = await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 4096,
+        responseMimeType: "application/json",
+        responseSchema: GEMINI_RESPONSE_SCHEMA,
+      },
+    }),
+  });
+
+  if (!geminiRes.ok) {
+    const errBody = await geminiRes.text();
+    if (geminiRes.status === 429) {
+      throw new GeminiRateLimitError(`Gemini API 429: ${errBody}`);
+    }
+    throw new Error(`Gemini API 오류 (${geminiRes.status}): ${errBody}`);
+  }
+
+  const data = (await geminiRes.json()) as GeminiGenerateContentResponse;
+  const candidate = data.candidates?.[0];
+  const text = candidate?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+  if (!text) {
+    throw new Error(`AI 응답이 비어 있습니다 (finishReason: ${candidate?.finishReason ?? "unknown"})`);
+  }
+  return text;
 }
 
 function extractJson(raw: string): unknown {
@@ -188,38 +223,26 @@ ${trimmedText}`;
 
   let rawText: string;
   try {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
-    const geminiRes = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: 4096,
-          responseMimeType: "application/json",
-          responseSchema: GEMINI_RESPONSE_SCHEMA,
-        },
-      }),
-    });
-
-    if (!geminiRes.ok) {
-      const errBody = await geminiRes.text();
-      throw new Error(`Gemini API 오류 (${geminiRes.status}): ${errBody}`);
-    }
-
-    const data = (await geminiRes.json()) as GeminiGenerateContentResponse;
-    const candidate = data.candidates?.[0];
-    const text = candidate?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
-    if (!text) {
-      throw new Error(`AI 응답이 비어 있습니다 (finishReason: ${candidate?.finishReason ?? "unknown"})`);
-    }
-    rawText = text;
+    rawText = await callGeminiQuote(prompt, geminiApiKey);
   } catch (err) {
-    console.error("[quote] Gemini API 호출 실패:", err);
-    return NextResponse.json(
-      { error: "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
-      { status: 502 }
-    );
+    if (err instanceof GeminiRateLimitError) {
+      console.warn("[quote] Gemini 429(rate limit) — OpenRouter 폴백으로 재시도합니다.");
+      try {
+        rawText = await callOpenRouter(appendJsonSchemaHint(prompt, GEMINI_RESPONSE_SCHEMA));
+      } catch (fallbackErr) {
+        console.error("[quote] OpenRouter 폴백도 실패:", fallbackErr);
+        return NextResponse.json(
+          { error: "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
+          { status: 502 }
+        );
+      }
+    } else {
+      console.error("[quote] Gemini API 호출 실패:", err);
+      return NextResponse.json(
+        { error: "AI 분석 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
+        { status: 502 }
+      );
+    }
   }
 
   let quote: Quote;

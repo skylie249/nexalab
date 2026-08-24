@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { callOpenRouter } from "@/lib/openrouter";
 
 // /api/quote와 동일 모델로 통일 (무료/저비용 운영을 위해 Gemini Flash Lite 사용)
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
@@ -16,6 +17,38 @@ interface GeminiGenerateContentResponse {
     content?: { parts?: { text?: string }[] };
     finishReason?: string;
   }[];
+}
+
+class GeminiRateLimitError extends Error {}
+
+async function callGeminiWizard(prompt: string, apiKey: string): Promise<string> {
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const geminiRes = await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 1024,
+      },
+    }),
+  });
+
+  if (!geminiRes.ok) {
+    const errBody = await geminiRes.text();
+    if (geminiRes.status === 429) {
+      throw new GeminiRateLimitError(`Gemini API 429: ${errBody}`);
+    }
+    throw new Error(`Gemini API 오류 (${geminiRes.status}): ${errBody}`);
+  }
+
+  const data = (await geminiRes.json()) as GeminiGenerateContentResponse;
+  const candidate = data.candidates?.[0];
+  const text = candidate?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+  if (!text) {
+    throw new Error(`AI 응답이 비어 있습니다 (finishReason: ${candidate?.finishReason ?? "unknown"})`);
+  }
+  return text;
 }
 
 export async function POST(req: NextRequest) {
@@ -63,36 +96,26 @@ ${deadline || "미정"}`;
 
   let requestText: string;
   try {
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiApiKey}`;
-    const geminiRes = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: {
-          maxOutputTokens: 1024,
-        },
-      }),
-    });
-
-    if (!geminiRes.ok) {
-      const errBody = await geminiRes.text();
-      throw new Error(`Gemini API 오류 (${geminiRes.status}): ${errBody}`);
-    }
-
-    const data = (await geminiRes.json()) as GeminiGenerateContentResponse;
-    const candidate = data.candidates?.[0];
-    const text = candidate?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
-    if (!text) {
-      throw new Error(`AI 응답이 비어 있습니다 (finishReason: ${candidate?.finishReason ?? "unknown"})`);
-    }
-    requestText = text;
+    requestText = await callGeminiWizard(prompt, geminiApiKey);
   } catch (err) {
-    console.error("[wizard-to-request] Gemini API 호출 실패:", err);
-    return NextResponse.json(
-      { error: "요청서 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
-      { status: 502 }
-    );
+    if (err instanceof GeminiRateLimitError) {
+      console.warn("[wizard-to-request] Gemini 429(rate limit) — OpenRouter 폴백으로 재시도합니다.");
+      try {
+        requestText = (await callOpenRouter(prompt)).trim();
+      } catch (fallbackErr) {
+        console.error("[wizard-to-request] OpenRouter 폴백도 실패:", fallbackErr);
+        return NextResponse.json(
+          { error: "요청서 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
+          { status: 502 }
+        );
+      }
+    } else {
+      console.error("[wizard-to-request] Gemini API 호출 실패:", err);
+      return NextResponse.json(
+        { error: "요청서 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요." },
+        { status: 502 }
+      );
+    }
   }
 
   // 답변/생성 결과는 저장하지 않고 그대로 반환만 합니다.

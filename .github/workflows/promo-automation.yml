@@ -38,6 +38,8 @@ jobs:
         if: steps.detect.outputs.has_new_posts == 'true'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Gemini 429(rate limit) 시 OpenRouter로 폴백 (미설정이어도 폴백만 스킵되고 정상 동작)
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npm run promo:generate
 
       - name: 노션에 저장
