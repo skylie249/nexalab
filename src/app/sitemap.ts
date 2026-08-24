@@ -16,6 +16,7 @@ const STATIC_PATHS: {
   { path: "/ai-apps", changeFrequency: "monthly", priority: 0.7 },
   { path: "/biz", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 function languageAlternates(path: string) {

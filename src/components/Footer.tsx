@@ -14,6 +14,8 @@ export default function Footer() {
           <div className={styles.links}>
             <Link href="/about">About NexaLab</Link>
             <span className={styles.divider}>|</span>
+            <Link href="/privacy">Privacy Policy</Link>
+            <span className={styles.divider}>|</span>
             <Link href="mailto:kimhg249@gmail.com">Contact</Link>
           </div>
         </div>
