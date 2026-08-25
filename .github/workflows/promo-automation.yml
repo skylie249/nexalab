@@ -1,10 +1,18 @@
 name: Blog Promo Automation
 
 on:
-  schedule:
-    # 매일 한국 시간(KST, UTC+9) 오전 8시 = 전날 UTC 23:00
-    - cron: "0 23 * * *"
+  # 레포 A(글 발행을 처리하는 쪽)가 글이 발행될 때마다 보내는 이벤트로 즉시 실행된다
+  # (기존의 매일 23:00 UTC cron 폴링은 폐지됨 — 이벤트 기반으로 완전히 대체).
+  repository_dispatch:
+    types: [new-post-published]
+  # 문제가 생겼을 때(예: dispatch 유실, 실패 후 재시도) 사람이 특정 글을 지정해 수동 실행할 수 있는
+  # 안전장치. repository_dispatch와 병행하는 게 아니라 같은 파이프라인을 트리거하는 대체 입구다.
   workflow_dispatch:
+    inputs:
+      post_id:
+        description: "수동 실행 시 대상 post_id"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -12,6 +20,12 @@ permissions:
 jobs:
   promo-automation:
     runs-on: ubuntu-latest
+    env:
+      # workflow_dispatch(inputs.post_id) 또는 repository_dispatch(client_payload.post_id) 중
+      # 실제로 이 워크플로우를 트리거한 쪽의 값을 사용한다.
+      POST_ID: ${{ github.event.inputs.post_id || github.event.client_payload.post_id }}
+      NOTION_PAGE_ID: ${{ github.event.client_payload.notion_page_id }}
+      PUBLISHED_AT: ${{ github.event.client_payload.published_at }}
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +39,7 @@ jobs:
 
       - run: npm ci
 
-      - name: 새 글 감지
+      - name: 대상 글 확인
         id: detect
         env:
           # supabase-healthcheck.yml과 동일한 repo secret(SUPABASE_URL/SUPABASE_ANON_KEY)을 재사용 —
@@ -50,7 +64,23 @@ jobs:
         run: npm run promo:save
 
       - name: .last-run.json 커밋
+        if: steps.detect.outputs.has_new_posts == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update promo automation last-run timestamp"
           file_pattern: scripts/promo-automation/.last-run.json
+
+      - name: 실패 요약 기록
+        if: failure()
+        run: |
+          {
+            echo "## ❌ Blog Promo Automation 실패"
+            echo ""
+            echo "- post_id: \`${POST_ID:-<none>}\`"
+            echo "- trigger: \`${{ github.event_name }}\`"
+            echo "- published_at: \`${PUBLISHED_AT:-<none>}\`"
+            echo ""
+            echo "실행 로그의 각 스텝(대상 글 확인 / 채널별 홍보 문구 생성 / 노션에 저장)을 확인하세요."
+            echo "실패한 글의 post_id는 \`.last-run.json\`의 processedPostIds에 기록되지 않으므로,"
+            echo "동일한 repository_dispatch 재전달 또는 이 워크플로우의 workflow_dispatch(post_id 입력)로 재시도할 수 있습니다."
+          } >> "$GITHUB_STEP_SUMMARY"

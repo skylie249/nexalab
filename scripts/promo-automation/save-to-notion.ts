@@ -5,7 +5,7 @@
 import "./loadEnv";
 import { Client } from "@notionhq/client";
 import { readState, GENERATED_COPY_STATE_PATH } from "./state";
-import { writeLastRun } from "./lastRun";
+import { markPostProcessed } from "./lastRun";
 import type { GeneratedCopyState, GenerateResult } from "./types";
 
 const PROP = {
@@ -98,34 +98,41 @@ async function main() {
   const notion = new Client({ auth: notionApiKey });
   const target = await resolveTarget(notion, databaseId);
 
-  // 문구 생성이 실패한 글이 하나라도 있으면 전체 성공이 아니므로 .last-run.json을 갱신하지 않는다
-  // (lastRun.ts 참고 — 실패한 글이 다음 실행에 다시 감지되도록 하기 위함).
-  let hasFailure = false;
+  // 성공(신규 저장 또는 이미 저장돼 스킵)한 글의 post_id만 처리 이력에 남긴다 — 실패한 글은
+  // 남기지 않아 같은 이벤트가 재전달되거나 수동으로 재실행될 때 다시 시도된다(lastRun.ts 참고).
   const failedTitles: string[] = [];
+  const succeededPostIds: string[] = [];
 
   for (const item of results) {
     if (item.status === "failed") {
-      hasFailure = true;
       failedTitles.push(item.post.title);
       continue;
     }
     try {
       await saveOne(notion, target, item);
+      succeededPostIds.push(item.post.id);
     } catch (err) {
-      hasFailure = true;
       failedTitles.push(item.post.title);
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[save-to-notion] "${item.post.title}" 저장 실패: ${message}`);
     }
   }
 
-  if (hasFailure) {
+  succeededPostIds.forEach((postId) => markPostProcessed(postId, runTimestamp));
+
+  if (failedTitles.length > 0) {
     console.error(
-      `[save-to-notion] 일부 글이 실패해 .last-run.json을 갱신하지 않습니다 — 다음 실행에 다시 감지됩니다: ${failedTitles.join(", ")}`
+      `[save-to-notion] 일부 글이 실패해 처리 이력에 남기지 않습니다 — 다음 실행에 다시 시도됩니다: ${failedTitles.join(", ")}`
     );
-  } else {
-    writeLastRun(runTimestamp);
-    console.log(`[save-to-notion] 전체 성공 — .last-run.json을 ${runTimestamp} 기준으로 갱신했습니다.`);
+  }
+  if (succeededPostIds.length > 0) {
+    console.log(`[save-to-notion] ${succeededPostIds.length}건 처리 완료 (기준 시각: ${runTimestamp}).`);
+  }
+
+  // repository_dispatch 전환 이후에는 글 하나당 실행 한 번이 원칙이라, 그 글이 실패하면
+  // 워크플로우 자체도 실패로 표시되어야 Actions summary/재실행 판단이 명확해진다.
+  if (failedTitles.length > 0 && succeededPostIds.length === 0) {
+    process.exitCode = 1;
   }
 }
 
