@@ -31,7 +31,9 @@ const SYSTEM_INSTRUCTION = `당신은 55세 전후 사무직 독자를 대상으
   "kakaoTitle": "카톡 공유용 제목",
   "kakaoCopy": "카톡 공유용 본문 문구",
   "facebookTitle": "페이스북 그룹용 제목",
-  "facebookCopy": "페이스북 그룹용 본문 문구"
+  "facebookCopy": "페이스북 그룹용 본문 문구",
+  "bandTitle": "네이버 밴드 공유용 제목",
+  "bandCopy": "네이버 밴드 공유용 본문 문구"
 }`;
 
 function sanitizeSnippet(text: string): string {
@@ -50,7 +52,8 @@ function buildPrompt(post: DetectedPost): string {
 
 1. naver (네이버 블로그 소개용): 제목은 10~20자, 본문은 100자 내외로 궁금증을 유발하는 도입부 스타일
 2. kakao (카톡 공유용): 제목은 8~15자, 본문은 40자 내외로 단톡방에 툭 던지듯 자연스러운 한두 문장. 이모지는 본문에 최대 1개까지만(55세 타겟은 과도한 이모지에 거부감이 있을 수 있음)
-3. facebook (페이스북 그룹용): 제목은 10~20자, 본문은 150자 내외로 소상공인/자영업자 그룹에 어울리는 경험 공유 톤(예: "~해봤는데 괜찮더라구요")`;
+3. facebook (페이스북 그룹용): 제목은 10~20자, 본문은 150자 내외로 소상공인/자영업자 그룹에 어울리는 경험 공유 톤(예: "~해봤는데 괜찮더라구요")
+4. band (네이버 밴드 공유용): 제목은 10~15자, 본문은 80자 내외로 동호회/소모임 밴드에 정보를 나눠주듯 다정한 존댓말 톤(예: "회원님들께 도움 될 것 같아 공유합니다")`;
 }
 
 // responseMimeType: "application/json"를 지정해도 코드펜스나 JSON 뒤에 부가 설명이 붙어 나오는
@@ -77,6 +80,8 @@ function buildResult(post: DetectedPost, raw: string): GenerateResult {
     kakaoCopy: string;
     facebookTitle: string;
     facebookCopy: string;
+    bandTitle: string;
+    bandCopy: string;
   }>;
 
   if (
@@ -85,10 +90,12 @@ function buildResult(post: DetectedPost, raw: string): GenerateResult {
     !parsed.kakaoTitle ||
     !parsed.kakaoCopy ||
     !parsed.facebookTitle ||
-    !parsed.facebookCopy
+    !parsed.facebookCopy ||
+    !parsed.bandTitle ||
+    !parsed.bandCopy
   ) {
     throw new Error(
-      "응답 JSON에 필수 필드(naverTitle/naverCopy/kakaoTitle/kakaoCopy/facebookTitle/facebookCopy)가 없습니다."
+      "응답 JSON에 필수 필드(naverTitle/naverCopy/kakaoTitle/kakaoCopy/facebookTitle/facebookCopy/bandTitle/bandCopy)가 없습니다."
     );
   }
 
@@ -101,6 +108,7 @@ function buildResult(post: DetectedPost, raw: string): GenerateResult {
       naverCopy: `${parsed.naverTitle}${TITLE_BODY_SEPARATOR}${parsed.naverCopy}`,
       kakaoCopy: `${parsed.kakaoTitle}${TITLE_BODY_SEPARATOR}${parsed.kakaoCopy}`,
       facebookCopy: `${parsed.facebookTitle}${TITLE_BODY_SEPARATOR}${parsed.facebookCopy}`,
+      bandCopy: `${parsed.bandTitle}${TITLE_BODY_SEPARATOR}${parsed.bandCopy}`,
     },
   };
 }

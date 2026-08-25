@@ -14,6 +14,7 @@ export interface GeneratedCopy {
   naverCopy: string;
   kakaoCopy: string;
   facebookCopy: string;
+  bandCopy: string;
 }
 
 export interface GenerateResult {

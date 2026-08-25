@@ -2,6 +2,8 @@
 // 문구(title, Notion 필수 title 속성) / 글 제목(rich_text, "문구"와 같은 값을 중복 표시용으로 채움) /
 // 글 URL(url) / 발행일(date) / 네이버문구(rich_text, 공백 없음 — 지침서 원문의 "네이버 문구"와 다름) /
 // 카톡 문구(rich_text) / 페이스북 문구(rich_text) / 상태(select, 기본값 "대기")
+// 2026-08-25: 네이버 밴드 채널 추가 — 노션 데이터베이스에 "네이버밴드 문구"(rich_text) 컬럼을
+// 기존 "네이버문구"와 동일하게 공백 없이 수동으로 추가해야 저장이 성공한다.
 import "./loadEnv";
 import { Client } from "@notionhq/client";
 import { readState, GENERATED_COPY_STATE_PATH } from "./state";
@@ -16,6 +18,7 @@ const PROP = {
   naver: "네이버문구",
   kakao: "카톡 문구",
   facebook: "페이스북 문구",
+  band: "네이버밴드 문구",
   status: "상태",
 } as const;
 
@@ -73,6 +76,7 @@ async function saveOne(notion: Client, target: ResolvedTarget, item: GenerateRes
       [PROP.naver]: { rich_text: [{ text: { content: item.copy.naverCopy } }] },
       [PROP.kakao]: { rich_text: [{ text: { content: item.copy.kakaoCopy } }] },
       [PROP.facebook]: { rich_text: [{ text: { content: item.copy.facebookCopy } }] },
+      [PROP.band]: { rich_text: [{ text: { content: item.copy.bandCopy } }] },
       [PROP.status]: { select: { name: "대기" } },
     },
   });
