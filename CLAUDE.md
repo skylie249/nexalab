@@ -719,6 +719,13 @@ export async function POST(req: Request) {
   - **사용자 작업 필요**: GitHub repo secret의 `NOTION_DATABASE_ID`도 로컬과 동일한 값(`3c463e2359078021876c000b7d7c5be8`)으로 등록/수정 필요 — 처음 등록했던 값이 있다면 위 버그 2와 같은 이유로 잘못된 값일 가능성이 높음
   - 검증 과정에서 사용한 `scripts/promo-automation/notion-diagnose.ts`(Integration 접근 가능 객체 조회, 속성 스키마 확인용 1회성 스크립트)는 확인 후 삭제, 커밋되지 않음
 
+### 2026-08-27
+- **홍보 문구 자동화에 네이버 밴드 채널 추가 후 실제 저장 실패 진단·해결**: 커밋 `c094278`(2026-08-25)에서 코드(`generate-copy.ts`/`save-to-notion.ts`/`types.ts`)는 이미 네이버/카톡/페이스북 3채널에 밴드용 문구(`bandTitle`/`bandCopy`)를 추가했으나, 노션 데이터베이스에는 대응하는 "네이버밴드 문구" 컬럼이 없어 8/25~8/27 사이 `promo-automation.yml` 실행 5건이 전부 `네이버밴드 문구 is not a property that exists.` 검증 에러로 실패하고 있었음(사용자가 "밴드 문구가 생성 안 된다"고 보고)
+  - 원인은 코드가 아니라 노션 DB 설정 누락이었음 — `save-to-notion.ts` 상단 주석에도 "컬럼을 수동으로 추가해야 저장이 성공한다"고 이미 기록돼 있었으나 실제로는 아직 추가되지 않은 상태였던 것
+  - 사용자가 노션에 "네이버밴드 문구"(rich_text) 컬럼 추가 후, 밀려 있던 글 5건(영문 "Agentic Shift" 시리즈 2건, 한글 재무/UI·UX/기획 관련 3건)을 `gh workflow run promo-automation.yml -f post_id=<id>`로 하나씩 수동 재실행해 전부 노션 저장 완료까지 확인. `.last-run.json`에 7개 post_id 전부 반영됨
+  - 재시도 중 무관한 1회성 이슈도 함께 관측: 첫 재시도(`2621b3ec-...`)에서는 Gemini가 이번엔 `bandTitle`/`bandCopy`를 포함한 JSON을 온전히 반환하지 못해 `generate-copy` 단계에서 실패 — 노션 컬럼 문제와 무관한 일시적 응답 품질 이슈로, 재시도 설계(실패한 글은 `.last-run.json`에 기록 안 됨) 덕분에 곧바로 재실행해 정상 처리됨. 별도 코드 수정 불필요
+  - **결론**: 앞으로 새 글이 발행되면(repository_dispatch) 4채널(네이버/카톡/페이스북/밴드) 문구가 모두 정상적으로 생성·저장됨
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
