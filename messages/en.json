@@ -288,7 +288,55 @@
     "formFileHint": "PDF, DOCX · up to {maxMb}MB",
     "formSubmitting": "AI is analyzing...",
     "formSubmit": "Analyze with AI",
-    "formNote": "Uploaded content is used only to generate this quote. Results are a rough estimate — please have an expert review any real contract."
+    "formNote": "Uploaded content is used only to generate this quote. Results are a rough estimate — please have an expert review any real contract.",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Does writing a single quote take you 30 minutes or more? Figuring out which line items to include, how many days to budget, and what rate is fair takes time away from your actual work every time you start from scratch. Missing an item makes it awkward to bill for it later, and looking up standard pricing conventions for your industry each time is a hassle.",
+    "contentIntroSolution": "Paste in your client's request and the AI Quote Generator drafts a quote in seconds — line items, estimated effort, and the reasoning behind each number.",
+    "contentHowToUseTitle": "How it works",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter project details",
+        "description": "Paste or upload the service request, then pick your industry and hourly rate (optional)."
+      },
+      {
+        "title": "AI drafts the line items",
+        "description": "AI analyzes the request and estimates effort and a price range for each task."
+      },
+      {
+        "title": "Review and use it",
+        "description": "Check the reasoning and risk notes, then edit freely before sending it to your client."
+      }
+    ],
+    "contentRecommendForTitle": "Built for",
+    "contentRecommendFor": [
+      "Freelancers tired of rebuilding a quote template every time",
+      "Solo business owners juggling multiple projects",
+      "Small agencies that need a quote draft fast",
+      "Anyone who wants a quote with no missing line items"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "Which industries does the quote format cover?",
+        "answer": "Rates reflect standard conventions for web/app development, design, marketing, and video production."
+      },
+      {
+        "question": "How many quotes can I generate for free?",
+        "answer": "There's a daily per-IP limit to prevent abuse; otherwise it's completely free."
+      },
+      {
+        "question": "Where can I find a quote I generated earlier?",
+        "answer": "Nothing is saved on our servers, so refreshing the page clears your result — you'll need to regenerate it."
+      },
+      {
+        "question": "Can I sign a contract based on the AI's numbers?",
+        "answer": "Treat it as a reference estimate only. Always have an expert review the terms before signing."
+      },
+      {
+        "question": "Can I use this without a written request document?",
+        "answer": "Yes — answer a few questions and the AI will draft a request document for you first."
+      }
+    ]
   },
   "profitCalculator": {
     "metaTitle": "Project Profit Calculator - NexaLab.app",
@@ -338,7 +386,55 @@
     "chartExpense": "Other expenses",
     "chartFee": "Platform fee",
     "marginCommentNote": "* Industry averages are rough estimates and may differ from actual statistics.",
-    "resultHint": "Enter a contract/quote amount to see your results."
+    "resultHint": "Enter a contract/quote amount to see your results.",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Not sure how much you actually made this month? Revenue looks up, but your balance feels the same, and once you subtract subcontractor fees, materials, and platform commissions, the math gets messy. Rebuilding a spreadsheet formula every time — or figuring out your real hourly earnings — isn't easy either.",
+    "contentIntroSolution": "Enter your income and cost items and the Profit Calculator instantly shows net profit, margin, and your real hourly rate. Nothing is saved, so run it as many times as you like.",
+    "contentHowToUseTitle": "How it works",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter your contract amount",
+        "description": "Enter the income you received for this project."
+      },
+      {
+        "title": "Add cost items",
+        "description": "Add labor, subcontractor fees, materials, platform commissions, and any other costs by line item."
+      },
+      {
+        "title": "See results instantly",
+        "description": "No button to press — net profit, margin, and real hourly rate update as you type."
+      }
+    ],
+    "contentRecommendForTitle": "Built for",
+    "contentRecommendFor": [
+      "Freelancers who want to see what a project actually earned",
+      "Small business owners working with multiple subcontractors",
+      "New founders getting a feel for their margins",
+      "Anyone curious about their real hourly earnings"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "Is VAT/sales tax factored in automatically?",
+        "answer": "No. Tax matters are outside this reference calculation — please consult a tax professional."
+      },
+      {
+        "question": "Does the formula change by industry?",
+        "answer": "The formula is the same for every industry; selecting one adds a comment comparing your margin to the industry average."
+      },
+      {
+        "question": "Are my results saved?",
+        "answer": "Nothing is saved on our servers — results only exist for your current session."
+      },
+      {
+        "question": "How is real hourly rate calculated?",
+        "answer": "Net profit divided by hours worked, shown only if you enter hours worked."
+      },
+      {
+        "question": "Can I bring in a result from the quote generator?",
+        "answer": "Yes — the quote generator's result screen has a button to send that estimate straight here."
+      }
+    ]
   },
   "seoGeoChecker": {
     "metaTitle": "Free SEO/GEO/Accessibility Checker - NexaLab.app",
@@ -372,7 +468,55 @@
     "kakaoShareCardTitle": "{title} SEO/GEO diagnosis results",
     "kakaoShareCardDescription": "SEO {seoScore} · GEO {geoScore} — can AI search engines actually read your site?",
     "kakaoShareCardButton": "Check my site for free too",
-    "kakaoShareCopied": "Link copied"
+    "kakaoShareCopied": "Link copied",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Would ChatGPT and Google both like your site? You've put some effort into SEO, but lately you're also wondering whether AI chatbots would ever cite your content. Terms like alt text, heading structure, and llms.txt aren't familiar, and checking each one by hand takes more time than you have.",
+    "contentIntroSolution": "Enter one URL and the SEO/GEO Checker automatically audits your site across three areas — search engine optimization, AI search (GEO), and web accessibility — with concrete fixes for each issue.",
+    "contentHowToUseTitle": "How it works",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter the URL to check",
+        "description": "Paste the URL of the page you want audited."
+      },
+      {
+        "title": "Run the automatic check",
+        "description": "A static rule-based analysis audits SEO, GEO, and accessibility items."
+      },
+      {
+        "title": "Review scores and fixes",
+        "description": "See per-category scores, what passed or needs work, and specific fix suggestions."
+      }
+    ],
+    "contentRecommendForTitle": "Built for",
+    "contentRecommendFor": [
+      "Blog and media site owners who want more search traffic",
+      "Marketers who need to audit client sites",
+      "Solo founders who want to show up in AI search too",
+      "Site owners who need a basic accessibility check"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "How is the GEO score calculated?",
+        "answer": "It scores how easy your content is for AI to cite — summaries, structured data, llms.txt, and similar signals."
+      },
+      {
+        "question": "How long does a check take?",
+        "answer": "Usually under 10 seconds; the same URL returns even faster within a 24-hour cache."
+      },
+      {
+        "question": "How accurate are the results?",
+        "answer": "It's a reference-only static analysis and may not perfectly match real browser rendering."
+      },
+      {
+        "question": "Does it check color contrast and keyboard access?",
+        "answer": "Yes — it also analyzes CSS for color contrast, focus indicators, and ARIA misuse."
+      },
+      {
+        "question": "Is the site content I check stored anywhere?",
+        "answer": "Only the URL and score are cached briefly; the page's raw content is never stored."
+      }
+    ]
   },
   "llmsTxtGenerator": {
     "metaTitle": "Free llms.txt Generator - NexaLab.app",
@@ -454,7 +598,59 @@
     "kakaoShareCardTitle": "Report checker diagnosis results",
     "kakaoShareCardDescription": "Overall score {overallScore} ({overallGrade}) — is your report ready for your exec's desk?",
     "kakaoShareCardButton": "Check my report for free too",
-    "kakaoShareCopied": "Link copied"
+    "kakaoShareCopied": "Link copied",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Worried you missed something before submitting your report? Checking whether you led with the conclusion, whether sentences run too long, or whether you overused conjunctions is harder to judge on your own than it seems. And right before a deadline, there's often no time left to review at all.",
+    "contentIntroSolution": "Paste in your document and Report Checker automatically diagnoses it across structure, sentence quality, and tone, then AI suggests improved phrasing — even a full rewrite if you want one.",
+    "contentHowToUseTitle": "How it works",
+    "contentHowToUseSteps": [
+      {
+        "title": "Paste your document",
+        "description": "Paste the report or proposal text you want checked."
+      },
+      {
+        "title": "Run the analysis",
+        "description": "Rule-based checks and AI checks run together to score each category."
+      },
+      {
+        "title": "Review feedback by category",
+        "description": "See which sentences are flagged and specific hints for how to fix them."
+      },
+      {
+        "title": "Get an AI rewrite (optional)",
+        "description": "If you want, AI can rewrite the entire document for you."
+      }
+    ],
+    "contentRecommendForTitle": "Built for",
+    "contentRecommendFor": [
+      "Employees doing a final check before submitting a report",
+      "Planners polishing proposal or planning-document sentences",
+      "Anyone trying to break the habit of long, winding sentences or passive voice",
+      "Solo founders with no one else to give them writing feedback"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "What does it check?",
+        "answer": "Rule-based checks (leading with the conclusion, sentence length, conjunction overuse, double passives, paragraph length, dated phrasing) plus AI checks."
+      },
+      {
+        "question": "Is my document stored anywhere?",
+        "answer": "No. Analysis happens in memory only while the request is processed, then is discarded immediately."
+      },
+      {
+        "question": "Is there a length limit?",
+        "answer": "Very long documents may reduce accuracy — we recommend pasting key sections in parts."
+      },
+      {
+        "question": "Can I use the AI rewrite as-is?",
+        "answer": "Treat it as a suggestion — please verify context and facts yourself before using it."
+      },
+      {
+        "question": "Does it work on non-Korean documents?",
+        "answer": "This tool is optimized for Korean text; accuracy may be lower for other languages."
+      }
+    ]
   },
   "dashboard": {
     "metaTitle": "My Business Health Check - NexaLab.app",

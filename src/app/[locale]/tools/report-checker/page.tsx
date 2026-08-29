@@ -3,6 +3,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
+import ToolContentWrapper from "@/components/tool-content/ToolContentWrapper";
+import type { HowToUseStep } from "@/components/tool-content/ToolHowToUse";
+import type { FaqItem } from "@/components/tool-content/ToolFAQ";
 import styles from "./page.module.css";
 import ReportCheckerClient from "./ReportCheckerClient";
 
@@ -60,7 +63,19 @@ export default async function ReportCheckerPage({
         <p className={styles.subtitle}>{t("subtitle")}</p>
       </header>
 
-      <ReportCheckerClient />
+      <ToolContentWrapper
+        introTitle={t("contentIntroTitle")}
+        introProblem={t("contentIntroProblem")}
+        introSolution={t("contentIntroSolution")}
+        howToUseTitle={t("contentHowToUseTitle")}
+        howToUseSteps={t.raw("contentHowToUseSteps") as HowToUseStep[]}
+        recommendForTitle={t("contentRecommendForTitle")}
+        recommendFor={t.raw("contentRecommendFor") as string[]}
+        faqTitle={t("contentFaqTitle")}
+        faq={t.raw("contentFaq") as FaqItem[]}
+      >
+        <ReportCheckerClient />
+      </ToolContentWrapper>
     </div>
   );
 }

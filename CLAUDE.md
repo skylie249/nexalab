@@ -726,6 +726,16 @@ export async function POST(req: Request) {
   - 재시도 중 무관한 1회성 이슈도 함께 관측: 첫 재시도(`2621b3ec-...`)에서는 Gemini가 이번엔 `bandTitle`/`bandCopy`를 포함한 JSON을 온전히 반환하지 못해 `generate-copy` 단계에서 실패 — 노션 컬럼 문제와 무관한 일시적 응답 품질 이슈로, 재시도 설계(실패한 글은 `.last-run.json`에 기록 안 됨) 덕분에 곧바로 재실행해 정상 처리됨. 별도 코드 수정 불필요
   - **결론**: 앞으로 새 글이 발행되면(repository_dispatch) 4채널(네이버/카톡/페이스북/밴드) 문구가 모두 정상적으로 생성·저장됨
 
+### 2026-08-29
+- **애드센스 재심사 대응: 툴 4종 페이지에 SEO/GEO 친화적 텍스트 콘텐츠 블록 추가** (`adsense-tool-content-guide.md` 지침 기준) — "가치가 별로 없는 콘텐츠" 반려 사유 대응을 위해 견적서 생성기·손익 계산기·SEO/GEO 체커·report-checker 4개 페이지에 도입부+사용법+추천 대상+FAQ 텍스트 블록을 추가
+  - **아키텍처는 지침서를 그대로 따르지 않고 프로젝트 컨벤션에 맞게 조정**: 지침서는 `content/tool-copy/*.ts`(한국어 하드코딩) + `components/tool-content/*` 구조를 제시했으나, 이 프로젝트는 이미 모든 UI 문구를 `next-intl`(`messages/ko.json`/`en.json`)로 관리하는 컨벤션이 확립돼 있어(2026-08-18 다국어 도입 이후 전 페이지 동일 패턴) 콘텐츠 데이터는 별도 `.ts` 파일이 아니라 각 툴의 기존 네임스페이스(`quoteGenerator`/`profitCalculator`/`seoGeoChecker`/`reportChecker`) 안에 `content*` 접두사 키로 추가 — 배열(단계/추천목록/FAQ)은 `next-intl` 4.x의 `t.raw()`로 그대로 꺼내 씀. 덕분에 지침서에는 없던 영문 버전까지 4개 페이지 전부 자연스럽게 확보됨(기존 다국어 원칙과 일치)
+  - `src/components/tool-content/`(신규): `ToolIntro`(도입부, 제목+문제제기+해결요약) / `ToolHowToUse`(3~4단계 카드) / `ToolRecommendFor`(체크 아이콘 bullet) / `ToolFAQ`(질문-답변 + `FAQPage` JSON-LD를 `<script type="application/ld+json">`로 자동 삽입, 기존 `JsonLd` 컴포넌트 재사용) / `ToolRelatedPosts`(선택, posts 배열이 비어있으면 렌더링 자체를 생략) / `ToolContentWrapper`(위 컴포넌트들을 감싸며 `children` 슬롯에 기존 툴 UI를 그대로 유지 — 지침서의 "기존 툴 UI/로직은 건드리지 않음" 원칙 그대로 반영)
+  - 각 페이지(`page.tsx`, 4개 파일 동일 패턴)에서 `getTranslations`로 이미 받아온 서버 컴포넌트 `t`에 `t("content...")`/`t.raw("content...")` 호출을 추가해 `ToolContentWrapper`에 전달, 기존 툴 클라이언트 컴포넌트(`QuoteGeneratorClient` 등)는 `children`으로 감싸기만 해서 변경 없음
+  - **"관련 글 링크"(지침서 5번, 선택 항목)는 이번 범위에서 구현하지 않음**: `dashboard/page.tsx`의 `getSeoRelatedPost()`처럼 `posts.tags`로 관련 글을 매칭하는 패턴이 이미 있어 재사용을 검토했으나, 실제 Supabase `posts` 테이블을 조회해보니 전체 글의 태그가 전부 `["AutoPoster"]`(또는 `"AI News"`)뿐이라 4개 툴 주제(견적/프리랜서/손익/SEO/보고서 작성)와 매칭되는 글이 하나도 없음을 확인 — 무관한 글을 억지로 연결하지 않기 위해 `ToolRelatedPosts` 컴포넌트만 만들어두고 실제 페이지에는 연결하지 않음(향후 관련 태그를 가진 글이 생기면 dashboard와 동일한 패턴으로 붙이면 됨)
+  - 콘텐츠 카피 방향은 지침서 3번 표를 그대로 따름(각 도구별 "이런 고민 있으신가요?" 문제 제기 → 해결 요약 → 3~4단계 사용법 → 추천 대상 4개 → FAQ 5개, 손익 계산기 FAQ에는 지침서 지시대로 "세무 상담 권장" 면책 문구 포함)
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(Turbopack, `/ko`·`/en` 양쪽 4개 툴 페이지 전부 SSG(`●`) 정적 생성 확인 — 지침서 4번 체크리스트의 "CSR만 되면 크롤러가 못 읽음" 우려에 해당 없음) 모두 통과. 빌드 산출물(`.next/server/app/{ko,en}/tools/*.html`)을 직접 grep해 도입부 텍스트와 `"@type":"FAQPage"` JSON-LD가 4개 페이지 모두의 정적 HTML에 실제로 포함되는 것을 확인(지침서 4번 "curl로 SSR 여부 확인" 항목에 해당), 본문 텍스트 분량도 4개 페이지 전부 1,400~1,750자로 목표(600~800자) 상회. `next start`로 로컬 프로덕션 서버를 띄우고 Chrome 자동화로 견적서 생성기(ko, 데스크톱 1400px)·report-checker(en) 페이지가 실제로 정상 렌더링되는 것을 스크린샷으로 확인(도입부 카드, 단계 그리드, 추천 목록, FAQ 목록 모두 레이아웃 정상) — **모바일 실제 폭(390px) 스크린샷은 이번에도 리사이즈 도구가 뷰포트에 반영되지 않아 검증하지 못함**(과거 세션에도 반복된 동일한 도구 한계, 2026-08-21/2026-08-22 기록 참고). 다만 새 CSS(`ToolContent.module.css`)의 반응형 그리드는 기존에 이미 모바일 검증을 마친 `.choiceGrid`/`.resultGrid` 등과 동일한 `grid-template-columns: 1fr` → `repeat(2, 1fr)`(640px 기준) 패턴을 그대로 재사용해 깨질 가능성은 낮다고 판단
+  - **이번 범위에서 하지 않은 것**: Google Search Console "URL 검사"·실시간 색인 요청, About 페이지(지침서 2순위) 작업, 애드센스 재심사 요청 자체 — 전부 사용자가 배포 후 직접 진행해야 하는 대시보드/외부 서비스 작업
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
