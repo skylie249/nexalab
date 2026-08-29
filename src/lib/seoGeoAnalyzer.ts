@@ -333,7 +333,9 @@ function checkMixedContent($: cheerio.CheerioAPI, finalUrl: string): CheckResult
 
 // ── GEO: AI 크롤러 접근성 ────────────────────────────────────────────────
 
-interface RobotsGroup {
+// adsensePrecheckAnalyzer.ts(애드센스 사전 점검기)의 크롤러 접근성 체크가 동일한
+// robots.txt 파싱 로직을 재사용하기 위해 export함 — 로직 중복 방지.
+export interface RobotsGroup {
   agents: string[];
   disallowRoot: boolean;
   hasOwnAllowAll: boolean;
@@ -343,7 +345,7 @@ interface RobotsGroup {
 // 표준 group-matching(가장 구체적인 User-agent 그룹, 없으면 '*' 그룹)만 지원하며,
 // RFC 9309의 경로 단위 longest-match 우선순위까지는 구현하지 않음 — 이 도구의 목적은
 // "전체 차단 여부" 시그널이지 범용 robots.txt 평가기가 아니기 때문(의도적 단순화).
-function parseRobotsGroups(text: string): RobotsGroup[] {
+export function parseRobotsGroups(text: string): RobotsGroup[] {
   const groups: RobotsGroup[] = [];
   let current: RobotsGroup | null = null;
   let sawNonAgentSinceLastAgent = false;
@@ -377,7 +379,7 @@ function parseRobotsGroups(text: string): RobotsGroup[] {
   return groups;
 }
 
-function isBotAllowed(groups: RobotsGroup[], userAgent: string): boolean {
+export function isBotAllowed(groups: RobotsGroup[], userAgent: string): boolean {
   const ua = userAgent.toLowerCase();
   const specific = groups.find((g) => g.agents.includes(ua));
   const group = specific ?? groups.find((g) => g.agents.includes("*"));

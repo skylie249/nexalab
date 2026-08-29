@@ -12,12 +12,14 @@
     "navSeoGeoChecker": "SEO/GEO Checker",
     "navLlmsTxtGenerator": "llms.txt Generator",
     "navReportChecker": "Report Checker",
+    "navAdsensePrecheck": "AdSense Precheck",
     "navAiTools": "🛠️ AI Tools",
     "aiToolsQuoteDesc": "From line items to totals, AI does it all",
     "aiToolsProfitDesc": "Just enter the numbers — net profit calculated instantly",
     "aiToolsSeoDesc": "Check SEO+GEO+accessibility with a single URL",
     "aiToolsLlmsDesc": "Auto-generate an llms.txt for AI crawlers",
     "aiToolsReportDesc": "AI checks structure, clarity, and tone",
+    "aiToolsAdsenseDesc": "Check your ad-review readiness in advance",
     "newBadge": "NEW",
     "navAbout": "About",
     "toggleTheme": "Toggle theme",
@@ -520,6 +522,84 @@
       {
         "question": "Does it check color contrast and keyboard access?",
         "answer": "Yes — it also analyzes CSS for color contrast, focus indicators, and ARIA misuse."
+      },
+      {
+        "question": "Is the site content I check stored anywhere?",
+        "answer": "Only the URL and score are cached briefly; the page's raw content is never stored."
+      }
+    ]
+  },
+  "adsensePrecheck": {
+    "metaTitle": "Free AdSense Precheck Tool - NexaLab.app",
+    "metaDescription": "Enter a URL to get a free check on your AdSense (and other ad platform) review readiness — content volume, policy pages, and crawler access.",
+    "eyebrow": "Free Tool",
+    "title": "Get ready for ad review <highlight>before you apply</highlight>",
+    "subtitle": "Many AdSense rejections come from things you can check in advance — missing policy pages, thin content, blocked crawlers. Enter a URL for a free readiness check.",
+    "urlInputLabel": "URL to check",
+    "urlPlaceholder": "https://example.com",
+    "submitButton": "Check for free",
+    "loadingText": "Checking...",
+    "errorEmptyUrl": "Please enter a URL to check.",
+    "errorGeneric": "Something went wrong. Please try again in a moment.",
+    "formNote": "The URL you enter and the check results are never stored on our servers.",
+    "scoreLabel": "Readiness score",
+    "passLabel": "Passed",
+    "warnLabel": "Needs work",
+    "failLabel": "Failed",
+    "restartButton": "← Check another URL",
+    "manualChecklistTitle": "📋 When automatic checks aren't possible, check these yourself",
+    "manualChecklistNote": "This site can't be checked automatically. We recommend reviewing these items yourself. Nothing you check is stored.",
+    "manualItem1": "Before adding ad code, eyeball whether the ad-to-content ratio looks excessive.",
+    "manualItem2": "Click through every menu on the site and make sure nothing looks like an empty or \"coming soon\" page.",
+    "manualItem3": "Make sure you're not using images or text that could infringe on someone's copyright.",
+    "manualItem4": "Double-check that your 5–10 most recent posts were actually reviewed by a human.",
+    "kakaoShareButton": "Share on KakaoTalk",
+    "kakaoShareCardTitle": "{title} AdSense precheck result",
+    "kakaoShareCardDescription": "Readiness score {score} (grade {grade}) — check your ad-review readiness before you apply.",
+    "kakaoShareCardButton": "Check your own site for free",
+    "kakaoShareCopied": "Link copied",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "You applied to AdSense and got rejected for \"low-value content\" — a vague reason that doesn't say which page or what exactly is wrong. You're not sure whether your privacy policy or about page is missing, or whether crawlers can even read your site properly.",
+    "contentIntroSolution": "The AdSense Precheck tool takes a single URL and automatically checks content volume, policy pages, AdSense crawler access, site skeleton, content structure, and author signals — with a fix guide for each item.",
+    "contentHowToUseTitle": "How to use it",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter the URL to check",
+        "description": "Paste the URL of the site you're preparing for review."
+      },
+      {
+        "title": "Run the automatic check",
+        "description": "Static rule-based analysis checks all 6 categories automatically."
+      },
+      {
+        "title": "Review your score and fix guide",
+        "description": "See your readiness score, pass/needs-work items, and concrete fix hints."
+      }
+    ],
+    "contentRecommendForTitle": "Recommended for",
+    "contentRecommendFor": [
+      "Blog/media owners preparing for an AdSense re-review",
+      "Solo founders applying for ads on a new site for the first time",
+      "Marketers who need to check a client site's ad-review readiness",
+      "Site owners who want a quick check for missing policy pages"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "Does a high score guarantee AdSense approval?",
+        "answer": "No. This score is a reference indicator based on static analysis and does not guarantee an actual review outcome. Platforms keep their review criteria private and can change them at any time."
+      },
+      {
+        "question": "Why does the policy pages category carry the highest weight?",
+        "answer": "Missing policy pages are frequently cited as an actual rejection reason, so we weight this category higher than the others."
+      },
+      {
+        "question": "What happens if a site blocks automatic checks?",
+        "answer": "We'll let you know automatic checking is limited, and show you a manual checklist to review yourself instead."
+      },
+      {
+        "question": "How long does a check take?",
+        "answer": "Usually under 10 seconds. The same URL is cached for 24 hours for faster repeat results."
       },
       {
         "question": "Is the site content I check stored anywhere?",

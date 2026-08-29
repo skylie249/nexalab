@@ -763,6 +763,24 @@ export async function POST(req: Request) {
   - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(Turbopack, 전체 라우트 정상 생성) 모두 통과. 제목 보정·비공개 전환은 Supabase 서비스 롤 키로 직접 실행해 즉시 반영 확인(스크립트 실행 로그로 55건 전부 성공 확인). 조사·수정에 사용한 1회성 스크립트(`scripts/promo-automation/_audit-*.ts` 등)는 작업 완료 후 전부 삭제(커밋 대상 아님)
   - **이번 범위에서 하지 않은 것**: Search Console 인덱싱 현황 확인·재제출(1번, 자격증명 없어 사용자 직접 필요), 영문 `AI Job News` 클러스터 통합/차별화(3-2, 판단은 했으나 조치 없음), 6번 최종 리포트 템플릿 채우기(이 로그가 사실상 그 역할을 대신함), 7번 "애드센스 재검토 요청" 자체(사용자가 대시보드에서 직접 진행)
 
+- **애드센스 사전 점검기(`/tools/adsense-precheck`) 신규 구현** (`adsense-precheck-tool-implementation-guide.md` 기준) — URL 입력 → 콘텐츠 볼륨/정책 페이지/크롤러 접근성/사이트 골격/콘텐츠 구조/저자 신호 6개 카테고리 정적 분석 → 가중 점수 산출. 1~3순위(툴 콘텐츠, About·카테고리, 전체 볼륨 정리) 완료 후 "재심사 전 마지막 자가 점검" 도구로 위치
+  - **0번 선행 조사에서 지침서와 다르게 확인된 것(그대로 반영)**:
+    1. 기존 SEO/GEO 체커는 `lib/adsense-precheck/`처럼 체크당 파일을 쪼갠 구조가 아니라 `seoGeoAnalyzer.ts`(cheerio 분석)/`seoGeoConfig.ts`(순수 상수)/`seoGeoTypes.ts`(클라이언트 안전 타입) 3파일 구조 — 동일하게 `adsensePrecheckAnalyzer.ts`/`Config.ts`/`Types.ts` 3파일로 구현(guide의 8파일 `lib/adsense-precheck/` 디렉터리 구조 대신)
+    2. `/result/[hash]` 공유 결과 페이지는 실제로 존재하지 않음 — `supabase-seo-check-cache.sql` 주석에 "공유 가능한 결과 페이지는 만들지 않는다"고 이미 명시돼 있었음. 공유는 `KakaoShareButton`(카카오 SDK 미초기화 시 클립보드 폴백)으로만 처리하는 기존 패턴을 그대로 따름 — 새 라우트를 만들지 않음
+    3. robots.txt 파싱(`parseRobotsGroups`/`isBotAllowed`)은 실제로 재사용 가능해, `seoGeoAnalyzer.ts`에서 두 함수와 `RobotsGroup` 인터페이스를 `export`만 추가해 새 분석기가 import하도록 함(로직 중복 없이 진짜 재사용) — 대상 UA만 `Googlebot`/`Mediapartners-Google`로 교체
+    4. 콘텐츠 글자수 카운트는 report-checker의 `text.replace(/\s/g, "").length`(공백 제거 후 길이) 방식을 그대로 재사용
+  - **점수 산출은 SEO/GEO 체커와 다른 방식 채택**: 기존 체커의 단순 평균(pass=1/warn=0.5/fail=0 전체 평균)과 달리, 이 도구는 지침서가 명시한 카테고리별 가중치(정책 페이지 30%·콘텐츠 볼륨 25%·크롤러 접근성 15%·사이트 골격 15%·콘텐츠 구조 10%·저자 신호 5%)를 그대로 적용한 가중합 방식 — "정책 페이지 누락은 반려 직결 항목이라 최고 가중치"라는 지침서의 명시적 설계 의도를 살리기 위해 기존 컨벤션에서 의도적으로 벗어남(`adsensePrecheckAnalyzer.ts`의 `computeScore`)
+  - **정책 페이지 탐지 흐름 분리**: `extractPolicyPageCandidates()`(순수 함수, cheerio로 `<a>` 텍스트+href를 `POLICY_KEYWORDS`와 매칭해 privacy/about/contact 카테고리별 첫 후보 링크만 추출)는 분석기에 두고, 후보 URL을 실제로 `safeFetch`해 200 응답인지 검증하는 네트워크 호출은 API 라우트(`route.ts`)가 담당 — `analyze()`는 seoGeoAnalyzer.ts와 동일하게 네트워크 호출 없는 순수 함수 원칙을 유지. 후보 자체가 없으면 `fail`, 후보는 있지만 요청 실패(404/timeout)면 `warn`(지침서 2-3의 명시적 예외 처리 그대로), 200 응답 확인되면 `pass`
+  - **본문 텍스트 추출**: `<article>` 우선 → 없으면 `<main>` → 그것도 없으면 `<body>`에서 script/style/nav/header/footer/aside를 제거한 나머지 사용(guide 2-2 "nav/footer/sidebar 텍스트 제외" 요구 반영)
+  - **캐싱/rate limit**: `seo_check_cache`와 동일 패턴으로 신규 테이블 `adsense_precheck_cache`(SQL: `supabase-adsense-precheck-cache.sql`, anon INSERT/SELECT만 허용, UPDATE/DELETE 정책 없음)를 도입 — 지침서가 제안한 "기존 캐시 테이블에 prefix로 구분" 방식 대신 테이블당 도구 1개라는 기존 실제 컨벤션을 따름. Rate limit도 `src/proxy.ts`의 기존 `RATE_LIMITS` 맵에 `/api/adsense-precheck: 20회/24시간`(seo-check와 동일 한도, Gemini 비용은 없지만 URL당 최대 6회 서버 fetch가 발생해 SSRF/스크래핑 남용 우려가 같음)로 등록
+  - **수동 체크리스트(지침서 4번)**: 자동 점검이 실패(대상 사이트가 서버 fetch를 차단하는 경우 등)했을 때만 노출 — SEO/GEO 체커의 a11y 수동 체크리스트(성공 후 항상 노출)와 달리, 이 도구는 지침서가 "자동 점검 실패 시 대체 콘텐츠"로 명시했으므로 에러 상태에서만 렌더링
+  - **부수 발견·수정 — `src/app/sitemap.ts`에 llms.txt 생성기·report-checker 경로가 애초에 빠져 있었음**: 이번 작업(지침서 8번 "sitemap.xml에 신규 툴 경로 반영")을 하며 보니 `STATIC_PATHS`에 `/tools/seo-geo-checker`까지만 있고 그 이후 출시된 두 도구가 등록된 적이 없었음 — `adsense-precheck`와 함께 두 경로도 같이 추가(이번 작업과 직접 관련은 없지만 같은 원인의 누락이라 함께 반영)
+  - **1순위 패턴 재사용(지침서 8번)**: 다른 4개 도구와 동일하게 `ToolContentWrapper`(도입부/사용법/추천대상/FAQ)를 페이지 출시 시점부터 적용 — 신규 도구가 콘텐츠 볼륨 부족으로 같은 반려 사유를 재발시키지 않도록 함
+  - **Header 내비게이션·llms.txt**: "AI 도구" 드롭다운에 "애드센스 사전 점검"(NEW) 추가, `public/llms.txt`의 Free Tools 목록에도 항목 추가
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(Turbopack, `/ko`·`/en` 양쪽 `/tools/adsense-precheck` 정적 생성 + `/api/adsense-precheck` Dynamic 라우트 확인) 모두 통과. `next start` 로컬 프로덕션 서버로 실제 API 호출 검증: nexalab.app 홈(`/ko`, 카드형 페이지라 본문 175자로 콘텐츠 볼륨 fail — 홈페이지 자체는 원래 본문이 짧으므로 정확한 판정) 73점/C, 실제 블로그 글 페이지는 1,577자로 콘텐츠 볼륨 pass에 100점/A까지 정상 산출되는 것을 확인해 `<article>` 우선 추출 로직이 올바르게 동작함을 검증. 정책 페이지 3종(개인정보처리방침/about/contact) 모두 실제 footer 링크를 정확히 찾아 200 확인까지 성공하는 것도 확인. 캐시 테이블이 아직 없는 상태(사용자가 SQL 미실행)에서도 캐시 조회/기록 실패가 로그로만 남고 응답은 정상 반환되는 graceful degradation 확인(seo_check_cache와 동일 패턴). 존재하지 않는 도메인 입력 시 "해당 도메인을 찾을 수 없습니다" 에러 확인. Chrome 자동화로 결과 화면(점수 카드, 배지, 카테고리 섹션, 카카오 공유 버튼) 라이트 모드 렌더링 확인 — **모바일 실제 폭 스크린샷은 이번에도 리사이즈 도구가 반영되지 않아 검증하지 못함**(반복되는 도구 한계, 과거 세션 기록과 동일). 다만 CSS는 이미 모바일 검증된 seo-geo-checker의 `page.module.css`를 클래스명까지 그대로 재사용했으므로 깨질 가능성은 낮다고 판단
+  - **사용자 작업 필요**: Supabase 대시보드 SQL Editor에서 `supabase-adsense-precheck-cache.sql` 실행 — 실행 전까지는 캐시 없이 매번 새로 분석(정상 동작, 성능 이점만 없음)
+  - **이번 범위에서 하지 않은 것**: 지침서 8번의 Search Console 신규 URL 등록·색인 요청(배포 후 사용자 직접 필요)
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

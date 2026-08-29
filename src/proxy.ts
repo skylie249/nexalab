@@ -23,6 +23,7 @@ const RATE_LIMITS: Record<string, RateLimitRule> = {
   "/api/quote": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
   "/api/wizard-to-request": { max: 8, windowMs: 24 * 60 * 60 * 1000 },
   "/api/seo-check": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
+  "/api/adsense-precheck": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-check": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-rewrite": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
 };
@@ -89,6 +90,7 @@ export const config = {
     "/api/quote",
     "/api/wizard-to-request",
     "/api/seo-check",
+    "/api/adsense-precheck",
     "/api/report-check",
     "/api/report-rewrite",
     "/admin/:path*",
