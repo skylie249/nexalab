@@ -30,6 +30,7 @@ function languageAlternates(path: string) {
 interface PostRow {
   id: string;
   created_at: string;
+  updated_at: string;
   categories: { locale?: string } | { locale?: string }[] | null;
 }
 
@@ -52,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const { data: posts } = await supabase
       .from("posts")
-      .select("id, created_at, categories(locale)")
+      .select("id, created_at, updated_at, categories(locale)")
       .eq("published", true);
 
     for (const post of (posts || []) as PostRow[]) {
@@ -60,7 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const locale = categoryData?.locale === "en" ? "en" : "ko";
       entries.push({
         url: `${SITE_URL}/${locale}/posts/${post.id}`,
-        lastModified: new Date(post.created_at),
+        lastModified: new Date(post.updated_at ?? post.created_at),
         changeFrequency: "monthly",
         priority: 0.6,
       });
