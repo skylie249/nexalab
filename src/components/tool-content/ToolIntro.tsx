@@ -10,7 +10,7 @@ export default function ToolIntro({
   solution: string;
 }) {
   return (
-    <section className={`${styles.section} ${styles.introSection} glass`}>
+    <section className={`${styles.section} glass`}>
       <h2 className={styles.sectionTitle}>{title}</h2>
       <p className={styles.introProblem}>{problem}</p>
       <p className={styles.introSolution}>{solution}</p>
