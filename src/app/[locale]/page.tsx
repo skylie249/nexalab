@@ -36,6 +36,7 @@ const PAGE_SIZE = 6;
 const CATEGORY_ICONS: Record<string, string> = {
   "ai-apps": "🤖",
   "biz-ideas": "💡",
+  "ai-job-news": "📰",
 };
 
 const CATEGORY_INTRO: Record<string, { descKey: string; countKey: string; tagKeys: string[] }> = {
@@ -58,6 +59,16 @@ const CATEGORY_INTRO: Record<string, { descKey: string; countKey: string; tagKey
       "categoryIntroBizTag2",
       "categoryIntroBizTag3",
       "categoryIntroBizTag4",
+    ],
+  },
+  "ai-job-news": {
+    descKey: "categoryIntroJobNewsDesc",
+    countKey: "categoryIntroJobNewsCount",
+    tagKeys: [
+      "categoryIntroJobNewsTag1",
+      "categoryIntroJobNewsTag2",
+      "categoryIntroJobNewsTag3",
+      "categoryIntroJobNewsTag4",
     ],
   },
 };

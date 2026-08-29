@@ -225,20 +225,6 @@
   justify-content: center;
 }
 
-.disclosure {
-  max-width: 700px;
-  margin: -1.5rem auto 0;
-  padding: 0.85rem 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  line-height: 1.6;
-  text-align: center;
-  text-wrap: balance;
-}
-
 .note {
   padding: 2rem;
   border-radius: 1rem;

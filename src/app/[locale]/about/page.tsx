@@ -99,6 +99,11 @@ export default async function AboutPage({
         <p>{t("storyBody")}</p>
       </section>
 
+      <section className={`${styles.storySection} glass`}>
+        <h2>{t("philosophyTitle")}</h2>
+        <p>{t("philosophyBody")}</p>
+      </section>
+
       <section>
         <h2 className={styles.sectionTitle}>{t("coverageTitle")}</h2>
         <div className={styles.gridThree}>
@@ -128,7 +133,10 @@ export default async function AboutPage({
         </div>
       </section>
 
-      <p className={styles.disclosure}>🤖 {t("disclosureText")}</p>
+      <section className={`${styles.storySection} glass`}>
+        <h2>{t("principleTitle")}</h2>
+        <p>{t("principleBody")}</p>
+      </section>
 
       <section className={`${styles.note} glass`}>
         <h2>{t("contactTitle")}</h2>

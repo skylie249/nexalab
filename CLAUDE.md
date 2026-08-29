@@ -736,6 +736,21 @@ export async function POST(req: Request) {
   - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(Turbopack, `/ko`·`/en` 양쪽 4개 툴 페이지 전부 SSG(`●`) 정적 생성 확인 — 지침서 4번 체크리스트의 "CSR만 되면 크롤러가 못 읽음" 우려에 해당 없음) 모두 통과. 빌드 산출물(`.next/server/app/{ko,en}/tools/*.html`)을 직접 grep해 도입부 텍스트와 `"@type":"FAQPage"` JSON-LD가 4개 페이지 모두의 정적 HTML에 실제로 포함되는 것을 확인(지침서 4번 "curl로 SSR 여부 확인" 항목에 해당), 본문 텍스트 분량도 4개 페이지 전부 1,400~1,750자로 목표(600~800자) 상회. `next start`로 로컬 프로덕션 서버를 띄우고 Chrome 자동화로 견적서 생성기(ko, 데스크톱 1400px)·report-checker(en) 페이지가 실제로 정상 렌더링되는 것을 스크린샷으로 확인(도입부 카드, 단계 그리드, 추천 목록, FAQ 목록 모두 레이아웃 정상) — **모바일 실제 폭(390px) 스크린샷은 이번에도 리사이즈 도구가 뷰포트에 반영되지 않아 검증하지 못함**(과거 세션에도 반복된 동일한 도구 한계, 2026-08-21/2026-08-22 기록 참고). 다만 새 CSS(`ToolContent.module.css`)의 반응형 그리드는 기존에 이미 모바일 검증을 마친 `.choiceGrid`/`.resultGrid` 등과 동일한 `grid-template-columns: 1fr` → `repeat(2, 1fr)`(640px 기준) 패턴을 그대로 재사용해 깨질 가능성은 낮다고 판단
   - **이번 범위에서 하지 않은 것**: Google Search Console "URL 검사"·실시간 색인 요청, About 페이지(지침서 2순위) 작업, 애드센스 재심사 요청 자체 — 전부 사용자가 배포 후 직접 진행해야 하는 대시보드/외부 서비스 작업
 
+- **애드센스 재심사 대응 2순위: About·카테고리 인트로 콘텐츠 보강** (`adsense-about-category-guide.md` 지침 기준) — 1순위(툴 페이지) 작업에 이어, 사이트 기본 골격(About·카테고리)의 신뢰도·완성도를 보강
+  - **착수 전 조사 결과, 지침서 체크리스트 상당 부분이 이미 충족돼 있음을 확인**(과거 세션에서 별도로 작업된 것으로 보임, 이번 세션 로그에는 해당 작업 기록이 없어 정확한 시점은 불명):
+    - Privacy Policy(`privacy` 네임스페이스): 서비스명(NexaLab.app)·운영자명·GA4/AdSense 쿠키 수집 항목·Supabase/Vercel 등 제3자 서비스·보유기간·연락처까지 이미 10개 섹션으로 상세히 구성돼 있어 추가 보강 불필요로 판단, 변경하지 않음
+    - Contact 페이지: 이메일 카드 + 문의 유형 4종(협업·광고·버그·기타, 유형별 아이콘/설명/메일 subject 프리셋) + 소셜 링크 + 응답 안내까지 이미 구조화돼 있어 "1~2줄뿐인 빈약한 콘텐츠"에 해당하지 않음, 변경하지 않음
+    - Footer(`Footer.tsx`)의 Contact 링크: 이미 `mailto`/난독화 이메일이 아니라 `/contact`(로케일 인식 `Link`)로 연결되어 있어 지침서가 우려한 문제가 해당 없음
+    - 카테고리 10개 미만 통합/삭제 검토: 실제 Supabase `categories` 테이블을 조회해 카테고리별 발행 글 수를 확인한 결과 AI Applications(ko) 51편, Business & Ideas(ko) 20편, **AI Job News(en) 13편**(이전 세션 로그에는 등장한 적 없는 카테고리 — 별도 세션에서 생성된 것으로 추정) 전부 10편을 훨씬 상회해 통합/삭제 대상 없음
+  - **실제로 보강한 것 — About 페이지**(`src/app/[locale]/about/page.tsx`): 지침서 1-1 표의 5개 요소 중 이미 있던 저자 소개(프로필 카드, 실명+직함+GitHub/LinkedIn)·콘텐츠 요약(Coverage 3카드)·연락 방법(Contact 섹션)은 유지하고, 빠져 있던 2개 섹션을 신규 추가
+    - "왜 도구를 전부 무료로 제공하나요"(`philosophyTitle`/`philosophyBody`, 약 227자): 지침서 1-1이 명시적으로 권장한 "무료 툴을 트래픽 훅으로 쓰는 전략 자체를 솔직하게 설명" 방향을 그대로 반영 — 광고 수익 확보 목적과 무저장 원칙 유지를 함께 명시해 방문자 신뢰를 해치지 않는 톤으로 작성
+    - "콘텐츠는 어떻게 만들어지나요"(`principleTitle`/`principleBody`, 약 225자): 기존에 있던 한 줄짜리 `disclosureText`("AI와 함께 작성합니다")를 지침서 1-2 "AI 생성 콘텐츠는 투명하게, 검수 프로세스와 함께 명시" 원칙에 맞춰 정식 섹션으로 확장 — AI 초안+사람 검수 프로세스, 무료 도구 4종도 직접 사용하며 다듬는다는 점, 대략적인 업데이트 주기(주 1~2회)까지 포함. 기존 `disclosureText` 키와 전용 CSS(`.disclosure`)는 더 이상 쓰이지 않아 함께 제거
+    - 두 섹션 모두 기존 `storySection` 클래스(글래스 카드, 좌측 정렬 h2+p)를 그대로 재사용해 새 CSS 없이 기존 디자인 톤과 일치시킴
+  - **실제로 보강한 것 — 카테고리 인트로**(`src/app/[locale]/page.tsx`의 `CATEGORY_INTRO`/`CATEGORY_ICONS`): 기존 ai-apps/biz-ideas(ko) 인트로가 각각 36~38자로 지침서 목표(200~300자)에 크게 못 미쳐, 지침서 2-2 템플릿("[카테고리]는 [주제범위]... 주로 [하위주제]... [타겟독자]에게... [추천 상황]")대로 확장(약 225~248자). 위에서 발견한 세 번째 카테고리 **AI Job News(en, 13편)**는 `CATEGORY_INTRO`/`CATEGORY_ICONS`(📰) 맵 자체에 아예 없어 `/en` 홈에서 카테고리 탭을 눌러도 인트로 블록이 노출되지 않던 상태였음 — 신규로 영문 인트로(약 470자)를 작성해 추가
+    - `ai-job-news`는 실제 글 내용이 전부 영어(해외 AI 트렌드 뉴스)라 한국어 사이트(`/ko`)에서는 이 카테고리 자체가 노출될 일이 없지만(카테고리는 `locale` 컬럼으로 분리 운영), 기존 ai-apps/biz-ideas가 en.json에도 대칭으로 복사돼 있던 기존 컨벤션을 따라 ko.json에도 동일 키를 함께 추가(실사용은 안 되지만 두 메시지 파일 간 키 대칭 유지)
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(Turbopack, `/ko`·`/en` 양쪽 `/about` SSG 정적 생성 확인) 모두 통과. 빌드 산출물(`.next/server/app/{ko,en}/about.html`)을 직접 확인해 새 섹션 텍스트가 실제 정적 HTML에 포함되는 것과 본문 텍스트 분량(태그/헤더 제외 순수 텍스트 기준 ko 약 1,981자, en 약 3,457자 — 지침서 목표 1,000자를 크게 상회)을 확인. `next start` 로컬 프로덕션 서버 + curl로 `/ko?category=ai-apps`, `/ko?category=biz-ideas`, `/en?category=ai-job-news` 세 조합 모두 새 인트로 텍스트가 SSR 응답에 포함되는 것을 확인(1순위와 동일한 검증 방식). Chrome 자동화로 `/ko/about`(신규 두 섹션 레이아웃)과 `/ko?category=ai-apps`(확장된 카테고리 인트로) 실제 렌더링을 스크린샷으로 확인 — 레이아웃 깨짐 없음
+  - **이번 범위에서 하지 않은 것**: Google Search Console URL 검사·색인 요청, 삭제/통합된 카테고리가 없어 301 리다이렉트 작업 자체가 불필요, 애드센스 재심사 요청 자체는 1·2순위 전부 완료 후 사용자가 직접 진행
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
