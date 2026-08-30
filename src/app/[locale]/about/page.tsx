@@ -70,7 +70,7 @@ export default async function AboutPage({
           <div className={styles.links}>
             <Link href="https://github.com/skylie249/" target="_blank" rel="noopener noreferrer">GitHub</Link>
             <Link href="https://www.linkedin.com/in/nexalab0812" target="_blank" rel="noopener noreferrer">LinkedIn</Link>
-            <Link href="mailto:kimhg249@gmail.com">Contact</Link>
+            <Link href="/contact">Contact</Link>
           </div>
         </div>
       </section>
