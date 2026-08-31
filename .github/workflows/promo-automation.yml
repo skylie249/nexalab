@@ -17,6 +17,14 @@ on:
 permissions:
   contents: write
 
+# 이벤트 기반 트리거(post_id별 repository_dispatch)라 두 개 이상의 실행이 겹칠 수 있는데,
+# 겹치면 마지막에 push하는 쪽이 .last-run.json 커밋 단계에서 non-fast-forward로 실패한다.
+# cancel-in-progress를 false로 둬서 대기 중인 실행이 취소되지 않고 순서대로 처리되게 한다
+# (취소하면 그 실행이 담당하던 post_id가 그대로 유실됨).
+concurrency:
+  group: promo-automation
+  cancel-in-progress: false
+
 jobs:
   promo-automation:
     runs-on: ubuntu-latest
