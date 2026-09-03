@@ -13,7 +13,6 @@ export interface GeneratedCopy {
   postUrl: string;
   naverCopy: string;
   kakaoCopy: string;
-  facebookCopy: string;
   bandCopy: string;
 }
 

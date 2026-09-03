@@ -15,29 +15,33 @@ const REQUEST_DELAY_MS = 5000;
 // 제목/본문은 AI에게 각각 별도 필드로 받아 이 구분자로 코드에서 직접 조립한다.
 const TITLE_BODY_SEPARATOR = "\n━━━━━━━━━━\n";
 
-// 4개 채널(네이버/카톡/페이스북/밴드) 본문의 최소 분량(자).
-const MIN_LONG_BODY_LENGTH = 180;
+// 3개 채널(네이버/카톡/밴드) 본문의 최소 분량(자). 목표(800자)에 약 12% 여유를 둔다.
+const MIN_LONG_BODY_LENGTH = 700;
 
-const SYSTEM_INSTRUCTION = `당신은 55세 전후 사무직 독자를 대상으로 블로그 글을 홍보하는 카피라이터입니다.
+const SYSTEM_INSTRUCTION = `당신은 55세 전후 사무직 독자를 대상으로 블로그 글을 홍보하는 카피라이터입니다. 짧은 홍보 문구가 아니라, 그 자체로 읽을 만한 "홍보글"(긴 게시글)을 작성합니다.
 
 지켜야 할 규칙:
 - SEO, GEO, API 같은 기술 용어는 그대로 쓰지 말고 쉬운 말로 풀어서 설명하세요.
-- 각 채널마다 눈길을 끄는 짧은 제목을 먼저 만들고, 그 아래에 본문 문구를 작성하세요. 제목은 본문 내용을 그대로 반복하지 말고 클릭/호기심을 유도하는 한 줄로 작성하세요(15자 내외).
-- 모든 채널(네이버/카톡/페이스북/밴드) 본문은 "훅(호기심을 유발하는 한 줄) → 공감(독자가 겪는 불편함에 공감) → 소개(AI가 이렇게 해결해준다는 한두 줄) → CTA(글을 읽어보라는 행동 유도 문장)" 4단 구조를 반드시 포함해 각 단계가 자연스럽게 이어지도록 작성하세요.
+- 각 채널마다 눈길을 끄는 제목을 먼저 만드세요. 제목은 본문 내용을 그대로 반복하지 말고 클릭/호기심을 유도하는 한 줄로 작성하세요(15자 내외).
+- 모든 채널(네이버/카톡/밴드) 본문은 800~1200자 분량의 블로그형 게시글로, 아래 6단 구조를 각 단계마다 짧은 소제목 한 줄 + 그 아래 1~3문단으로 작성하세요. 소제목은 마크다운(#, ##) 기호 없이 "▶ 소제목" 형식의 일반 텍스트 줄로 쓰세요(네이버/카톡/밴드는 마크다운을 렌더링하지 않는 일반 텍스트 게시판입니다).
+  1. 훅: 호기심을 유발하는 도입 한두 문장
+  2. 공감: 독자가 실제로 겪는 불편함/고민을 구체적으로 짚어주기
+  3. 문제 제기: 그 불편함이 왜 해결되지 않고 방치되는지, 흔한 착각이나 시행착오
+  4. 해결책 소개: 소개할 도구/글이 무엇이고 어떻게 이 문제를 해결하는지
+  5. 사용법/효과: 실제로 어떻게 쓰는지, 써보면 어떤 점이 달라지는지 구체적으로
+  6. CTA: 글을 읽어보라는 자연스러운 행동 유도 문장(URL은 본문에 직접 쓰지 말 것 — 시스템이 별도로 붙입니다)
 - 광고처럼 보이지 않는, 자연스러운 존댓말체로 작성하세요.
-- 이모지는 최소화하세요.
-- 채널별 톤을 구분하세요: 네이버 블로그는 정보를 차근차근 짚어주는 정보성 톤, 카톡은 친구에게 말하듯 편한 구어체, 페이스북은 같은 처지의 동료에게 경험을 공유하는 톤, 밴드는 동호회 회원들에게 다정하게 정보를 나눠주는 존댓말 톤으로 작성하세요.
+- 이모지는 최소화하세요(전체 본문에 2개 이하).
+- 채널별 톤을 구분하세요: 네이버 블로그는 정보를 차근차근 짚어주는 정보성 톤, 카톡은 친구에게 말하듯 편한 구어체(다만 분량과 소제목 구조는 동일하게 유지), 밴드는 동호회 회원들에게 다정하게 정보를 나눠주는 존댓말 톤으로 작성하세요.
 
 반드시 아래 JSON 형식으로만 응답하세요. 코드블록이나 다른 설명 없이 JSON 객체 하나만 출력하세요.
 {
   "naverTitle": "네이버 블로그 소개용 제목",
-  "naverCopy": "네이버 블로그 소개용 본문 문구",
+  "naverCopy": "네이버 블로그 소개용 본문 홍보글(800~1200자, 소제목 포함)",
   "kakaoTitle": "카톡 공유용 제목",
-  "kakaoCopy": "카톡 공유용 본문 문구",
-  "facebookTitle": "페이스북 그룹용 제목",
-  "facebookCopy": "페이스북 그룹용 본문 문구",
+  "kakaoCopy": "카톡 공유용 본문 홍보글(800~1200자, 소제목 포함)",
   "bandTitle": "네이버 밴드 공유용 제목",
-  "bandCopy": "네이버 밴드 공유용 본문 문구"
+  "bandCopy": "네이버 밴드 공유용 본문 홍보글(800~1200자, 소제목 포함)"
 }`;
 
 function sanitizeSnippet(text: string): string {
@@ -46,30 +50,60 @@ function sanitizeSnippet(text: string): string {
 
 function buildPrompt(post: DetectedPost): string {
   const snippet = sanitizeSnippet(post.excerpt || post.content).slice(0, 800);
-  return `다음 블로그 글을 보고 3개 채널용 홍보 문구를 만들어주세요.
+  return `다음 블로그 글을 보고 3개 채널용 홍보글을 만들어주세요.
 
 글 제목: ${post.title}
 글 URL: ${post.url}
 글 요약/본문 일부: ${snippet}
 
-각 문구는 아래 조건을 반드시 지켜서, 글 URL을 포함한 "바로 복사해 붙여넣을 수 있는 완성형"으로 작성하세요. 제목(Title)은 본문(Copy)과 별개 필드이며, 코드에서 구분 기호로 이어붙일 것이므로 본문에 제목을 다시 쓰지 마세요.
+각 홍보글은 아래 조건을 반드시 지켜서, "바로 복사해 붙여넣을 수 있는 완성형" 게시글로 작성하세요. 제목(Title)은 본문(Copy)과 별개 필드이며, 코드에서 구분 기호로 이어붙일 것이므로 본문에 제목을 다시 쓰지 마세요. URL도 코드에서 본문 끝에 자동으로 붙이므로 본문 안에 직접 쓰지 마세요.
 
-1. naver (네이버 블로그 소개용): 제목은 10~20자, 본문은 최소 200자 이상으로 정보를 차근차근 짚어주는 정보성 톤, 4단 구조(훅-공감-소개-CTA)를 갖춰 작성
-2. kakao (카톡 공유용): 제목은 8~15자, 본문은 최소 200자 이상으로 친구에게 말하듯 편한 구어체, 4단 구조(훅-공감-소개-CTA)를 갖춰 작성. 이모지는 본문에 최대 1개까지만(55세 타겟은 과도한 이모지에 거부감이 있을 수 있음)
-3. facebook (페이스북 그룹용): 제목은 10~20자, 본문은 최소 200자 이상으로 소상공인/자영업자 그룹에 어울리는 경험 공유 톤(예: "~해봤는데 괜찮더라구요")으로 4단 구조를 갖춰 작성
-4. band (네이버 밴드 공유용): 제목은 10~15자, 본문은 최소 200자 이상으로 동호회/소모임 밴드에 정보를 나눠주듯 다정한 존댓말 톤(예: "회원님들께 도움 될 것 같아 공유합니다")으로 4단 구조를 갖춰 작성`;
+1. naver (네이버 블로그 소개용): 제목은 10~20자, 본문은 800~1200자로 정보를 차근차근 짚어주는 정보성 톤, 소제목 포함 6단 구조(훅-공감-문제제기-해결책소개-사용법/효과-CTA)를 갖춰 작성
+2. kakao (카톡 공유용): 제목은 8~15자, 본문은 800~1200자로 친구에게 말하듯 편한 구어체, 소제목 포함 6단 구조(훅-공감-문제제기-해결책소개-사용법/효과-CTA)를 갖춰 작성. 이모지는 본문 전체에 최대 2개까지만(55세 타겟은 과도한 이모지에 거부감이 있을 수 있음)
+3. band (네이버 밴드 공유용): 제목은 10~15자, 본문은 800~1200자로 동호회/소모임 밴드에 정보를 나눠주듯 다정한 존댓말 톤(예: "회원님들께 도움 될 것 같아 공유합니다")으로 소제목 포함 6단 구조를 갖춰 작성`;
 }
 
-// responseMimeType: "application/json"를 지정해도 코드펜스나 JSON 뒤에 부가 설명이 붙어 나오는
-// 경우가 실제로 관측되어(예: 영문 글 처리 중 JSON 뒤에 후행 텍스트가 붙어 JSON.parse가 실패),
-// 첫 "{"부터 마지막 "}"까지만 잘라내는 방식으로 방어한다(lib/reportCheckerGemini.ts와 동일한 패턴).
+// responseMimeType: "application/json"를 지정해도 코드펜스나 JSON 뒤에 부가 설명(또는 스트레이
+// 중괄호 하나)이 붙어 나오는 경우가 실제로 관측된다. 본문이 800~1200자로 길어지면서 마지막
+// "}"를 단순 lastIndexOf로 찾는 방식(과거 lib/reportCheckerGemini.ts와 동일한 패턴)은, 모델이
+// 유효한 JSON 뒤에 여분의 "}"를 하나 더 붙이는 경우(실측됨) 그 여분까지 슬라이스에 포함시켜
+// "Unexpected non-whitespace character after JSON" 파싱 실패를 유발한다. 첫 "{"부터 문자열
+// 리터럴(이스케이프 포함)을 건너뛰며 중괄호 깊이를 직접 추적해, 그 "{"와 실제로 짝이 맞는
+// "}"만 찾아 슬라이스한다.
 function extractJson(raw: string): unknown {
   const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start === -1 || end === -1 || end < start) {
+  if (start === -1) {
     throw new Error("응답에서 JSON을 찾을 수 없습니다.");
   }
-  return JSON.parse(raw.slice(start, end + 1));
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < raw.length; i++) {
+    const ch = raw[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === "{") {
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0) {
+        return JSON.parse(raw.slice(start, i + 1));
+      }
+    }
+  }
+
+  throw new Error("응답에서 짝이 맞는 JSON 닫는 괄호를 찾을 수 없습니다.");
 }
 
 function sleep(ms: number): Promise<void> {
@@ -82,8 +116,6 @@ function buildResult(post: DetectedPost, raw: string): GenerateResult {
     naverCopy: string;
     kakaoTitle: string;
     kakaoCopy: string;
-    facebookTitle: string;
-    facebookCopy: string;
     bandTitle: string;
     bandCopy: string;
   }>;
@@ -93,22 +125,19 @@ function buildResult(post: DetectedPost, raw: string): GenerateResult {
     !parsed.naverCopy ||
     !parsed.kakaoTitle ||
     !parsed.kakaoCopy ||
-    !parsed.facebookTitle ||
-    !parsed.facebookCopy ||
     !parsed.bandTitle ||
     !parsed.bandCopy
   ) {
     throw new Error(
-      "응답 JSON에 필수 필드(naverTitle/naverCopy/kakaoTitle/kakaoCopy/facebookTitle/facebookCopy/bandTitle/bandCopy)가 없습니다."
+      "응답 JSON에 필수 필드(naverTitle/naverCopy/kakaoTitle/kakaoCopy/bandTitle/bandCopy)가 없습니다."
     );
   }
 
-  // 4채널 모두 프롬프트 지시만으로는 분량이 종종 못 미치는 경우가 있어 런타임에서도 강제한다.
-  // LLM의 글자 수 카운팅이 정확하지 않아 목표(200자)에 10% 여유(180자)를 둔다.
-  const longBodies: Array<["naverCopy" | "kakaoCopy" | "facebookCopy" | "bandCopy", string]> = [
+  // 3채널 모두 프롬프트 지시만으로는 분량이 종종 못 미치는 경우가 있어 런타임에서도 강제한다.
+  // LLM의 글자 수 카운팅이 정확하지 않아 목표(800자)에 여유(700자)를 둔다.
+  const longBodies: Array<["naverCopy" | "kakaoCopy" | "bandCopy", string]> = [
     ["naverCopy", parsed.naverCopy],
     ["kakaoCopy", parsed.kakaoCopy],
-    ["facebookCopy", parsed.facebookCopy],
     ["bandCopy", parsed.bandCopy],
   ];
   const tooShort = longBodies.find(([, body]) => body.length < MIN_LONG_BODY_LENGTH);
@@ -117,16 +146,21 @@ function buildResult(post: DetectedPost, raw: string): GenerateResult {
     throw new Error(`${field}가 최소 분량(${MIN_LONG_BODY_LENGTH}자) 미달입니다 (${body.length}자).`);
   }
 
+  // 프롬프트가 모델에게 "URL은 본문에 쓰지 말라"고 지시하는 대신, CTA 뒤에 실제 링크를
+  // 코드에서 결정적으로 붙인다(제목/본문 구분자를 코드에서 조립하는 것과 동일한 이유 —
+  // 모델이 매번 URL 형식/위치를 다르게 쓰거나 누락하는 것을 방지). 이 URL_SUFFIX가 빠지면
+  // "바로 복사해 붙여넣을 수 있는 완성형" 문구에 정작 링크가 없는 상태가 된다.
+  const urlSuffix = `\n\n👉 ${post.url}`;
+
   return {
     post,
     status: "ok",
     copy: {
       postTitle: post.title,
       postUrl: post.url,
-      naverCopy: `${parsed.naverTitle}${TITLE_BODY_SEPARATOR}${parsed.naverCopy}`,
-      kakaoCopy: `${parsed.kakaoTitle}${TITLE_BODY_SEPARATOR}${parsed.kakaoCopy}`,
-      facebookCopy: `${parsed.facebookTitle}${TITLE_BODY_SEPARATOR}${parsed.facebookCopy}`,
-      bandCopy: `${parsed.bandTitle}${TITLE_BODY_SEPARATOR}${parsed.bandCopy}`,
+      naverCopy: `${parsed.naverTitle}${TITLE_BODY_SEPARATOR}${parsed.naverCopy}${urlSuffix}`,
+      kakaoCopy: `${parsed.kakaoTitle}${TITLE_BODY_SEPARATOR}${parsed.kakaoCopy}${urlSuffix}`,
+      bandCopy: `${parsed.bandTitle}${TITLE_BODY_SEPARATOR}${parsed.bandCopy}${urlSuffix}`,
     },
   };
 }
