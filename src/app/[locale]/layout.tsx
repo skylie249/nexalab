@@ -39,6 +39,7 @@ export async function generateMetadata({
     metadataBase: new URL(SITE_URL),
     title,
     description,
+    authors: [{ name: "Kim Ho-gyun", url: absoluteUrl(`/${locale}/about`) }],
     alternates: buildAlternates(locale as Locale, "/"),
     openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/" }),
     twitter: buildTwitter({ title, description, locale: locale as Locale }),
