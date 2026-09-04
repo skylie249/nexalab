@@ -14,7 +14,13 @@ import "highlight.js/styles/github-dark.css";
 import { supabase } from "@/lib/supabase";
 import type { Locale } from "@/i18n/routing";
 import { SITE_NAME, absoluteUrl, buildAlternates } from "@/lib/seo";
+import { calculateReadTimeMinutes } from "@/lib/readTime";
+import PostViewTracker from "@/components/PostViewTracker";
 import styles from "./page.module.css";
+
+// 조회수는 API 라우트가 즉시 DB에 반영하지만 이 페이지 자체는 정적 생성이라, 늘어난
+// 조회수가 다른 방문자에게 보이려면 주기적 재검증이 필요함 (홈/대시보드와 동일 전략)
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   try {
@@ -146,9 +152,10 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
           title={post.title}
           author="Kim Ho-gyun"
           date={new Date(post.created_at).toLocaleDateString(dateLocale)}
-          readTimeMinutes={8}
+          readTimeMinutes={calculateReadTimeMinutes(post.content || "")}
           hits={post.views?.toLocaleString() || "0"}
         />
+        <PostViewTracker postId={resolvedParams.id} />
 
         <AdSenseMock id="Ad #1" type="Horizontal / Responsive" width="100%" height="90px" />
 
