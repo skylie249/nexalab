@@ -26,6 +26,7 @@ const RATE_LIMITS: Record<string, RateLimitRule> = {
   "/api/adsense-precheck": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-check": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-rewrite": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
+  "/api/tools/feature-item-generator": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
 };
 
 // DB 없이 인스턴스 메모리에만 유지하는 best-effort 카운터.
@@ -93,6 +94,7 @@ export const config = {
     "/api/adsense-precheck",
     "/api/report-check",
     "/api/report-rewrite",
+    "/api/tools/feature-item-generator",
     "/admin/:path*",
     // next-intl: 페이지 경로만 대상 — api, admin, _next, 정적 파일(확장자 포함 경로)은 제외
     "/((?!api|admin|_next|_vercel|.*\\..*).*)",

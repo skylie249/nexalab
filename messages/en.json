@@ -13,6 +13,7 @@
     "navLlmsTxtGenerator": "llms.txt Generator",
     "navReportChecker": "Report Checker",
     "navAdsensePrecheck": "AdSense Precheck",
+    "navFeatureItemGenerator": "Feature Item Generator",
     "navAiTools": "🛠️ AI Tools",
     "aiToolsQuoteDesc": "From line items to totals, AI does it all",
     "aiToolsProfitDesc": "Just enter the numbers — net profit calculated instantly",
@@ -20,6 +21,7 @@
     "aiToolsLlmsDesc": "Auto-generate an llms.txt for AI crawlers",
     "aiToolsReportDesc": "AI checks structure, clarity, and tone",
     "aiToolsAdsenseDesc": "Check your ad-review readiness in advance",
+    "aiToolsFeatureDesc": "One sentence in, a full feature list out",
     "newBadge": "NEW",
     "navAbout": "About",
     "toggleTheme": "Toggle theme",
@@ -604,6 +606,87 @@
       {
         "question": "Is the site content I check stored anywhere?",
         "answer": "Only the URL and score are cached briefly; the page's raw content is never stored."
+      }
+    ]
+  },
+  "featureItemGenerator": {
+    "metaTitle": "Feature Item Generator - NexaLab.app",
+    "metaDescription": "Describe your service idea in a sentence or two and AI drafts a categorized feature list — priority, difficulty, and all. Jump straight into the quote generator from your results.",
+    "eyebrow": "Free Tool",
+    "title": "One sentence, one full <highlight>feature list</highlight>",
+    "subtitle": "Not sure what to build first? Describe your service idea in a sentence or two and AI organizes the feature list by category, from sign-up to admin tools.",
+    "formLabel": "Describe the service you want to build in a sentence or two",
+    "formPlaceholder": "e.g. I want to build a booking app for a local cafe. Customers should be able to reserve a time slot and earn points.",
+    "formCounter": "{count} / {max} chars",
+    "formSubmit": "Generate feature list",
+    "formSubmitting": "Generating...",
+    "formNote": "Your service idea isn't stored on our servers — it's discarded right after analysis.",
+    "errorTooShort": "Please enter at least {min} characters.",
+    "errorGeneric": "Something went wrong. Please try again shortly.",
+    "restartButton": "← Try a different idea",
+    "fpToggleLabel": "Advanced: show FP score",
+    "fpNotice": "This score is a rough, reference-only estimate and may differ from official Function Point standards.",
+    "fpLoading": "Calculating FP score...",
+    "fpTotalLabel": "Rough total FP score",
+    "fpTotalValue": "{score} pts",
+    "priorityMvp": "MVP",
+    "priorityNiceToHave": "Nice-to-have",
+    "difficultyLabel": "Difficulty: {level}",
+    "fpTypeLabel": "Type",
+    "fpComplexityLabel": "Complexity",
+    "fpPointsLabel": "FP",
+    "resultQuoteLinkCta": "Get a quote for these features →",
+    "resultDisclaimer": "This feature list is AI-generated and may differ from your actual project scope. Use it as a reference and have an expert review it before development.",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "You have a service idea, but the moment you sit down to plan it, you're stuck on \"which features do I even build first?\" You've never written a spec before, so you're not sure what you're missing — and when you try to ask a dev shop for a quote, there's no feature list to even start the conversation.",
+    "contentIntroSolution": "The Feature Item Generator takes a sentence or two about your idea and has AI organize the features by category — auth, core functionality, payments, notifications, admin — complete with priority (MVP/nice-to-have) and difficulty. Once you have a list, jump straight into the AI Quote Generator to get an estimate.",
+    "contentHowToUseTitle": "How to use it",
+    "contentHowToUseSteps": [
+      {
+        "title": "Describe your idea",
+        "description": "Write a sentence or two about the service you want to build."
+      },
+      {
+        "title": "AI generates the feature list",
+        "description": "AI organizes features by category and assigns a priority and difficulty to each."
+      },
+      {
+        "title": "Check the FP score if you need it",
+        "description": "Toggle the advanced option to see a rough Function Point score per item."
+      },
+      {
+        "title": "Continue to the quote generator",
+        "description": "Carry the generated feature list straight into the AI Quote Generator for an estimate."
+      }
+    ],
+    "contentRecommendForTitle": "Recommended for",
+    "contentRecommendFor": [
+      "Solo founders just starting to plan a service and unsure where to begin",
+      "Aspiring founders who want a feature list ready before requesting quotes from dev shops",
+      "Freelancers and planners who need a quick draft spec",
+      "Anyone who wants a rough, reference-only sense of FP-based development effort"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "Is the Feature Item Generator free?",
+        "answer": "Yes, it's free to use with no login required."
+      },
+      {
+        "question": "Can I get a quote directly from the generated feature list?",
+        "answer": "Yes — click \"Get a quote for these features\" at the bottom of your results to continue into the AI Quote Generator."
+      },
+      {
+        "question": "How is the Function Point (FP) score calculated?",
+        "answer": "Turning on the advanced option roughly classifies each feature as EI/EO/EQ/ILF/EIF and assigns a reference score based on complexity. It's a reference-only figure and may differ from official FP standards."
+      },
+      {
+        "question": "Is the service idea I enter stored?",
+        "answer": "No. Your input is only used for AI analysis and isn't stored on our servers. Identical input may be cached briefly (24 hours) in server memory to speed up repeat responses."
+      },
+      {
+        "question": "Could the generated feature list differ from my actual project scope?",
+        "answer": "Yes. It's an AI-generated reference list, so it may not match your actual requirements. We recommend an expert review before development."
       }
     ]
   },
