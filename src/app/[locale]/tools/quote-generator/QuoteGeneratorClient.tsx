@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { INDUSTRY_OPTIONS, type Industry } from "@/lib/quotePresets";
@@ -31,10 +32,35 @@ type Step = "landing" | "wizard" | "form";
 type InputMode = "text" | "file";
 type BudgetKnown = "yes" | "no" | null;
 
+// 기능 항목 생성기(`/tools/feature-item-generator`)의 "이 항목으로 견적서 만들기" 딥링크가
+// 넘기는 `features` 쿼리 파라미터(JSON 문자열 배열)를 파싱한다. 값이 없거나 형식이
+// 잘못된 경우 null을 반환해 일반 진입(랜딩 화면)으로 자연스럽게 폴백한다.
+function parseFeaturesParam(raw: string | null): string[] | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const names = parsed.filter((f): f is string => typeof f === "string" && f.trim().length > 0);
+    return names.length > 0 ? names : null;
+  } catch {
+    return null;
+  }
+}
+
+// 기능 목록은 항상 한국어로 생성되므로(기능 항목 생성기가 로케일과 무관하게 한국어로
+// AI 응답을 생성하는 기존 컨벤션과 동일), 여기서 조립하는 요청서 초안 문구도 로케일과
+// 무관하게 한국어로 고정한다 — /api/quote의 분석 프롬프트 자체도 한국어 고정이라 일관됨.
+function buildTextFromFeatures(features: string[]): string {
+  const bulletList = features.map((name) => `- ${name}`).join("\n");
+  return `다음 기능들을 포함하는 서비스를 개발하고 싶습니다.\n\n${bulletList}`;
+}
+
 export default function QuoteGeneratorClient() {
   const t = useTranslations("quoteGenerator");
   const tIndustries = useTranslations("industries");
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const initialFeatures = parseFeaturesParam(searchParams.get("features"));
 
   const SERVICE_TYPE_OPTIONS = [
     t("serviceTypeNew"),
@@ -42,15 +68,16 @@ export default function QuoteGeneratorClient() {
     t("serviceTypeAddFeature"),
   ];
 
-  const [step, setStep] = useState<Step>("landing");
+  const [step, setStep] = useState<Step>(initialFeatures ? "form" : "landing");
 
   // 공통(견적 분석) 상태
   const [industry, setIndustry] = useState(INDUSTRY_OPTIONS[0]?.value ?? "web_dev");
   const [hourlyRate, setHourlyRate] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("text");
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialFeatures ? buildTextFromFeatures(initialFeatures) : "");
   const [file, setFile] = useState<File | null>(null);
   const [fromWizard, setFromWizard] = useState(false);
+  const [fromFeatureGenerator, setFromFeatureGenerator] = useState(Boolean(initialFeatures));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -92,6 +119,7 @@ export default function QuoteGeneratorClient() {
   const resetToLanding = () => {
     setStep("landing");
     setFromWizard(false);
+    setFromFeatureGenerator(false);
     setWizardStep(0);
     setServiceType("");
     setFeatures("");
@@ -486,6 +514,9 @@ export default function QuoteGeneratorClient() {
             {fromWizard && (
               <p className={styles.noteBox}>{t("formWizardNote")}</p>
             )}
+            {fromFeatureGenerator && (
+              <p className={styles.noteBox}>{t("formFeatureGeneratorNote")}</p>
+            )}
             <textarea
               id="rfpText"
               rows={10}
@@ -494,6 +525,7 @@ export default function QuoteGeneratorClient() {
               onChange={(e) => {
                 setText(e.target.value);
                 setFromWizard(false);
+                setFromFeatureGenerator(false);
               }}
             />
           </>

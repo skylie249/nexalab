@@ -295,6 +295,7 @@
     "formModeText": "텍스트 붙여넣기",
     "formModeFile": "파일 업로드 (PDF·DOCX)",
     "formWizardNote": "AI가 답변을 바탕으로 작성한 요청서 초안입니다. 필요하면 자유롭게 수정하세요.",
+    "formFeatureGeneratorNote": "기능 항목 생성기에서 넘어온 기능 목록으로 자동 채워졌어요. 실제 요청 내용에 맞게 자유롭게 수정하세요.",
     "formTextPlaceholder": "클라이언트가 보낸 요청서 내용, 이메일, 미팅 메모 등을 붙여넣어 주세요.",
     "formFileRemove": "제거",
     "formFileLabel": "파일을 선택하거나 이곳에 끌어다 놓으세요",

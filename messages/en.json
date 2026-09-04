@@ -295,6 +295,7 @@
     "formModeText": "Paste text",
     "formModeFile": "Upload file (PDF/DOCX)",
     "formWizardNote": "This is an AI-drafted request based on your answers. Feel free to edit it.",
+    "formFeatureGeneratorNote": "Pre-filled with the feature list from the Feature Item Generator. Feel free to edit it to match your actual request.",
     "formTextPlaceholder": "Paste the client's request, an email, meeting notes, etc.",
     "formFileRemove": "Remove",
     "formFileLabel": "Choose a file or drop it here",
