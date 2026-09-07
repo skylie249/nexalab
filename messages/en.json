@@ -68,7 +68,12 @@
     "categoryIntroJobNewsTag1": "AgenticAI",
     "categoryIntroJobNewsTag2": "AIPolicy",
     "categoryIntroJobNewsTag3": "AIAdoption",
-    "categoryIntroJobNewsTag4": "AutonomousAgents"
+    "categoryIntroJobNewsTag4": "AutonomousAgents",
+    "paginationLabel": "Pagination",
+    "paginationFirst": "Go to first page",
+    "paginationPrev": "Previous page",
+    "paginationNext": "Next page",
+    "paginationLast": "Go to last page"
   },
   "about": {
     "metaTitle": "About - NexaLab.app",
