@@ -6,19 +6,19 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useTheme } from "./ThemeProvider";
 import styles from "./Header.module.css";
 
+// 그룹 허브(사이트 진단센터/제안·견적/업무 지원)와 올인원 진단은 대시보드 콘텐츠 쪽으로
+// 옮기고, 여기는 기존 개별 도구 8개만 "왜 찾는가" 기준 그룹 순서로 정렬해서 유지한다
+// (유틸기능_그룹화_올인원진단_기획서.md 그룹 기준 — 사이트 진단 4종 → 제안·견적 2종 →
+// 업무 지원 2종).
 const AI_TOOLS = [
-  { href: "/tools/site-check/all-in-one", titleKey: "navAllInOneCheck", descKey: "aiToolsAllInOneDesc", isNew: true },
-  { href: "/tools/site-check", titleKey: "navSiteCheckHub", descKey: "aiToolsSiteCheckHubDesc", isNew: true },
-  { href: "/tools/proposal", titleKey: "navProposalHub", descKey: "aiToolsProposalHubDesc", isNew: true },
-  { href: "/tools/business-utility", titleKey: "navBusinessUtilityHub", descKey: "aiToolsBusinessUtilityHubDesc", isNew: true },
+  { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc", isNew: true },
+  { href: "/tools/security-check", titleKey: "navSecurityCheck", descKey: "aiToolsSecurityDesc", isNew: true },
+  { href: "/tools/adsense-precheck", titleKey: "navAdsensePrecheck", descKey: "aiToolsAdsenseDesc", isNew: true },
+  { href: "/tools/llms-txt-generator", titleKey: "navLlmsTxtGenerator", descKey: "aiToolsLlmsDesc", isNew: true },
+  { href: "/tools/feature-item-generator", titleKey: "navFeatureItemGenerator", descKey: "aiToolsFeatureDesc", isNew: true },
   { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc", isNew: false },
   { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc", isNew: false },
-  { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc", isNew: true },
-  { href: "/tools/llms-txt-generator", titleKey: "navLlmsTxtGenerator", descKey: "aiToolsLlmsDesc", isNew: true },
   { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc", isNew: true },
-  { href: "/tools/adsense-precheck", titleKey: "navAdsensePrecheck", descKey: "aiToolsAdsenseDesc", isNew: true },
-  { href: "/tools/feature-item-generator", titleKey: "navFeatureItemGenerator", descKey: "aiToolsFeatureDesc", isNew: true },
-  { href: "/tools/security-check", titleKey: "navSecurityCheck", descKey: "aiToolsSecurityDesc", isNew: true },
 ] as const;
 
 type TrigramPattern = [boolean, boolean, boolean];

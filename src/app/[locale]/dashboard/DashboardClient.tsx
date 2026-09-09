@@ -14,6 +14,7 @@ import {
 } from "@/lib/dashboardHistory";
 import { formatWon } from "@/lib/formatCurrency";
 import PostCard from "@/components/PostCard";
+import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import styles from "./page.module.css";
 
 export interface DashboardPost {
@@ -48,8 +49,17 @@ interface Recommendation {
   ctaLabel: string;
 }
 
+interface ToolGroup {
+  key: string;
+  emoji: string;
+  title: string;
+  hubHref: string;
+  tools: HubToolCardData[];
+}
+
 export default function DashboardClient({ posts, seoRelatedPost }: Props) {
   const t = useTranslations("dashboard");
+  const tHeader = useTranslations("header");
   const tIndustries = useTranslations("industries");
   const locale = useLocale();
   const dateLocale = locale === "en" ? "en-US" : "ko-KR";
@@ -145,6 +155,62 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
     });
   }
 
+  // AI 도구 8종 + 올인원 진단을 "왜 이 도구를 찾아왔는가" 기준 3그룹으로 묶어서 보여준다
+  // (유틸기능_그룹화_올인원진단_기획서.md의 그룹 기준) — 헤더의 "AI 도구" 드롭다운에는
+  // 기존 개별 도구만 남기고, 그룹화된 모습은 대시보드 콘텐츠 쪽으로 옮겼다.
+  const toolGroups: ToolGroup[] = [
+    {
+      key: "siteCheck",
+      emoji: "🔍",
+      title: t("toolGroupSiteCheckTitle"),
+      hubHref: "/tools/site-check",
+      tools: [
+        {
+          href: "/tools/site-check/all-in-one",
+          emoji: "⭐",
+          title: tHeader("navAllInOneCheck"),
+          description: tHeader("aiToolsAllInOneDesc"),
+          isFlagship: true,
+          isNew: true,
+        },
+        { href: "/tools/seo-geo-checker", emoji: "🔍", title: tHeader("navSeoGeoChecker"), description: tHeader("aiToolsSeoDesc") },
+        { href: "/tools/security-check", emoji: "🔒", title: tHeader("navSecurityCheck"), description: tHeader("aiToolsSecurityDesc") },
+        { href: "/tools/adsense-precheck", emoji: "💰", title: tHeader("navAdsensePrecheck"), description: tHeader("aiToolsAdsenseDesc") },
+        { href: "/tools/llms-txt-generator", emoji: "📄", title: tHeader("navLlmsTxtGenerator"), description: tHeader("aiToolsLlmsDesc") },
+      ],
+    },
+    {
+      key: "proposal",
+      emoji: "💼",
+      title: t("toolGroupProposalTitle"),
+      hubHref: "/tools/proposal",
+      tools: [
+        {
+          href: "/tools/feature-item-generator",
+          emoji: "🧩",
+          title: tHeader("navFeatureItemGenerator"),
+          description: tHeader("aiToolsFeatureDesc"),
+        },
+        { href: "/tools/quote-generator", emoji: "📝", title: tHeader("navQuoteGenerator"), description: tHeader("aiToolsQuoteDesc") },
+      ],
+    },
+    {
+      key: "businessUtility",
+      emoji: "🧮",
+      title: t("toolGroupBusinessUtilityTitle"),
+      hubHref: "/tools/business-utility",
+      tools: [
+        {
+          href: "/tools/profit-calculator",
+          emoji: "🧮",
+          title: tHeader("navProfitCalculator"),
+          description: tHeader("aiToolsProfitDesc"),
+        },
+        { href: "/tools/report-checker", emoji: "📄", title: tHeader("navReportChecker"), description: tHeader("aiToolsReportDesc") },
+      ],
+    },
+  ];
+
   return (
     <>
       <header className={styles.greeting}>
@@ -159,6 +225,23 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
           <p className={styles.onboardingSubtitle}>{t("onboardingSubtitle")}</p>
         </div>
       )}
+
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>{t("sectionToolsTitle")}</h2>
+        {toolGroups.map((group) => (
+          <div key={group.key} className={styles.toolGroupBlock}>
+            <div className={styles.toolGroupHeader}>
+              <span className={styles.toolGroupTitle}>
+                {group.emoji} {group.title}
+              </span>
+              <Link href={group.hubHref} className={styles.toolGroupMore}>
+                {t("toolGroupMoreLabel")}
+              </Link>
+            </div>
+            <HubToolGrid tools={group.tools} linkLabel={t("toolCardLinkLabel")} />
+          </div>
+        ))}
+      </section>
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>{t("sectionHealthTitle")}</h2>
