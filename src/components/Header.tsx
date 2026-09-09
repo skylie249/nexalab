@@ -11,14 +11,14 @@ import styles from "./Header.module.css";
 // (유틸기능_그룹화_올인원진단_기획서.md 그룹 기준 — 사이트 진단 4종 → 제안·견적 2종 →
 // 업무 지원 2종).
 const AI_TOOLS = [
-  { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc", isNew: true },
-  { href: "/tools/security-check", titleKey: "navSecurityCheck", descKey: "aiToolsSecurityDesc", isNew: true },
-  { href: "/tools/adsense-precheck", titleKey: "navAdsensePrecheck", descKey: "aiToolsAdsenseDesc", isNew: true },
-  { href: "/tools/llms-txt-generator", titleKey: "navLlmsTxtGenerator", descKey: "aiToolsLlmsDesc", isNew: true },
-  { href: "/tools/feature-item-generator", titleKey: "navFeatureItemGenerator", descKey: "aiToolsFeatureDesc", isNew: true },
-  { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc", isNew: false },
-  { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc", isNew: false },
-  { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc", isNew: true },
+  { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc" },
+  { href: "/tools/security-check", titleKey: "navSecurityCheck", descKey: "aiToolsSecurityDesc" },
+  { href: "/tools/adsense-precheck", titleKey: "navAdsensePrecheck", descKey: "aiToolsAdsenseDesc" },
+  { href: "/tools/llms-txt-generator", titleKey: "navLlmsTxtGenerator", descKey: "aiToolsLlmsDesc" },
+  { href: "/tools/feature-item-generator", titleKey: "navFeatureItemGenerator", descKey: "aiToolsFeatureDesc" },
+  { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc" },
+  { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc" },
+  { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc" },
 ] as const;
 
 type TrigramPattern = [boolean, boolean, boolean];
@@ -220,10 +220,7 @@ export default function Header() {
                     className={styles.dropdownLink}
                     onClick={() => setIsToolsOpen(false)}
                   >
-                    <span className={styles.dropdownLinkTitle}>
-                      {t(tool.titleKey)}
-                      {tool.isNew && <span className={styles.newBadge}>{t("newBadge")}</span>}
-                    </span>
+                    <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
                     <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
                   </Link>
                 ))}
@@ -295,10 +292,7 @@ export default function Header() {
               {AI_TOOLS.map((tool) => (
                 <li key={tool.href}>
                   <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
-                    <span className={styles.dropdownLinkTitle}>
-                      {t(tool.titleKey)}
-                      {tool.isNew && <span className={styles.newBadge}>{t("newBadge")}</span>}
-                    </span>
+                    <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
                     <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
                   </Link>
                 </li>
