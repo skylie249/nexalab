@@ -15,6 +15,10 @@
     "navAdsensePrecheck": "애드센스 사전 점검",
     "navFeatureItemGenerator": "기능 항목 생성기",
     "navSecurityCheck": "보안 취약점 점검기",
+    "navAllInOneCheck": "⭐ 올인원 진단",
+    "navSiteCheckHub": "🔍 사이트 진단센터",
+    "navProposalHub": "💼 제안·견적 도구",
+    "navBusinessUtilityHub": "🧮 업무 지원 도구",
     "navAiTools": "🛠️ AI 도구",
     "aiToolsQuoteDesc": "항목부터 계산까지, AI가 완성",
     "aiToolsProfitDesc": "숫자만 넣으면 순이익까지 자동 계산",
@@ -24,6 +28,10 @@
     "aiToolsAdsenseDesc": "광고 심사 준비도를 미리 점검",
     "aiToolsFeatureDesc": "아이디어 한 줄로 기능 목록 자동 생성",
     "aiToolsSecurityDesc": "HTTP 헤더·쿠키 보안 설정을 무료로 점검",
+    "aiToolsAllInOneDesc": "URL 하나로 4가지를 한 번에 진단",
+    "aiToolsSiteCheckHubDesc": "URL 진단 도구 4종 + 올인원 모음",
+    "aiToolsProposalHubDesc": "AI 견적서 + 기능항목 생성기 모음",
+    "aiToolsBusinessUtilityHubDesc": "손익계산기 + 보고서 다듬기 모음",
     "newBadge": "NEW",
     "navAbout": "About",
     "toggleTheme": "테마 전환",
@@ -949,5 +957,134 @@
     "recoSeoLow": "메타데이터·구조화 데이터부터 손봐보세요",
     "recoSeoLowCta": "관련 글 보기 →",
     "sectionBlogTitle": "📚 최근 블로그 글"
+  },
+  "allInOneCheck": {
+    "metaTitle": "올인원 진단 - NexaLab.app",
+    "metaDescription": "URL 하나로 SEO·GEO, 보안, 애드센스 준비도, llms.txt까지 4가지를 한 번에 진단해 드립니다. 무료, 회원가입 불필요.",
+    "eyebrow": "Free Tool",
+    "title": "URL 하나로 <highlight>4가지를 한 번에</highlight> 진단하세요",
+    "subtitle": "SEO·GEO 체커, 보안 취약점 점검기, 애드센스 사전점검, llms.txt까지 따로 돌리지 않아도 돼요. 한 번의 진단으로 가장 시급한 문제부터 확인하세요.",
+    "urlInputLabel": "진단할 URL",
+    "urlPlaceholder": "https://example.com",
+    "submitButton": "전체 진단 시작",
+    "loadingText": "진단 중입니다...",
+    "formNote": "입력하신 URL과 점검 결과는 서버에 저장되지 않습니다.",
+    "errorEmptyUrl": "진단할 URL을 입력해주세요.",
+    "errorGeneric": "점검 중 오류가 발생했습니다.",
+    "progressTitle": "{url} 올인원 진단 진행 중...",
+    "stepSeoLabel": "SEO·GEO 체커",
+    "stepSecurityLabel": "보안 취약점 점검",
+    "stepAdsenseLabel": "애드센스 사전점검",
+    "stepPending": "대기 중",
+    "stepRunning": "진행 중...",
+    "stepDone": "완료",
+    "stepError": "실패",
+    "progressTip": "GPTBot이 robots.txt에서 차단되면 ChatGPT가 이 사이트를 아예 읽지 못해요.",
+    "seoCardTitle": "SEO·GEO",
+    "securityCardTitle": "보안",
+    "adsenseCardTitle": "애드센스",
+    "llmsCardTitle": "llms.txt",
+    "detailButton": "자세히 보기 →",
+    "llmsTxtFound": "llms.txt가 이미 있어요.",
+    "llmsTxtMissing": "llms.txt가 없어요.",
+    "llmsTxtCtaButton": "지금 만들기 →",
+    "topIssuesTitle": "가장 시급한 문제",
+    "crossSellText": "점검 결과를 바탕으로 개선이 필요하다면?",
+    "crossSellButton": "AI 견적서 받아보기",
+    "kakaoShareButton": "카카오톡으로 공유하기",
+    "kakaoShareCardTitle": "{title} 올인원 진단 결과",
+    "kakaoShareCardDescription": "SEO {seoScore}점 · 보안 {securityGrade}등급 · 애드센스 {adsenseScore}점 — 내 사이트도 무료로 진단해보세요.",
+    "kakaoShareCardButton": "내 사이트도 무료로 진단하기",
+    "kakaoShareCopied": "링크가 복사됐어요",
+    "restartButton": "← 다른 URL 진단하기",
+    "contentIntroTitle": "이런 고민 있으신가요?",
+    "contentIntroProblem": "SEO 상태, 보안 설정, 애드센스 승인 가능성, llms.txt까지 확인하려면 도구를 하나씩 따로 열어서 URL을 매번 다시 입력해야 합니다. 결과도 제각각이라 결국 무엇부터 고쳐야 할지 감이 잡히지 않습니다.",
+    "contentIntroSolution": "올인원 진단은 URL 하나만 입력하면 4가지 점검을 한 번에 실행하고, 4개 리포트를 통틀어 가장 시급한 문제 3가지를 자동으로 뽑아 보여드립니다.",
+    "contentHowToUseTitle": "이렇게 사용하세요",
+    "contentHowToUseSteps": [
+      {
+        "title": "URL 입력",
+        "description": "진단하고 싶은 사이트의 URL을 입력하고 전체 진단을 시작하세요."
+      },
+      {
+        "title": "4가지 진단 동시 실행",
+        "description": "SEO·GEO, 보안, 애드센스 준비도, llms.txt 존재 여부를 한 번에 확인합니다."
+      },
+      {
+        "title": "가장 시급한 문제부터 확인",
+        "description": "4개 리포트를 통틀어 자동으로 취합된 시급한 문제와 각 도구의 상세 리포트를 확인하세요."
+      }
+    ],
+    "contentRecommendForTitle": "이런 분들께 추천해요",
+    "contentRecommendFor": [
+      "새 사이트를 출시하기 전 한 번에 점검하고 싶은 개발자",
+      "여러 도구를 따로 쓰기 번거로운 1인 사업자·프리랜서",
+      "클라이언트 사이트 전반을 빠르게 훑어봐야 하는 에이전시",
+      "무엇부터 고쳐야 할지 우선순위가 필요한 사이트 운영자"
+    ],
+    "contentFaqTitle": "자주 묻는 질문",
+    "contentFaq": [
+      {
+        "question": "개별 도구를 따로 쓰는 것과 뭐가 다른가요?",
+        "answer": "분석 로직 자체는 동일한 3개 도구를 그대로 사용하지만, 4개 리포트를 한 화면에서 비교하고 가장 시급한 문제 3가지를 자동으로 취합해서 보여준다는 점이 다릅니다."
+      },
+      {
+        "question": "왜 4개가 아니라 3개만 자동으로 점검하나요?",
+        "answer": "llms.txt는 페이지 목록 등 직접 입력해야 하는 정보가 필요해 완전 자동 생성은 지원하지 않습니다. 대신 SEO·GEO 체커가 이미 확인한 llms.txt 존재 여부를 보여드리고, 필요하면 생성기로 바로 연결해 드립니다."
+      },
+      {
+        "question": "결과가 저장되나요?",
+        "answer": "아니요. 입력한 URL과 점검 결과는 서버에 저장되지 않으며, 개별 도구의 24시간 캐시만 재사용될 수 있습니다."
+      },
+      {
+        "question": "점검에 얼마나 걸리나요?",
+        "answer": "3개 점검이 동시에 실행되며 보통 15초 이내에 모두 완료됩니다."
+      },
+      {
+        "question": "일부 점검만 실패하면 어떻게 되나요?",
+        "answer": "실패한 항목은 오류 메시지와 함께 표시되고, 성공한 나머지 점검 결과는 정상적으로 확인할 수 있습니다."
+      }
+    ]
+  },
+  "siteCheckHub": {
+    "metaTitle": "사이트 진단센터 - NexaLab.app",
+    "metaDescription": "URL 하나로 SEO·GEO, 보안, 애드센스 준비도, llms.txt를 무료로 점검하는 도구 모음이에요.",
+    "eyebrow": "Tool Collection",
+    "title": "내 사이트, <highlight>지금 이대로 괜찮을까요?</highlight>",
+    "subtitle": "URL 하나로 검색 노출부터 보안, 광고 심사 준비도까지 무료로 점검해보세요.",
+    "cardLinkLabel": "바로가기 →",
+    "allInOneTitle": "올인원 진단 (한 번에 체크)",
+    "allInOneDesc": "URL 하나로 4가지를 한 번에 진단하고 가장 시급한 문제부터 확인하세요.",
+    "introTitle": "사이트 진단센터는 이런 곳이에요",
+    "introProblem": "검색 노출, 보안 설정, 광고 심사 준비도, AI 크롤러 대응까지 사이트 하나를 제대로 점검하려면 여러 도구를 따로 찾아 써야 하는 게 보통입니다.",
+    "introSolution": "사이트 진단센터는 nexalab.app이 제공하는 URL 기반 진단 도구 4종(SEO·GEO 체커, 보안 취약점 점검기, 애드센스 사전점검, llms.txt 생성기)과 이를 한 번에 실행하는 올인원 진단을 한곳에 모아뒀습니다. 전부 무료이고 회원가입이 필요 없으며, 입력한 내용은 서버에 저장되지 않습니다.",
+    "crossSellText": "점검 후 개선이 필요하다면?",
+    "crossSellButton": "제안·견적 도구 보러가기 →"
+  },
+  "proposalHub": {
+    "metaTitle": "제안·견적 도구 - NexaLab.app",
+    "metaDescription": "AI 견적서와 기능항목 생성기로 제안·견적 작업을 빠르게 끝내는 무료 도구 모음이에요.",
+    "eyebrow": "Tool Collection",
+    "title": "제안서·견적서, <highlight>AI로 더 빠르게</highlight>",
+    "subtitle": "아이디어 한 줄에서 기능 목록을, 요청서 한 장에서 견적서를 자동으로 만들어 드립니다.",
+    "cardLinkLabel": "바로가기 →",
+    "introTitle": "제안·견적 도구는 이런 곳이에요",
+    "introProblem": "영업 단계에서 견적서와 기능 목록을 매번 처음부터 작성하다 보면 시간이 오래 걸리고, 정작 중요한 항목을 빠뜨리기 쉽습니다.",
+    "introSolution": "제안·견적 도구는 기능항목 생성기로 뽑아낸 기능 목록을 AI 견적서로 바로 넘겨 견적 초안까지 이어지도록 연결해뒀습니다. 두 도구 모두 무료이고, 입력한 내용은 서버에 저장되지 않습니다.",
+    "crossSellText": "사이트 점검이 먼저 필요하다면?",
+    "crossSellButton": "사이트 진단센터 보러가기 →"
+  },
+  "businessUtilityHub": {
+    "metaTitle": "업무 지원 도구 - NexaLab.app",
+    "metaDescription": "손익계산기와 보고서 다듬기로 일상 업무를 더 쉽게 만드는 무료 도구 모음이에요.",
+    "eyebrow": "Tool Collection",
+    "title": "직장인·사업자의 <highlight>일상 업무</highlight>를 더 쉽게",
+    "subtitle": "프로젝트 손익 계산부터 보고서 문장 다듬기까지, 자주 쓰는 실무 계산과 점검을 무료로 도와드립니다.",
+    "cardLinkLabel": "바로가기 →",
+    "introTitle": "업무 지원 도구는 이런 곳이에요",
+    "introProblem": "프로젝트가 실제로 남는 장사인지 계산하거나, 급하게 쓴 보고서를 다듬어야 할 때 매번 엑셀을 새로 만들거나 문장을 하나하나 고치는 건 번거롭습니다.",
+    "introSolution": "업무 지원 도구는 손익계산기와 보고서 다듬기를 한곳에 모아뒀습니다. 손익계산기는 숫자만 입력하면 즉시 계산되고, 보고서 다듬기는 AI가 문장 구조와 톤앤매너까지 점검해 드립니다. 둘 다 무료이고, 입력한 내용은 서버에 저장되지 않습니다.",
+    "crossSellText": "견적서 작성이 먼저 필요하다면?",
+    "crossSellButton": "제안·견적 도구 보러가기 →"
   }
 }

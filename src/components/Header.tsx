@@ -7,6 +7,10 @@ import { useTheme } from "./ThemeProvider";
 import styles from "./Header.module.css";
 
 const AI_TOOLS = [
+  { href: "/tools/site-check/all-in-one", titleKey: "navAllInOneCheck", descKey: "aiToolsAllInOneDesc", isNew: true },
+  { href: "/tools/site-check", titleKey: "navSiteCheckHub", descKey: "aiToolsSiteCheckHubDesc", isNew: true },
+  { href: "/tools/proposal", titleKey: "navProposalHub", descKey: "aiToolsProposalHubDesc", isNew: true },
+  { href: "/tools/business-utility", titleKey: "navBusinessUtilityHub", descKey: "aiToolsBusinessUtilityHubDesc", isNew: true },
   { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc", isNew: false },
   { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc", isNew: false },
   { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc", isNew: true },

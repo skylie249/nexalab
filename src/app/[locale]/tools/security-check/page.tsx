@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
@@ -74,7 +75,9 @@ export default async function SecurityCheckPage({
         faqTitle={t("contentFaqTitle")}
         faq={t.raw("contentFaq") as FaqItem[]}
       >
-        <SecurityCheckClient />
+        <Suspense fallback={null}>
+          <SecurityCheckClient />
+        </Suspense>
       </ToolContentWrapper>
     </div>
   );

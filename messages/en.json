@@ -15,6 +15,10 @@
     "navAdsensePrecheck": "AdSense Precheck",
     "navFeatureItemGenerator": "Feature Item Generator",
     "navSecurityCheck": "Security Header Checker",
+    "navAllInOneCheck": "⭐ All-in-One Check",
+    "navSiteCheckHub": "🔍 Site Check Center",
+    "navProposalHub": "💼 Proposal & Quote Tools",
+    "navBusinessUtilityHub": "🧮 Business Utility Tools",
     "navAiTools": "🛠️ AI Tools",
     "aiToolsQuoteDesc": "From line items to totals, AI does it all",
     "aiToolsProfitDesc": "Just enter the numbers — net profit calculated instantly",
@@ -24,6 +28,10 @@
     "aiToolsAdsenseDesc": "Check your ad-review readiness in advance",
     "aiToolsFeatureDesc": "One sentence in, a full feature list out",
     "aiToolsSecurityDesc": "Check HTTP header & cookie security for free",
+    "aiToolsAllInOneDesc": "Check 4 things at once from one URL",
+    "aiToolsSiteCheckHubDesc": "4 URL check tools + the all-in-one check",
+    "aiToolsProposalHubDesc": "AI Quote Generator + Feature Item Generator",
+    "aiToolsBusinessUtilityHubDesc": "Profit Calculator + Report Checker",
     "newBadge": "NEW",
     "navAbout": "About",
     "toggleTheme": "Toggle theme",
@@ -949,5 +957,134 @@
     "recoSeoLow": "Start with your metadata and structured data",
     "recoSeoLowCta": "Read the related post →",
     "sectionBlogTitle": "📚 Recent posts"
+  },
+  "allInOneCheck": {
+    "metaTitle": "All-in-One Site Check - NexaLab.app",
+    "metaDescription": "One URL, four checks: SEO/GEO, security, AdSense readiness, and llms.txt — all at once, for free, no signup.",
+    "eyebrow": "Free Tool",
+    "title": "Check <highlight>4 things at once</highlight> with a single URL",
+    "subtitle": "No need to run the SEO/GEO checker, security checker, AdSense precheck, and llms.txt checker separately. One run surfaces the most urgent issues first.",
+    "urlInputLabel": "URL to check",
+    "urlPlaceholder": "https://example.com",
+    "submitButton": "Start full check",
+    "loadingText": "Checking...",
+    "formNote": "The URL you enter and the results are never stored on our server.",
+    "errorEmptyUrl": "Please enter a URL to check.",
+    "errorGeneric": "Something went wrong while checking.",
+    "progressTitle": "Running all-in-one check on {url}...",
+    "stepSeoLabel": "SEO/GEO Checker",
+    "stepSecurityLabel": "Security Check",
+    "stepAdsenseLabel": "AdSense Precheck",
+    "stepPending": "Waiting",
+    "stepRunning": "Running...",
+    "stepDone": "Done",
+    "stepError": "Failed",
+    "progressTip": "If GPTBot is blocked in robots.txt, ChatGPT can't read this site at all.",
+    "seoCardTitle": "SEO/GEO",
+    "securityCardTitle": "Security",
+    "adsenseCardTitle": "AdSense",
+    "llmsCardTitle": "llms.txt",
+    "detailButton": "View details →",
+    "llmsTxtFound": "llms.txt already exists.",
+    "llmsTxtMissing": "llms.txt is missing.",
+    "llmsTxtCtaButton": "Create it now →",
+    "topIssuesTitle": "Most urgent issues",
+    "crossSellText": "Need to fix something based on these results?",
+    "crossSellButton": "Get an AI quote",
+    "kakaoShareButton": "Share on KakaoTalk",
+    "kakaoShareCardTitle": "{title} all-in-one check results",
+    "kakaoShareCardDescription": "SEO {seoScore} · Security grade {securityGrade} · AdSense {adsenseScore} — check your own site for free.",
+    "kakaoShareCardButton": "Check your site for free",
+    "kakaoShareCopied": "Link copied",
+    "restartButton": "← Check another URL",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Checking SEO health, security settings, AdSense readiness, and llms.txt means opening a different tool for each one and re-typing the same URL every time. The results don't line up either, so it's hard to tell what to fix first.",
+    "contentIntroSolution": "The All-in-One Check runs all 3 automated checks from a single URL and automatically surfaces the top 3 most urgent issues across all the reports.",
+    "contentHowToUseTitle": "How to use it",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter a URL",
+        "description": "Enter the URL of the site you want to check and start the full check."
+      },
+      {
+        "title": "3 checks run at once",
+        "description": "SEO/GEO, security, and AdSense readiness are checked together, plus whether llms.txt exists."
+      },
+      {
+        "title": "See what's most urgent first",
+        "description": "Review the auto-aggregated top issues across all reports, then dig into each tool's full report."
+      }
+    ],
+    "contentRecommendForTitle": "Recommended for",
+    "contentRecommendFor": [
+      "Developers who want a single pre-launch check before shipping a new site",
+      "Solo founders and freelancers who don't want to juggle separate tools",
+      "Agencies who need a quick overview of a client site",
+      "Site operators who need to know what to fix first"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "How is this different from using the individual tools?",
+        "answer": "It uses the exact same 3 underlying tools, but lets you compare all 4 reports on one screen and automatically surfaces the top 3 most urgent issues."
+      },
+      {
+        "question": "Why does it only auto-check 3 things instead of 4?",
+        "answer": "llms.txt generation needs manually entered information like a page list, so it can't be fully automated from a URL alone. Instead we show whether llms.txt already exists (already checked by the SEO/GEO checker) and link you straight to the generator if it's missing."
+      },
+      {
+        "question": "Is anything stored?",
+        "answer": "No. The URL you enter and the results aren't stored on our server, though the individual tools' 24-hour caches may be reused."
+      },
+      {
+        "question": "How long does it take?",
+        "answer": "All 3 checks run in parallel and usually finish within 15 seconds."
+      },
+      {
+        "question": "What happens if one check fails?",
+        "answer": "The failed check shows an error message while the other successful results remain visible as normal."
+      }
+    ]
+  },
+  "siteCheckHub": {
+    "metaTitle": "Site Check Center - NexaLab.app",
+    "metaDescription": "A free toolkit to check SEO/GEO, security, AdSense readiness, and llms.txt from a single URL.",
+    "eyebrow": "Tool Collection",
+    "title": "Is your site <highlight>okay as it is right now?</highlight>",
+    "subtitle": "Check search visibility, security, and ad-review readiness for free, all from one URL.",
+    "cardLinkLabel": "Go →",
+    "allInOneTitle": "All-in-One Check",
+    "allInOneDesc": "Check 4 things at once from a single URL and see what's most urgent first.",
+    "introTitle": "What the Site Check Center is",
+    "introProblem": "Properly checking a site's search visibility, security settings, ad-review readiness, and AI crawler handling usually means hunting down and using several separate tools.",
+    "introSolution": "The Site Check Center brings together nexalab.app's 4 URL-based diagnostic tools (SEO/GEO Checker, Security Checker, AdSense Precheck, llms.txt Generator) plus the All-in-One Check that runs them together. All free, no signup, and nothing you enter is stored on our server.",
+    "crossSellText": "Need to improve something after checking?",
+    "crossSellButton": "See Proposal & Quote Tools →"
+  },
+  "proposalHub": {
+    "metaTitle": "Proposal & Quote Tools - NexaLab.app",
+    "metaDescription": "A free toolkit to speed up proposal and quote work with the AI Quote Generator and Feature Item Generator.",
+    "eyebrow": "Tool Collection",
+    "title": "Proposals and quotes, <highlight>faster with AI</highlight>",
+    "subtitle": "Turn one sentence of an idea into a feature list, and one request document into a quote draft — automatically.",
+    "cardLinkLabel": "Go →",
+    "introTitle": "What Proposal & Quote Tools is",
+    "introProblem": "Writing a quote and feature list from scratch every time you're pitching a project takes a long time, and it's easy to miss important items.",
+    "introSolution": "Proposal & Quote Tools connects the feature list from the Feature Item Generator directly into the AI Quote Generator, carrying it through to a quote draft. Both tools are free, and nothing you enter is stored on our server.",
+    "crossSellText": "Need to check a site first?",
+    "crossSellButton": "See Site Check Center →"
+  },
+  "businessUtilityHub": {
+    "metaTitle": "Business Utility Tools - NexaLab.app",
+    "metaDescription": "A free toolkit to make everyday work easier with the Profit Calculator and Report Checker.",
+    "eyebrow": "Tool Collection",
+    "title": "Making <highlight>everyday work</highlight> easier",
+    "subtitle": "From project profit calculations to polishing report writing, free help for the calculations and checks you do often.",
+    "cardLinkLabel": "Go →",
+    "introTitle": "What Business Utility Tools is",
+    "introProblem": "Figuring out whether a project is actually profitable, or polishing a report you wrote in a hurry, usually means building a new spreadsheet or editing sentences one by one every time.",
+    "introSolution": "Business Utility Tools brings together the Profit Calculator and Report Checker in one place. The Profit Calculator computes instantly as you type numbers, and the Report Checker uses AI to check sentence structure and tone. Both are free, and nothing you enter is stored on our server.",
+    "crossSellText": "Need to put together a quote first?",
+    "crossSellButton": "See Proposal & Quote Tools →"
   }
 }

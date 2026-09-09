@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { CATEGORY_LABELS, CATEGORY_ORDER, ADSENSE_PRECHECK_DISCLAIMER_KO } from "@/lib/adsensePrecheckConfig";
 import type { AdsensePrecheckReport, CheckResult, CheckStatus } from "@/lib/adsensePrecheckTypes";
@@ -76,7 +77,8 @@ function ManualChecklist() {
 export default function AdsensePrecheckClient() {
   const t = useTranslations("adsensePrecheck");
   const locale = useLocale() as Locale;
-  const [url, setUrl] = useState("");
+  const searchParams = useSearchParams();
+  const [url, setUrl] = useState(() => searchParams.get("url") ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ApiSuccess | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

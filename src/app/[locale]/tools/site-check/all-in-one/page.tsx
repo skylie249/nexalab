@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
@@ -8,7 +7,7 @@ import ToolContentWrapper from "@/components/tool-content/ToolContentWrapper";
 import type { HowToUseStep } from "@/components/tool-content/ToolHowToUse";
 import type { FaqItem } from "@/components/tool-content/ToolFAQ";
 import styles from "./page.module.css";
-import AdsensePrecheckClient from "./AdsensePrecheckClient";
+import AllInOneClient from "./AllInOneClient";
 
 export async function generateMetadata({
   params,
@@ -16,15 +15,15 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "adsensePrecheck" });
+  const t = await getTranslations({ locale, namespace: "allInOneCheck" });
   const title = t("metaTitle");
   const description = t("metaDescription");
 
   return {
     title,
     description,
-    alternates: buildAlternates(locale as Locale, "/tools/adsense-precheck"),
-    openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/tools/adsense-precheck" }),
+    alternates: buildAlternates(locale as Locale, "/tools/site-check/all-in-one"),
+    openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/tools/site-check/all-in-one" }),
     twitter: buildTwitter({ title, description, locale: locale as Locale }),
   };
 }
@@ -35,21 +34,21 @@ function toolJsonLd(locale: Locale, name: string, description: string) {
     "@type": "SoftwareApplication",
     name,
     description,
-    url: absoluteUrl(`/${locale}/tools/adsense-precheck`),
+    url: absoluteUrl(`/${locale}/tools/site-check/all-in-one`),
     applicationCategory: "BusinessApplication",
     operatingSystem: "Any (web browser)",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 }
 
-export default async function AdsensePrecheckPage({
+export default async function AllInOnePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("adsensePrecheck");
+  const t = await getTranslations("allInOneCheck");
 
   return (
     <div className={styles.page}>
@@ -75,9 +74,7 @@ export default async function AdsensePrecheckPage({
         faqTitle={t("contentFaqTitle")}
         faq={t.raw("contentFaq") as FaqItem[]}
       >
-        <Suspense fallback={null}>
-          <AdsensePrecheckClient />
-        </Suspense>
+        <AllInOneClient />
       </ToolContentWrapper>
     </div>
   );

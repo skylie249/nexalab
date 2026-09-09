@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { CATEGORY_LABELS, CATEGORY_ORDER, SECURITY_CHECK_DISCLAIMER_KO } from "@/lib/securityCheckConfig";
 import type { SecurityCheckReport, CheckResult, CheckStatus } from "@/lib/securityCheckTypes";
@@ -43,7 +44,8 @@ function CheckRow({ check }: { check: CheckResult }) {
 export default function SecurityCheckClient() {
   const t = useTranslations("securityCheck");
   const locale = useLocale() as Locale;
-  const [url, setUrl] = useState("");
+  const searchParams = useSearchParams();
+  const [url, setUrl] = useState(() => searchParams.get("url") ?? "");
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ApiSuccess | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

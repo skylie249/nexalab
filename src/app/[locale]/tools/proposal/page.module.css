@@ -1,0 +1,92 @@
+.page {
+  padding: 3rem 0 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.intro {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 2.75rem;
+  }
+}
+
+.highlight {
+  background: linear-gradient(135deg, var(--accent-color), #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.6;
+  text-wrap: balance;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.crossSellBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background-color: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+}
+
+.crossSellText {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.crossSellButton {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--accent-color);
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+}
+
+.crossSellButton:hover {
+  opacity: 0.9;
+}
