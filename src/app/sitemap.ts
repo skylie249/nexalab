@@ -17,6 +17,7 @@ const STATIC_PATHS: {
   { path: "/tools/report-checker", changeFrequency: "monthly", priority: 0.8 },
   { path: "/tools/adsense-precheck", changeFrequency: "monthly", priority: 0.8 },
   { path: "/tools/feature-item-generator", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/tools/security-check", changeFrequency: "monthly", priority: 0.8 },
   { path: "/ai-apps", changeFrequency: "monthly", priority: 0.7 },
   { path: "/biz", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", changeFrequency: "monthly", priority: 0.5 },

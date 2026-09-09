@@ -14,6 +14,7 @@ const AI_TOOLS = [
   { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc", isNew: true },
   { href: "/tools/adsense-precheck", titleKey: "navAdsensePrecheck", descKey: "aiToolsAdsenseDesc", isNew: true },
   { href: "/tools/feature-item-generator", titleKey: "navFeatureItemGenerator", descKey: "aiToolsFeatureDesc", isNew: true },
+  { href: "/tools/security-check", titleKey: "navSecurityCheck", descKey: "aiToolsSecurityDesc", isNew: true },
 ] as const;
 
 type TrigramPattern = [boolean, boolean, boolean];

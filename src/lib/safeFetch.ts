@@ -13,6 +13,10 @@ export interface SafeFetchOk {
   contentType: string | null;
   body: string;
   truncated: boolean;
+  // 최종 응답의 헤더(중복 키는 fetch 표준대로 콤마로 합쳐짐 — set-cookie는 예외라 아래
+  // setCookies로 별도 제공) — security-check 같은 헤더 기반 점검 도구가 사용.
+  headers: Record<string, string>;
+  setCookies: string[];
 }
 
 export type SafeFetchErrorReason =
@@ -262,6 +266,8 @@ export async function safeFetch(
       }
 
       const { body, truncated } = await readBodyCapped(res, maxBytes);
+      const headers = Object.fromEntries(res.headers.entries());
+      const setCookies = typeof res.headers.getSetCookie === "function" ? res.headers.getSetCookie() : [];
       await pinnedAgent.close().catch(() => {});
       return {
         ok: true,
@@ -270,6 +276,8 @@ export async function safeFetch(
         contentType: res.headers.get("content-type"),
         body,
         truncated,
+        headers,
+        setCookies,
       };
     }
 

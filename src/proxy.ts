@@ -27,6 +27,9 @@ const RATE_LIMITS: Record<string, RateLimitRule> = {
   "/api/report-check": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-rewrite": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
   "/api/tools/feature-item-generator": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
+  // 요청 1건당 최대 2번의 서버 측 fetch(대상 URL + http:// 리다이렉트 확인)가 발생해
+  // 다른 URL 기반 점검기와 동일하게 SSRF 프로빙/스크래핑 남용 우려로 제한한다.
+  "/api/security-check": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
 };
 
 // DB 없이 인스턴스 메모리에만 유지하는 best-effort 카운터.
@@ -95,6 +98,7 @@ export const config = {
     "/api/report-check",
     "/api/report-rewrite",
     "/api/tools/feature-item-generator",
+    "/api/security-check",
     "/admin/:path*",
     // next-intl: 페이지 경로만 대상 — api, admin, _next, 정적 파일(확장자 포함 경로)은 제외
     "/((?!api|admin|_next|_vercel|.*\\..*).*)",

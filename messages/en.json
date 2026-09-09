@@ -14,6 +14,7 @@
     "navReportChecker": "Report Checker",
     "navAdsensePrecheck": "AdSense Precheck",
     "navFeatureItemGenerator": "Feature Item Generator",
+    "navSecurityCheck": "Security Header Checker",
     "navAiTools": "🛠️ AI Tools",
     "aiToolsQuoteDesc": "From line items to totals, AI does it all",
     "aiToolsProfitDesc": "Just enter the numbers — net profit calculated instantly",
@@ -22,6 +23,7 @@
     "aiToolsReportDesc": "AI checks structure, clarity, and tone",
     "aiToolsAdsenseDesc": "Check your ad-review readiness in advance",
     "aiToolsFeatureDesc": "One sentence in, a full feature list out",
+    "aiToolsSecurityDesc": "Check HTTP header & cookie security for free",
     "newBadge": "NEW",
     "navAbout": "About",
     "toggleTheme": "Toggle theme",
@@ -693,6 +695,79 @@
       {
         "question": "Could the generated feature list differ from my actual project scope?",
         "answer": "Yes. It's an AI-generated reference list, so it may not match your actual requirements. We recommend an expert review before development."
+      }
+    ]
+  },
+  "securityCheck": {
+    "metaTitle": "Security Header Checker - NexaLab.app",
+    "metaDescription": "Enter a URL to get a free check of HTTP security headers, cookie security attributes, and whether HTTPS is enforced. A passive, publicly-visible-information-only diagnostic, not a penetration test.",
+    "eyebrow": "Free Tool",
+    "title": "Is your site's <highlight>basic security setup</highlight> safe?",
+    "subtitle": "Many real breaches start with basic misconfigurations like missing security headers or weak cookie attributes. Enter a URL and we'll check for risk points using only information your server already makes public — for free.",
+    "urlInputLabel": "URL to check",
+    "urlPlaceholder": "https://example.com",
+    "submitButton": "Check for free",
+    "loadingText": "Checking...",
+    "errorEmptyUrl": "Please enter a URL to check.",
+    "errorGeneric": "Something went wrong while checking. Please try again shortly.",
+    "formNote": "The URL you enter and the results are never stored on our server. This performs no attack/penetration actions — it only reads information your server already makes public.",
+    "scoreLabel": "Security score",
+    "passLabel": "Safe",
+    "warnLabel": "Needs improvement",
+    "failLabel": "At risk",
+    "restartButton": "← Check another URL",
+    "criticalBannerTitle": "🚨 Needs immediate action",
+    "kakaoShareButton": "Share on KakaoTalk",
+    "kakaoShareCardTitle": "{title} security check results",
+    "kakaoShareCardDescription": "Security score {score} (grade {grade}) — check your site's basic security setup for free.",
+    "kakaoShareCardButton": "Check your site for free",
+    "kakaoShareCopied": "Link copied",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Without a dedicated security person, there's no easy way to know if your site's default settings are safe. Terms like \"security headers\" and \"cookie attributes\" feel unfamiliar, and you're worried you'll only find out about a problem after you've already been breached.",
+    "contentIntroSolution": "The Security Header Checker automatically checks HTTP security headers, cookie security attributes, and whether HTTPS is enforced from a single URL — and explains why each issue matters and how to fix it.",
+    "contentHowToUseTitle": "How to use it",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter a URL",
+        "description": "Paste the URL of the site you want to check into the input field."
+      },
+      {
+        "title": "Run the automatic check",
+        "description": "We check 3 categories using only the headers and cookies your server already responds with publicly."
+      },
+      {
+        "title": "See the grade and fixes",
+        "description": "Review your A-F grade, why each item matters, and fixes you can apply right away."
+      }
+    ],
+    "contentRecommendForTitle": "Recommended for",
+    "contentRecommendFor": [
+      "Solo founders and freelancers running a site without a dedicated security person",
+      "Developers who want to check basic security settings before launching a new service",
+      "Agencies who need a quick read on a client site's security posture",
+      "Site operators handling customer data who are unsure about their cookie security settings"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "Does this tool actually attempt to hack my site?",
+        "answer": "No. It never performs attack actions like SQL injection or brute-force attempts. It's a safe diagnostic that only reads the header and cookie information your server already responds with publicly when a browser connects."
+      },
+      {
+        "question": "If I get a low grade, will I definitely get hacked?",
+        "answer": "No. This check is a reference-only result based solely on publicly available information, and it may not guarantee or catch every vulnerability. A lower grade simply means more risk factors were found."
+      },
+      {
+        "question": "Why is the HTTPS item treated as the most critical?",
+        "answer": "If HTTPS isn't enforced, all communication — including login credentials — can be transmitted unencrypted, so we call this out separately as needing immediate action."
+      },
+      {
+        "question": "How long does the check take?",
+        "answer": "It usually finishes in under 10 seconds, and the same URL returns faster from a 24-hour cache."
+      },
+      {
+        "question": "Is sensitive information like cookie values stored?",
+        "answer": "No. We only check cookie names and whether security attributes are set — never cookie values or the page's source content."
       }
     ]
   },
