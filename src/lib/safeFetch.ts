@@ -1,5 +1,7 @@
 import { promises as dns } from "node:dns";
+import type { LookupAddress, LookupOptions } from "node:dns";
 import net from "node:net";
+import { Agent } from "undici";
 
 // Node.js 런타임 전용(dns/net 모듈 사용) — 이 파일을 import하는 API 라우트는
 // runtime = "edge"를 설정하면 안 됨(생략 = 기본 Node 런타임).
@@ -97,26 +99,59 @@ function hasBlockedHostnameLiteral(hostname: string): boolean {
   return BLOCKED_HOSTNAME_SUFFIXES.some((suffix) => lower === suffix || lower.endsWith(`.${suffix}`));
 }
 
-type HostValidation = "ok" | "blocked" | "dns_error";
+type HostValidation =
+  | { ok: true; address: string; family: 4 | 6 }
+  | { ok: false; reason: "blocked_host" | "dns_error" };
 
 // DNS 조회 자체가 실패한 경우(오타/존재하지 않는 도메인)와 "IP가 사설/내부망으로 확인되어
 // 의도적으로 차단"한 경우를 구분해서 반환한다 — 둘을 같은 에러로 합치면 사용자가 URL을
 // 잘못 입력했을 뿐인데 "접근이 제한된 주소"라는 오해를 살 수 있다.
+// 검증에 사용한 IP를 그대로 반환해서, 실제 연결(fetch)이 이 IP로 고정(pin)되도록 한다
+// (DNS 리바인딩 방지 — 아래 pinnedLookup() 참고).
 async function validateHost(hostname: string): Promise<HostValidation> {
-  if (hasBlockedHostnameLiteral(hostname)) return "blocked";
+  if (hasBlockedHostnameLiteral(hostname)) return { ok: false, reason: "blocked_host" };
 
   const literalVersion = net.isIP(hostname);
   if (literalVersion !== 0) {
-    return isBlockedIP(hostname) ? "blocked" : "ok";
+    if (isBlockedIP(hostname)) return { ok: false, reason: "blocked_host" };
+    return { ok: true, address: hostname, family: literalVersion as 4 | 6 };
   }
 
   try {
     const addrs = await dns.lookup(hostname, { all: true, verbatim: true });
-    if (addrs.length === 0) return "dns_error";
-    return addrs.every((addr) => !isBlockedIP(addr.address)) ? "ok" : "blocked";
+    if (addrs.length === 0) return { ok: false, reason: "dns_error" };
+    if (addrs.some((addr) => isBlockedIP(addr.address))) return { ok: false, reason: "blocked_host" };
+    const [first] = addrs;
+    return { ok: true, address: first.address, family: first.family as 4 | 6 };
   } catch {
-    return "dns_error";
+    return { ok: false, reason: "dns_error" };
   }
+}
+
+type NodeLookupCallback = (
+  err: NodeJS.ErrnoException | null,
+  address: string | LookupAddress[],
+  family?: number
+) => void;
+
+// undici Agent의 connect.lookup에 주입하는 DNS 리졸버. 호스트명이 무엇이든 항상
+// validateHost()가 이미 검증한 단일 IP만 반환해서, fetch()가 별도로 DNS를 재조회하며
+// 생기는 시간차(TOCTOU) 동안 공격자가 응답을 사설/내부망 IP로 바꿔치기하는 DNS
+// 리바인딩 공격을 원천적으로 차단한다.
+function pinnedLookup(address: string, family: 4 | 6) {
+  return (
+    _hostname: string,
+    optionsOrCallback: LookupOptions | NodeLookupCallback,
+    maybeCallback?: NodeLookupCallback
+  ): void => {
+    const callback = typeof optionsOrCallback === "function" ? optionsOrCallback : (maybeCallback as NodeLookupCallback);
+    const wantsAll = typeof optionsOrCallback !== "function" && Boolean((optionsOrCallback as { all?: boolean }).all);
+    if (wantsAll) {
+      callback(null, [{ address, family }]);
+    } else {
+      callback(null, address, family);
+    }
+  };
 }
 
 async function readBodyCapped(
@@ -148,10 +183,6 @@ async function readBodyCapped(
   return { body: Buffer.concat(chunks.map((c) => Buffer.from(c))).toString("utf-8"), truncated };
 }
 
-// 참고(허용된 잔존 리스크): validateHost()의 dns.lookup 결과와 실제 fetch()가 내부적으로
-// 수행하는 DNS 조회 사이에는 시간차가 있어, 이론적으로 DNS 리바인딩(TOCTOU) 공격이 가능하다.
-// 이 도구는 무료 저위험 정적 분석 도구이고 완전한 방어(고정 IP로 직접 연결 + Host 헤더 지정)는
-// 구현 복잡도가 크게 늘어나므로, MVP에서는 이 리스크를 의도적으로 감수한다.
 export async function safeFetch(
   rawUrl: string,
   opts: SafeFetchOptions = {}
@@ -177,24 +208,30 @@ export async function safeFetch(
       }
 
       const hostValidation = await validateHost(currentUrl.hostname);
-      if (hostValidation === "dns_error") {
-        return { ok: false, reason: "dns_error" };
+      if (!hostValidation.ok) {
+        return { ok: false, reason: hostValidation.reason };
       }
-      if (hostValidation === "blocked") {
-        return { ok: false, reason: "blocked_host" };
-      }
+
+      // fetch()가 별도로 DNS를 재조회하지 않도록, 방금 검증한 IP로 연결을 고정한다
+      // (DNS 리바인딩/TOCTOU 방지 — pinnedLookup() 참고).
+      const pinnedAgent = new Agent({
+        connect: { lookup: pinnedLookup(hostValidation.address, hostValidation.family) },
+      });
 
       let res: Response;
       try {
         res = await fetch(currentUrl.toString(), {
           redirect: "manual",
           signal: controller.signal,
+          // Node 내장 fetch(undici 기반)는 dispatcher로 커스텀 Agent 주입을 지원함.
+          dispatcher: pinnedAgent,
           headers: {
             "User-Agent": USER_AGENT,
             ...(opts.accept ? { Accept: opts.accept } : {}),
           },
-        });
+        } as RequestInit);
       } catch (err) {
+        await pinnedAgent.close().catch(() => {});
         if (err instanceof Error && err.name === "AbortError") {
           return { ok: false, reason: "timeout" };
         }
@@ -202,6 +239,8 @@ export async function safeFetch(
       }
 
       if (res.status >= 300 && res.status < 400) {
+        await res.body?.cancel().catch(() => {});
+        await pinnedAgent.close().catch(() => {});
         const location = res.headers.get("location");
         if (!location) {
           return { ok: false, reason: "http_error", status: res.status };
@@ -218,10 +257,12 @@ export async function safeFetch(
       }
 
       if (!res.ok) {
+        await pinnedAgent.close().catch(() => {});
         return { ok: false, reason: "http_error", status: res.status };
       }
 
       const { body, truncated } = await readBodyCapped(res, maxBytes);
+      await pinnedAgent.close().catch(() => {});
       return {
         ok: true,
         status: res.status,
