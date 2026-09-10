@@ -17,6 +17,7 @@
 - [Business Utility Tools](https://www.nexalab.app/en/tools/business-utility): A hub page linking the Project Profit Calculator and Report Checker.
 
 ## Blog
+- [Blog](https://www.nexalab.app/en/blog): Full post index across AI Apps, Biz, and AI Job News, with category filters and pagination.
 - [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback). Covers model selection, prompt design, deployment, and troubleshooting.
 - [Biz](https://www.nexalab.app/en/biz): Notes on turning tech experiments into sustainable, revenue-generating businesses — monetization experiments, AI applied to niche markets, and solo-developer decision-making.
 

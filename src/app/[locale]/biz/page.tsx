@@ -81,7 +81,7 @@ export default async function BizPage({
             strong: (chunks) => <strong>{chunks}</strong>,
           })}
         </p>
-        <Link href="/" className={styles.cta}>{t("cta")}</Link>
+        <Link href="/blog" className={styles.cta}>{t("cta")}</Link>
       </section>
     </div>
   );

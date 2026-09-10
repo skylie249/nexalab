@@ -221,6 +221,7 @@ export default function Header() {
                 ))}
               </div>
             </li>
+            <li><Link href="/blog">{t("navBlog")}</Link></li>
             <li><Link href="/ai-apps">{t("navAiApps")}</Link></li>
             <li><Link href="/biz">{t("navBiz")}</Link></li>
             <li><Link href="/about">{t("navAbout")}</Link></li>
@@ -294,6 +295,7 @@ export default function Header() {
               ))}
             </ul>
           </li>
+          <li><Link href="/blog" onClick={closeMenu}>{t("navBlog")}</Link></li>
           <li><Link href="/ai-apps" onClick={closeMenu}>{t("navAiApps")}</Link></li>
           <li><Link href="/biz" onClick={closeMenu}>{t("navBiz")}</Link></li>
           <li><Link href="/about" onClick={closeMenu}>{t("navAbout")}</Link></li>

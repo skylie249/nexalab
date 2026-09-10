@@ -13,18 +13,12 @@ import {
   type SeoHistoryEntry,
 } from "@/lib/dashboardHistory";
 import { formatWon } from "@/lib/formatCurrency";
+import type { DashboardPost } from "@/lib/posts";
 import PostCard from "@/components/PostCard";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import styles from "./page.module.css";
 
-export interface DashboardPost {
-  id: string;
-  category: string;
-  date: string;
-  title: string;
-  summary: string;
-  tags: string[];
-}
+export type { DashboardPost };
 
 export interface SeoRelatedPost {
   id: string;

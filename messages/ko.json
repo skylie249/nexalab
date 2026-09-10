@@ -5,6 +5,7 @@
   },
   "header": {
     "navDashboard": "대시보드",
+    "navBlog": "블로그",
     "navAiApps": "AI Apps",
     "navBiz": "Biz",
     "navQuoteGenerator": "AI 견적서",
@@ -83,6 +84,20 @@
     "paginationPrev": "이전 페이지",
     "paginationNext": "다음 페이지",
     "paginationLast": "마지막 페이지로"
+  },
+  "homeHub": {
+    "trustBadge": "완전 무료 · 회원가입 불필요",
+    "hubSectionTitle": "AI 도구, 지금 바로 써보세요",
+    "hubSectionSubtitle": "URL 하나로 진단부터 견적서, 손익 계산까지 — 무료로 확인해보세요",
+    "toolCardLinkLabel": "바로가기 →",
+    "insightSectionTitle": "최신 인사이트",
+    "viewAllPostsCta": "전체 글 보기 →"
+  },
+  "blog": {
+    "metaTitle": "블로그 - NexaLab.app",
+    "metaDescription": "AI Apps, Biz, AI Job News 카테고리의 모든 글을 한곳에서 확인하세요.",
+    "pageTitle": "블로그",
+    "pageSubtitle": "AI 앱 빌드로그, 비즈니스 아이디어, AI 업계 소식을 기록합니다."
   },
   "about": {
     "metaTitle": "About - NexaLab.app",
@@ -210,8 +225,8 @@
     "techStackTitle": "만들 때 주로 쓰는 기술",
     "techStackBody": "각 서비스는 기획부터 개발까지 혼자 진행하며, 아래 기술을 기반으로 만듭니다.",
     "noteTitle": "이 카테고리에서 다루는 것",
-    "noteBody": "모델 선택과 프롬프트 설계부터 배포, 운영, 트러블슈팅까지 — AI 앱을 실제로 돌리면서 얻은 기록을 정리합니다. 관련 글은 홈 피드의 <strong>AI Apps</strong> 탭에서 모아볼 수 있습니다.",
-    "cta": "홈으로 가기 →"
+    "noteBody": "모델 선택과 프롬프트 설계부터 배포, 운영, 트러블슈팅까지 — AI 앱을 실제로 돌리면서 얻은 기록을 정리합니다. 관련 글은 블로그의 <strong>AI Apps</strong> 탭에서 모아볼 수 있습니다.",
+    "cta": "블로그로 가기 →"
   },
   "biz": {
     "metaTitle": "Biz - NexaLab.app",
@@ -234,8 +249,8 @@
     "provenTag2": "AI 견적서 생성기",
     "provenTag3": "손익 계산기",
     "noteTitle": "이 카테고리에서 다루는 것",
-    "noteBody": "수익화, 시장 검증, 운영 관련 글은 홈 피드의 <strong>Biz</strong> 탭에서 모아볼 수 있습니다.",
-    "cta": "홈으로 가기 →"
+    "noteBody": "수익화, 시장 검증, 운영 관련 글은 블로그의 <strong>Biz</strong> 탭에서 모아볼 수 있습니다.",
+    "cta": "블로그로 가기 →"
   },
   "postDetail": {
     "readTimeSuffix": "{minutes}분 읽기",

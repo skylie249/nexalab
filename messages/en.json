@@ -5,6 +5,7 @@
   },
   "header": {
     "navDashboard": "Dashboard",
+    "navBlog": "Blog",
     "navAiApps": "AI Apps",
     "navBiz": "Biz",
     "navQuoteGenerator": "AI Quote",
@@ -83,6 +84,20 @@
     "paginationPrev": "Previous page",
     "paginationNext": "Next page",
     "paginationLast": "Go to last page"
+  },
+  "homeHub": {
+    "trustBadge": "100% Free · No Sign-up Required",
+    "hubSectionTitle": "Try the AI Tools Right Now",
+    "hubSectionSubtitle": "From site diagnostics to quotes and profit calculations — all free, one click away",
+    "toolCardLinkLabel": "Go →",
+    "insightSectionTitle": "Latest Insights",
+    "viewAllPostsCta": "View All Posts →"
+  },
+  "blog": {
+    "metaTitle": "Blog - NexaLab.app",
+    "metaDescription": "Browse every post across AI Apps, Biz, and AI Job News in one place.",
+    "pageTitle": "Blog",
+    "pageSubtitle": "Build logs, business ideas, and AI industry news, all in one place."
   },
   "about": {
     "metaTitle": "About - NexaLab.app",
@@ -210,8 +225,8 @@
     "techStackTitle": "Tech I usually build with",
     "techStackBody": "Each service is planned and built solo, on top of the stack below.",
     "noteTitle": "What this category covers",
-    "noteBody": "From model selection and prompt design to deployment, operations, and troubleshooting — this is where I collect what I've learned running AI apps for real. Related posts are gathered under the <strong>AI Apps</strong> tab on the home feed.",
-    "cta": "Back to home →"
+    "noteBody": "From model selection and prompt design to deployment, operations, and troubleshooting — this is where I collect what I've learned running AI apps for real. Related posts are gathered under the <strong>AI Apps</strong> tab on the blog.",
+    "cta": "Go to blog →"
   },
   "biz": {
     "metaTitle": "Biz - NexaLab.app",
@@ -234,8 +249,8 @@
     "provenTag2": "AI Quote Generator",
     "provenTag3": "Profit Calculator",
     "noteTitle": "What this category covers",
-    "noteBody": "Posts on monetization, market validation, and operations are gathered under the <strong>Biz</strong> tab on the home feed.",
-    "cta": "Back to home →"
+    "noteBody": "Posts on monetization, market validation, and operations are gathered under the <strong>Biz</strong> tab on the blog.",
+    "cta": "Go to blog →"
   },
   "postDetail": {
     "readTimeSuffix": "{minutes} min read",
