@@ -6,19 +6,14 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useTheme } from "./ThemeProvider";
 import styles from "./Header.module.css";
 
-// 그룹 허브(사이트 진단센터/제안·견적/업무 지원)와 올인원 진단은 대시보드 콘텐츠 쪽으로
-// 옮기고, 여기는 기존 개별 도구 8개만 "왜 찾는가" 기준 그룹 순서로 정렬해서 유지한다
-// (유틸기능_그룹화_올인원진단_기획서.md 그룹 기준 — 사이트 진단 4종 → 제안·견적 2종 →
-// 업무 지원 2종).
-const AI_TOOLS = [
-  { href: "/tools/seo-geo-checker", titleKey: "navSeoGeoChecker", descKey: "aiToolsSeoDesc" },
-  { href: "/tools/security-check", titleKey: "navSecurityCheck", descKey: "aiToolsSecurityDesc" },
-  { href: "/tools/adsense-precheck", titleKey: "navAdsensePrecheck", descKey: "aiToolsAdsenseDesc" },
-  { href: "/tools/llms-txt-generator", titleKey: "navLlmsTxtGenerator", descKey: "aiToolsLlmsDesc" },
-  { href: "/tools/feature-item-generator", titleKey: "navFeatureItemGenerator", descKey: "aiToolsFeatureDesc" },
-  { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc" },
-  { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc" },
-  { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc" },
+// 개별 도구 8개를 드롭다운에 그대로 나열했더니(2026-09-09 리팩토링) IA 기획
+// (유틸기능_그룹화_올인원진단_기획서.md)과 실제 GNB가 어긋난다는 QA 지적이 있어,
+// 허브 3개(사이트 진단센터/제안·견적/업무 지원)만 노출하는 원래 그룹 구조로 되돌린다.
+// 개별 도구 목록은 각 허브 페이지(/tools/site-check 등)와 대시보드에서 계속 보여준다.
+const AI_TOOL_HUBS = [
+  { href: "/tools/site-check", titleKey: "navSiteCheckHub", descKey: "aiToolsSiteCheckHubDesc" },
+  { href: "/tools/proposal", titleKey: "navProposalHub", descKey: "aiToolsProposalHubDesc" },
+  { href: "/tools/business-utility", titleKey: "navBusinessUtilityHub", descKey: "aiToolsBusinessUtilityHubDesc" },
 ] as const;
 
 type TrigramPattern = [boolean, boolean, boolean];
@@ -213,7 +208,7 @@ export default function Header() {
                 {t("navAiTools")}
               </button>
               <div className={`${styles.dropdownPanel} ${isToolsOpen ? styles.dropdownPanelOpen : ""}`}>
-                {AI_TOOLS.map((tool) => (
+                {AI_TOOL_HUBS.map((tool) => (
                   <Link
                     key={tool.href}
                     href={tool.href}
@@ -289,7 +284,7 @@ export default function Header() {
               <span className={`${styles.accordionChevron} ${isToolsAccordionOpen ? styles.accordionChevronOpen : ""}`}>▾</span>
             </button>
             <ul className={`${styles.mobileAccordionPanel} ${isToolsAccordionOpen ? styles.mobileAccordionPanelOpen : ""}`}>
-              {AI_TOOLS.map((tool) => (
+              {AI_TOOL_HUBS.map((tool) => (
                 <li key={tool.href}>
                   <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
                     <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
