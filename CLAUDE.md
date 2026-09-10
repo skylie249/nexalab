@@ -802,12 +802,34 @@ export async function POST(req: Request) {
     - `page.tsx`: `useSearchParams()` 사용에 따라 손익 계산기(`profit-calculator/page.tsx`)와 동일하게 `<Suspense fallback={null}>`로 클라이언트 컴포넌트를 감쌈 — 감싼 뒤에도 `next build` 결과 `/tools/quote-generator`는 그대로 정적(`●`) 페이지로 유지됨을 확인
     - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 모두 통과. `next start` 로컬 프로덕션 서버 + Chrome 자동화로 기능 항목 생성기가 실제로 만드는 딥링크 URL(`?from=feature-generator&features=[...]`)로 직접 접속해 랜딩 생략·안내 문구·불릿 목록 pre-fill을 확인했고, 그 상태에서 "AI 견적 분석하기"를 실제로 클릭해 pre-fill된 기능 목록 기준으로 주제가 일치하는 견적 결과(작업 항목·공수·총 견적 범위·리스크)까지 정상 생성되는 end-to-end 흐름을 확인함
 
+### 2026-09-09
+- **의존성 보안 패치**: `npm audit`가 `next@16.3.1`을 인증 불필요 원격 코드 실행(RCE) 취약점 범위(GHSA-p293-qw3h-jr36, GHSA-2xp9-vwfh-vxw4)로 표시 — 패치 레벨인 `16.3.4`로 올리고(breaking change 없음) `eslint-config-next`도 버전을 맞춤. 함께 딸려온 `sharp`(libheif)·`@xmldom/xmldom`(mammoth의 DOCX 파싱 경유)·`js-yaml`의 전이 의존성 취약점도 함께 해결돼 `npm audit` 결과 0건으로 정리됨
+- **`safeFetch`의 SSRF 방어에 DNS 리바인딩(TOCTOU) 허점 발견·수정**: 기존에는 `validateHost()`(공개 IP인지 검사)와 실제 `fetch()`의 DNS 조회가 서로 다른 시점에 일어나, 공격자가 도메인의 DNS를 조작해 검증 시점엔 공개 IP를 보여주고 실제 연결 시점엔 내부망/메타데이터 IP로 바꿔치기하는 시나리오(TOCTOU)가 이론상 가능했음 — SEO/GEO 체커·애드센스 사전 점검기·보안 점검기 등 `safeFetch`를 쓰는 모든 도구가 영향 범위. `src/lib/safeFetch.ts`를 검증된 IP를 커스텀 undici `Agent`의 `lookup`으로 고정해, 실제 연결이 검증했던 그 주소로만 가도록 수정
+- **보안 점검기(`/tools/security-check`) MVP 신규 구현** (`security-checker-plan.md` 1단계 범위 기준) — URL 하나로 HTTP 보안 헤더 7종(HSTS/CSP/X-Frame-Options/X-Content-Type-Options/Referrer-Policy/Permissions-Policy/서버 정보 노출)·쿠키 속성 3종(Secure/HttpOnly/SameSite)·HTTP→HTTPS 강제 리다이렉트 여부를 점검해 A~F 등급과 항목별 해결 힌트를 제공. "침투 테스트가 아니라 건강검진"이라는 지침서의 포지셔닝 그대로, 공격 행위 없이 서버가 이미 공개적으로 응답하는 정보만 분석
+  - **지침서와 다르게 구현한 부분**: 지침서가 제안한 `@mdn/mdn-http-observatory` 라이브러리 대신 **자체 경량 분석기**(`src/lib/securityCheckAnalyzer.ts`)로 직접 구현 — 그 라이브러리는 자체적으로 별도 네트워크 요청을 수행해, 방금 `safeFetch`에 추가한 DNS 리바인딩 방어를 우회하게 되므로 전체 요청 경로를 `safeFetch` 하나로 통일하기 위한 의도적 결정. `safeFetch`의 성공 응답 타입(`SafeFetchOk`)에 응답 헤더와 `Set-Cookie` 값을 노출하도록 확장
+  - 쿠키 점검 결과는 **쿠키 이름만** 리포트에 남기고 값은 절대 포함하지 않음 — 결과가 `seo_check_cache`/`adsense_precheck_cache`와 동일한 패턴(anon 공개 읽기 권한)의 신규 Supabase 캐시 테이블에 저장되기 때문
+  - 지침서 3-1(헤더)·3-4(쿠키) + 3-2 중 HTTPS 적용 여부만 우선 구현(지침서 로드맵의 "MVP" 단계), 3-3(민감 파일·경로 노출)·3-5(SPF/DKIM/DMARC 이메일 보안)·인증서 상세 분석은 이번 범위에서 구현하지 않음
+  - Header "AI 도구" 드롭다운, `sitemap.ts`, `public/llms.txt`에 신규 경로 등록, 다른 도구와 동일하게 한/영 메시지 키 추가
+- **자체 사이트 보안 헤더 조치**: 위에서 만든 보안 점검기로 nexalab.app 자신을 점검해 나온 fail/warn 항목을 실제로 수정 — `next.config.mjs`의 정적 `headers()`로 CSP(AdSense·GA·카카오 SDK·Google Fonts·Supabase 등 실제 사용 중인 서드파티 origin만 허용)·X-Frame-Options·X-Content-Type-Options·Referrer-Policy·Permissions-Policy 추가, `poweredByHeader: false`로 `X-Powered-By` 제거, next-intl의 `NEXT_LOCALE` 로케일 쿠키에 `Secure` 속성 추가
+  - Next.js가 권장하는 nonce 기반 CSP 대신 정적 `headers()` 방식을 채택 — nonce 방식은 모든 페이지가 동적 렌더링이어야 하는데, 이 사이트는 블로그 글 300여 개를 포함해 거의 전 페이지가 정적 생성(SSG)이라 맞지 않음
+  - **미검증 항목**: CSP allowlist가 실제 배포 환경에서 광고·애널리틱스·카카오 공유 기능을 깨뜨리지 않는지는 배포 후 실브라우저로 재확인 필요(로컬에서는 확인 못함)
+- **유틸 기능 8종을 JTBD(방문 목적) 기준 허브 3종 + 올인원 진단 플래그십으로 재구성** (`유틸기능_그룹화_올인원진단_기획서.md` 기준)
+  - 신규 허브 페이지 3개: `/tools/site-check`(사이트 진단센터 — SEO/GEO 체커·보안 점검기·애드센스 사전점검·llms.txt 생성기), `/tools/proposal`(제안·견적 도구 — AI 견적서·기능항목 생성기), `/tools/business-utility`(업무 지원 도구 — 손익계산기·보고서 다듬기). 3개 허브 모두 공용 `HubToolGrid` 컴포넌트로 도구 카드 그리드 렌더링
+  - **플래그십**: `/tools/site-check/all-in-one` — URL 하나로 SEO/GEO 체커·보안 점검기·애드센스 사전점검 3개(지침서는 llms.txt까지 4개를 제안했으나 아래 이유로 3개로 축소)를 한 번에 실행하고, 3개 리포트를 가로질러 "가장 시급한 문제 3가지"를 자동 취합해 상단에 보여줌
+  - **지침서와 다르게 구현한 부분(각각 기존 프로젝트 결정과 충돌해서)**:
+    - 기존 4개 도구 URL(`seo-geo-checker` 등)은 지침서가 제안한 개명(`seo-geo-check` 등)을 하지 않고 그대로 유지 — 이미 색인·공유된 링크를 깨뜨릴 이유가 허브 페이지로 얻는 정리 효과보다 크다고 판단
+    - llms.txt 생성기는 올인원 진단의 4번째 자동 URL 체크로 넣지 않음 — 지침서 가정과 달리 이 생성기는 단순 URL 크롤링이 아니라 사용자가 직접 입력하는 페이지 데이터가 필요해 자동화 대상이 아님. 대신 올인원 결과는 SEO/GEO 리포트가 이미 계산하는 "llms.txt 존재 여부" 체크를 재사용하고 생성기로 링크만 연결
+    - 영속적인 공유용 결과 URL(해시 라우트)·PDF 내보내기·이메일 게이트 리드 수집은 구현하지 않음 — 각각 기존 무저장 원칙(`supabase-seo-check-cache.sql`에 이미 명시), 과거 세션에서 시도 후 포기한 `@react-pdf/renderer` 호환성 문제, 프로젝트 이력 전반에서 반복적으로 보류된 이메일 수집 결정과 충돌
+  - SEO/GEO 체커·보안 점검기·애드센스 사전점검 3개 클라이언트 컴포넌트에 `?url=` 프리필 지원 추가(기존 손익계산기/견적서 생성기의 `useSearchParams` + `Suspense` 패턴과 동일) — 올인원 결과 카드가 각 도구로 URL이 채워진 채 딥링크되도록 함
+  - **후속 리팩토링(같은 날)**: 허브 3개 + 올인원 링크가 추가되며 헤더 "AI 도구" 드롭다운이 12개 항목으로 늘어나 복잡해져, 그룹화된 보기 자체는 `/dashboard`의 신규 "AI 도구" 섹션으로 옮기고(허브 페이지의 기존 `HubToolGrid`를 그대로 재사용, 각 그룹에 "전체 보기" 링크) 드롭다운은 기존 8개 개별 도구만 남기되 순서를 JTBD 그룹 기준으로 재정렬. 이제 쓰이지 않게 된 `navSiteCheckHub`/`navProposalHub`/`navBusinessUtilityHub` 관련 메시지 키 제거(`navAllInOneCheck`는 대시보드 카드가 재사용해 유지). 곧이어 드롭다운의 NEW 배지 표시 로직(`isNew` 플래그, 데스크톱/모바일 아코디언 양쪽, `.newBadge` CSS, 번역 키)도 함께 제거
+  - **이번 범위에서 하지 않은 것**: 지침서 4번 실행 우선순위표의 "제안·견적 도구 간 데이터 연동"(기능항목 생성기 ↔ AI 견적서)은 이미 2026-09-04에 별도로 구현 완료된 상태라 재작업 없음, 통합 PDF 리포트 템플릿·이메일 게이트는 위와 동일한 이유로 보류
+
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+# 이것은 당신이 알던 그 Next.js가 아닙니다
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+이 블록은 `next dev`가 작성하고 다시 추가합니다 — `node_modules/next/dist/server/lib/generate-agent-files.js`에서 확인할 수 있습니다. diff에서 이 블록을 지워도 커밋되지 않은 변경사항으로 다시 생성될 뿐입니다. 작업 내용과 함께 커밋해야 트리가 깨끗하게 유지됩니다.
 
 <!-- END:nextjs-agent-rules -->

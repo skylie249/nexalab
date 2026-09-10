@@ -6,7 +6,8 @@ node_modules
 # 블로그 홍보 자동화 스크립트의 실행 간 임시 상태(detect-new-posts.ts <-> generate-copy.ts <->
 # save-to-notion.ts 데이터 전달용) — .last-run.json과 달리 커밋 대상이 아님
 scripts/promo-automation/.state/
-Flag_of_South_Korea.svg
-icons8-한국-이모티콘-48.png
-icons8-한국-이모티콘-48.svg
+
+# 디자인 좌표 참고용으로만 쓰는 다운로드 자산 — 코드에서 로드되지 않음
+reference/
+
 *.md
