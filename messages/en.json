@@ -4,7 +4,7 @@
     "description": "See how AI can cut your workload, for free. Try practical tools like the quote generator and profit calculator right away."
   },
   "header": {
-    "navDashboard": "Dashboard",
+    "navDashboard": "📁 My Diagnostics",
     "navBlog": "Blog",
     "navAiApps": "AI Apps",
     "navBiz": "Biz",
@@ -35,6 +35,11 @@
     "aiToolsBusinessUtilityHubDesc": "From profit math to report polishing",
     "navAbout": "About",
     "navHistory": "History",
+    "navAboutGroup": "About",
+    "aboutGroupAiAppsDesc": "Build logs for the AI apps we've shipped",
+    "aboutGroupBizDesc": "Business ideas and strategy for the AI era",
+    "aboutGroupAboutDesc": "Who's behind NexaLab, and why",
+    "aboutGroupHistoryDesc": "How NexaLab has been built over time",
     "toggleTheme": "Toggle theme",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",

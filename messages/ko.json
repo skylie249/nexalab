@@ -4,7 +4,7 @@
     "description": "AI로 일 줄이는 법을 무료로 확인해보세요. 견적서·손익계산기 같은 실무 도구를 지금 바로 써보고, AI 앱을 만드는 과정을 기록한 빌드 로그도 함께 확인해보세요."
   },
   "header": {
-    "navDashboard": "대시보드",
+    "navDashboard": "📁 내 진단함",
     "navBlog": "블로그",
     "navAiApps": "AI Apps",
     "navBiz": "Biz",
@@ -35,6 +35,11 @@
     "aiToolsBusinessUtilityHubDesc": "손익 계산부터 보고서 다듬기까지",
     "navAbout": "About",
     "navHistory": "연혁",
+    "navAboutGroup": "소개",
+    "aboutGroupAiAppsDesc": "AI 앱을 만드는 과정을 기록한 빌드로그",
+    "aboutGroupBizDesc": "AI 시대 비즈니스 아이디어와 실행 전략",
+    "aboutGroupAboutDesc": "운영자 소개와 사이트 이야기",
+    "aboutGroupHistoryDesc": "NexaLab이 만들어져 온 과정",
     "toggleTheme": "테마 전환",
     "openMenu": "메뉴 열기",
     "closeMenu": "메뉴 닫기",

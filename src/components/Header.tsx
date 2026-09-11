@@ -16,6 +16,15 @@ const AI_TOOL_HUBS = [
   { href: "/tools/business-utility", titleKey: "navBusinessUtilityHub", descKey: "aiToolsBusinessUtilityHubDesc" },
 ] as const;
 
+// AI Apps/Biz(블로그 카테고리) + About/연혁(사이트 소개 성격 콘텐츠)을 "소개" 그룹으로 묶어
+// 최상위 GNB 항목 수를 줄인다.
+const ABOUT_GROUP_LINKS = [
+  { href: "/ai-apps", titleKey: "navAiApps", descKey: "aboutGroupAiAppsDesc" },
+  { href: "/biz", titleKey: "navBiz", descKey: "aboutGroupBizDesc" },
+  { href: "/about", titleKey: "navAbout", descKey: "aboutGroupAboutDesc" },
+  { href: "/history", titleKey: "navHistory", descKey: "aboutGroupHistoryDesc" },
+] as const;
+
 type TrigramPattern = [boolean, boolean, boolean];
 
 function Trigram({ pattern, x, y, rotate }: { pattern: TrigramPattern; x: number; y: number; rotate: number }) {
@@ -136,21 +145,28 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isToolsAccordionOpen, setIsToolsAccordionOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isAboutAccordionOpen, setIsAboutAccordionOpen] = useState(false);
   const toolsDropdownRef = useRef<HTMLLIElement>(null);
+  const aboutDropdownRef = useRef<HTMLLIElement>(null);
 
   // 렌더 중 이전 값과 비교해 상태를 조정하는 React 권장 패턴(effect+setState 대신) —
   // 메뉴가 닫히면 아코디언도 함께 접는다.
   const [prevIsMenuOpen, setPrevIsMenuOpen] = useState(isMenuOpen);
   if (isMenuOpen !== prevIsMenuOpen) {
     setPrevIsMenuOpen(isMenuOpen);
-    if (!isMenuOpen) setIsToolsAccordionOpen(false);
+    if (!isMenuOpen) {
+      setIsToolsAccordionOpen(false);
+      setIsAboutAccordionOpen(false);
+    }
   }
 
-  // 페이지 이동 시 도구 드롭다운을 닫는다(위와 동일한 패턴).
+  // 페이지 이동 시 드롭다운을 닫는다(위와 동일한 패턴).
   const [prevPathname, setPrevPathname] = useState(pathname);
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setIsToolsOpen(false);
+    setIsAboutOpen(false);
   }
 
   useEffect(() => {
@@ -182,6 +198,17 @@ export default function Header() {
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isToolsOpen]);
+
+  useEffect(() => {
+    if (!isAboutOpen) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (aboutDropdownRef.current && !aboutDropdownRef.current.contains(event.target as Node)) {
+        setIsAboutOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isAboutOpen]);
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -222,10 +249,29 @@ export default function Header() {
               </div>
             </li>
             <li><Link href="/blog">{t("navBlog")}</Link></li>
-            <li><Link href="/ai-apps">{t("navAiApps")}</Link></li>
-            <li><Link href="/biz">{t("navBiz")}</Link></li>
-            <li><Link href="/about">{t("navAbout")}</Link></li>
-            <li><Link href="/history">{t("navHistory")}</Link></li>
+            <li className={styles.dropdownItem} ref={aboutDropdownRef}>
+              <button
+                type="button"
+                className={styles.dropdownTrigger}
+                onClick={() => setIsAboutOpen((prev) => !prev)}
+                aria-expanded={isAboutOpen}
+              >
+                {t("navAboutGroup")}
+              </button>
+              <div className={`${styles.dropdownPanel} ${isAboutOpen ? styles.dropdownPanelOpen : ""}`}>
+                {ABOUT_GROUP_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={styles.dropdownLink}
+                    onClick={() => setIsAboutOpen(false)}
+                  >
+                    <span className={styles.dropdownLinkTitle}>{t(link.titleKey)}</span>
+                    <span className={styles.dropdownLinkDesc}>{t(link.descKey)}</span>
+                  </Link>
+                ))}
+              </div>
+            </li>
           </ul>
         </nav>
 
@@ -297,10 +343,27 @@ export default function Header() {
             </ul>
           </li>
           <li><Link href="/blog" onClick={closeMenu}>{t("navBlog")}</Link></li>
-          <li><Link href="/ai-apps" onClick={closeMenu}>{t("navAiApps")}</Link></li>
-          <li><Link href="/biz" onClick={closeMenu}>{t("navBiz")}</Link></li>
-          <li><Link href="/about" onClick={closeMenu}>{t("navAbout")}</Link></li>
-          <li><Link href="/history" onClick={closeMenu}>{t("navHistory")}</Link></li>
+          <li className={styles.mobileAccordionItem}>
+            <button
+              type="button"
+              className={styles.mobileAccordionTrigger}
+              onClick={() => setIsAboutAccordionOpen((prev) => !prev)}
+              aria-expanded={isAboutAccordionOpen}
+            >
+              {t("navAboutGroup")}
+              <span className={`${styles.accordionChevron} ${isAboutAccordionOpen ? styles.accordionChevronOpen : ""}`}>▾</span>
+            </button>
+            <ul className={`${styles.mobileAccordionPanel} ${isAboutAccordionOpen ? styles.mobileAccordionPanelOpen : ""}`}>
+              {ABOUT_GROUP_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
+                    <span className={styles.dropdownLinkTitle}>{t(link.titleKey)}</span>
+                    <span className={styles.dropdownLinkDesc}>{t(link.descKey)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </li>
         </ul>
       </nav>
 
