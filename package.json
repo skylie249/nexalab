@@ -11,7 +11,8 @@
     "promo:detect": "tsx scripts/promo-automation/detect-new-posts.ts",
     "promo:generate": "tsx scripts/promo-automation/generate-copy.ts",
     "promo:save": "tsx scripts/promo-automation/save-to-notion.ts",
-    "promo:test": "tsx scripts/promo-automation/run-all.ts"
+    "promo:test": "tsx scripts/promo-automation/run-all.ts",
+    "seed:history": "tsx scripts/seed-history-entries.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

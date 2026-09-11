@@ -11,6 +11,7 @@ const STATIC_PATHS: {
 }[] = [
   { path: "", changeFrequency: "daily", priority: 1 },
   { path: "/blog", changeFrequency: "daily", priority: 0.9 },
+  { path: "/history", changeFrequency: "weekly", priority: 0.7 },
   { path: "/tools/quote-generator", changeFrequency: "monthly", priority: 0.8 },
   { path: "/tools/profit-calculator", changeFrequency: "monthly", priority: 0.8 },
   { path: "/tools/seo-geo-checker", changeFrequency: "monthly", priority: 0.8 },
@@ -75,6 +76,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "monthly",
         priority: 0.6,
       });
+    }
+  } catch {
+    // Supabase unreachable at build time — fall back to the static entries above.
+  }
+
+  try {
+    const { data: historyEntries } = await supabase
+      .from("history_entries")
+      .select("slug, created_at, updated_at")
+      .eq("published", true);
+
+    for (const entry of historyEntries || []) {
+      for (const locale of LOCALES) {
+        entries.push({
+          url: `${SITE_URL}/${locale}/history/${entry.slug}`,
+          lastModified: new Date(entry.updated_at ?? entry.created_at),
+          changeFrequency: "monthly",
+          priority: 0.6,
+        });
+      }
     }
   } catch {
     // Supabase unreachable at build time — fall back to the static entries above.

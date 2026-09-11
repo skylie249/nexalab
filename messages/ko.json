@@ -34,6 +34,7 @@
     "aiToolsProposalHubDesc": "기능 목록부터 견적서까지 AI로 완성",
     "aiToolsBusinessUtilityHubDesc": "손익 계산부터 보고서 다듬기까지",
     "navAbout": "About",
+    "navHistory": "연혁",
     "toggleTheme": "테마 전환",
     "openMenu": "메뉴 열기",
     "closeMenu": "메뉴 닫기",
@@ -98,6 +99,14 @@
     "metaDescription": "AI Apps, Biz, AI Job News 카테고리의 모든 글을 한곳에서 확인하세요.",
     "pageTitle": "블로그",
     "pageSubtitle": "AI 앱 빌드로그, 비즈니스 아이디어, AI 업계 소식을 기록합니다."
+  },
+  "history": {
+    "metaTitle": "연혁 - NexaLab.app",
+    "metaDescription": "NexaLab.app이 만들어져 온 과정을 작업일 순서로 기록합니다.",
+    "pageTitle": "연혁",
+    "pageSubtitle": "NexaLab.app을 만들어온 과정을 시간 순서대로 기록합니다.",
+    "emptyState": "아직 등록된 연혁이 없습니다.",
+    "backToList": "연혁 목록으로"
   },
   "about": {
     "metaTitle": "About - NexaLab.app",

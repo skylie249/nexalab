@@ -34,6 +34,7 @@
     "aiToolsProposalHubDesc": "From feature lists to quotes, all with AI",
     "aiToolsBusinessUtilityHubDesc": "From profit math to report polishing",
     "navAbout": "About",
+    "navHistory": "History",
     "toggleTheme": "Toggle theme",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -98,6 +99,14 @@
     "metaDescription": "Browse every post across AI Apps, Biz, and AI Job News in one place.",
     "pageTitle": "Blog",
     "pageSubtitle": "Build logs, business ideas, and AI industry news, all in one place."
+  },
+  "history": {
+    "metaTitle": "History - NexaLab.app",
+    "metaDescription": "A running log of how NexaLab.app has been built, in the order it happened.",
+    "pageTitle": "History",
+    "pageSubtitle": "A running log of how NexaLab.app has been built, in chronological order.",
+    "emptyState": "No history entries yet.",
+    "backToList": "Back to history"
   },
   "about": {
     "metaTitle": "About - NexaLab.app",

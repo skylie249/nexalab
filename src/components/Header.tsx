@@ -225,6 +225,7 @@ export default function Header() {
             <li><Link href="/ai-apps">{t("navAiApps")}</Link></li>
             <li><Link href="/biz">{t("navBiz")}</Link></li>
             <li><Link href="/about">{t("navAbout")}</Link></li>
+            <li><Link href="/history">{t("navHistory")}</Link></li>
           </ul>
         </nav>
 
@@ -299,6 +300,7 @@ export default function Header() {
           <li><Link href="/ai-apps" onClick={closeMenu}>{t("navAiApps")}</Link></li>
           <li><Link href="/biz" onClick={closeMenu}>{t("navBiz")}</Link></li>
           <li><Link href="/about" onClick={closeMenu}>{t("navAbout")}</Link></li>
+          <li><Link href="/history" onClick={closeMenu}>{t("navHistory")}</Link></li>
         </ul>
       </nav>
 
