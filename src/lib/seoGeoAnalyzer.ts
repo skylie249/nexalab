@@ -3,6 +3,8 @@ import {
   A11Y_GENERIC_LINK_TEXTS,
   A11Y_MISSING_WARN_RATIO,
   A11Y_NATIVE_INTERACTIVE_TAGS,
+  AEO_ANSWER_WORD_RANGE,
+  AEO_RATIO_PASS_THRESHOLD,
   AI_CRAWLER_BOTS,
   ALT_MISSING_WARN_RATIO,
   ARIA_BOOLEAN_ATTRIBUTES,
@@ -454,6 +456,140 @@ function checkLlmsTxt(llmsTxt: AnalysisInput["llmsTxt"]): CheckResult[] {
   }
 
   return results;
+}
+
+// ── GEO: AEO(스니펫 최적화) ──────────────────────────────────────────────
+// AI 검색(구글 AI Overview, Perplexity 등)이 답변으로 바로 인용하기 좋은 구조인지
+// 판별: 질문형 소제목 비율, 소제목 직후 답변 문단의 길이(40~60단어), 리스트/표 형태 답변 존재 여부.
+// 모든 페이지가 FAQ 형태일 필요는 없으므로 fail 없이 pass/warn(제안)로만 판정한다.
+
+// <article>이 있으면 그 안에서만, 없으면 <main>, 그것도 없으면 <body> 전체에서 판별
+// (nav/header/footer는 보통 article/main 밖에 위치하므로 별도로 제거하지 않음 —
+// adsensePrecheckAnalyzer.ts의 extractMainText()와 동일한 우선순위, 다만 여기서는
+// 텍스트가 아니라 구조(헤딩/문단)를 그대로 탐색해야 해서 clone 없이 원본 $를 그대로 씀).
+function getMainContentContainer($: cheerio.CheerioAPI) {
+  const $article = $("article").first();
+  if ($article.length) return $article;
+  const $main = $("main").first();
+  if ($main.length) return $main;
+  return $("body");
+}
+
+function isQuestionHeading(text: string): boolean {
+  const trimmed = text.trim();
+  return trimmed.endsWith("?") || trimmed.endsWith("？");
+}
+
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function checkAeoQuestionHeadings($: cheerio.CheerioAPI): CheckResult {
+  const headings = getMainContentContainer($).find("h2, h3");
+  const total = headings.length;
+
+  if (total === 0) {
+    return {
+      id: "geo.aeo.question_headings",
+      group: "geo",
+      subcategory: "geo_aeo",
+      status: "warn",
+      title: "질문형 소제목 비율",
+      detail: "본문에서 H2/H3 소제목을 찾지 못해 판단할 수 없습니다.",
+      fixHint: 'AI 검색 스니펫에 노출되려면 "~은 무엇인가요?" 같은 질문형 소제목을 활용해보세요.',
+    };
+  }
+
+  let questionCount = 0;
+  headings.each((_, el) => {
+    if (isQuestionHeading($(el).text())) questionCount += 1;
+  });
+  const ratio = questionCount / total;
+  const status: CheckStatus = ratio >= AEO_RATIO_PASS_THRESHOLD ? "pass" : "warn";
+
+  return {
+    id: "geo.aeo.question_headings",
+    group: "geo",
+    subcategory: "geo_aeo",
+    status,
+    title: "질문형 소제목 비율",
+    detail: `소제목 ${total}개 중 ${questionCount}개(${Math.round(ratio * 100)}%)가 질문형입니다.`,
+    fixHint:
+      status === "pass"
+        ? undefined
+        : '일부 소제목을 "~은 무엇인가요?", "~하는 방법은?" 같은 질문형으로 바꾸면 AI 검색 답변으로 인용되기 쉬워집니다.',
+  };
+}
+
+function checkAeoAnswerLength($: cheerio.CheerioAPI): CheckResult {
+  const headings = getMainContentContainer($).find("h2, h3");
+
+  const wordCounts: number[] = [];
+  headings.each((_, el) => {
+    let sibling = $(el).next();
+    while (sibling.length) {
+      const tag = String(sibling.prop("tagName") ?? "").toLowerCase();
+      if (/^h[1-6]$/.test(tag)) break; // 다음 헤딩이 나올 때까지 답변 문단(<p>)을 못 찾음
+      if (tag === "p") {
+        const words = countWords(sibling.text());
+        if (words > 0) wordCounts.push(words);
+        break;
+      }
+      sibling = sibling.next();
+    }
+  });
+
+  if (wordCounts.length === 0) {
+    return {
+      id: "geo.aeo.answer_length",
+      group: "geo",
+      subcategory: "geo_aeo",
+      status: "warn",
+      title: "답변 문단 길이",
+      detail: "소제목 바로 다음에 오는 답변 문단(<p>)을 찾지 못해 판단할 수 없습니다.",
+      fixHint: "소제목 바로 아래에 핵심 답변을 담은 문단을 배치하면 AI가 답변으로 추출하기 쉬워집니다.",
+    };
+  }
+
+  const inRangeCount = wordCounts.filter(
+    (n) => n >= AEO_ANSWER_WORD_RANGE.min && n <= AEO_ANSWER_WORD_RANGE.max,
+  ).length;
+  const ratio = inRangeCount / wordCounts.length;
+  const status: CheckStatus = ratio >= AEO_RATIO_PASS_THRESHOLD ? "pass" : "warn";
+
+  return {
+    id: "geo.aeo.answer_length",
+    group: "geo",
+    subcategory: "geo_aeo",
+    status,
+    title: "답변 문단 길이",
+    detail: `소제목 직후 문단 ${wordCounts.length}개 중 ${inRangeCount}개(${Math.round(ratio * 100)}%)가 권장 길이(${AEO_ANSWER_WORD_RANGE.min}~${AEO_ANSWER_WORD_RANGE.max}단어)입니다.`,
+    fixHint:
+      status === "pass"
+        ? undefined
+        : `소제목 바로 아래 첫 문단을 ${AEO_ANSWER_WORD_RANGE.min}~${AEO_ANSWER_WORD_RANGE.max}단어 분량의 직답형으로 정리하면 AI 검색 스니펫으로 인용되기 좋습니다.`,
+  };
+}
+
+function checkAeoListOrTable($: cheerio.CheerioAPI): CheckResult {
+  const count = getMainContentContainer($).find("ul, ol, table").length;
+  const status: CheckStatus = count > 0 ? "pass" : "warn";
+
+  return {
+    id: "geo.aeo.list_or_table",
+    group: "geo",
+    subcategory: "geo_aeo",
+    status,
+    title: "리스트·표 형태 답변",
+    detail:
+      count > 0
+        ? `리스트/표 형태 콘텐츠 ${count}개를 찾았습니다.`
+        : "리스트(ul/ol)나 표(table) 형태의 콘텐츠가 없습니다.",
+    fixHint:
+      count > 0
+        ? undefined
+        : "비교·단계·항목 나열이 필요한 내용은 리스트나 표로 정리하면 AI가 구조화된 답변으로 추출하기 쉬워집니다.",
+  };
 }
 
 // ── 접근성(A11y) — 정적 분석으로 판별 가능한 항목만 (nexalab_웹접근성_점검기_지침서.md 3-1 "하" 난이도 8개) ──
@@ -1280,6 +1416,9 @@ export function analyze(input: AnalysisInput): AnalysisReport {
     checkMixedContent($, input.finalUrl),
     ...checkAiCrawlers(input.robotsTxt),
     ...checkLlmsTxt(input.llmsTxt),
+    checkAeoQuestionHeadings($),
+    checkAeoAnswerLength($),
+    checkAeoListOrTable($),
     checkAltTextA11y($),
     checkColorContrastA11y($, input.externalCss ?? []),
     checkHtmlLangA11y($),

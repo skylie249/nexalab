@@ -11,6 +11,12 @@ export interface AiCrawlerBot {
   label: string;
 }
 
+// AEO(스니펫 최적화) 체크 임계값 — "질문형 소제목 비율"과 "답변 문단 길이 적중 비율" 둘 다
+// 콘텐츠 유형(FAQ성 글인지 여부)에 따라 100%를 기대할 수 없는 권고 성격의 체크라, fail 없이
+// pass/warn(제안)로만 판정하고 임계값도 30%로 낮게 잡음.
+export const AEO_RATIO_PASS_THRESHOLD = 0.3;
+export const AEO_ANSWER_WORD_RANGE = { min: 40, max: 60 };
+
 export const AI_CRAWLER_BOTS: AiCrawlerBot[] = [
   { id: "gptbot", userAgent: "GPTBot", label: "GPTBot (OpenAI)" },
   { id: "claudebot", userAgent: "ClaudeBot", label: "ClaudeBot (Anthropic)" },
@@ -27,6 +33,7 @@ export type CheckSubcategory =
   | "security"
   | "ai_crawlers"
   | "llms_txt"
+  | "geo_aeo"
   | "a11y_alt_text"
   | "a11y_color_contrast"
   | "a11y_document_structure"
@@ -48,6 +55,7 @@ export const SUBCATEGORY_ORDER: CheckSubcategory[] = [
   "security",
   "ai_crawlers",
   "llms_txt",
+  "geo_aeo",
   "a11y_alt_text",
   "a11y_color_contrast",
   "a11y_document_structure",
@@ -70,6 +78,7 @@ export const CATEGORY_LABELS: Record<CheckSubcategory, string> = {
   security: "보안",
   ai_crawlers: "AI 크롤러 접근성",
   llms_txt: "llms.txt",
+  geo_aeo: "AEO(스니펫) 최적화",
   a11y_alt_text: "대체 텍스트",
   a11y_color_contrast: "색상 대비",
   a11y_document_structure: "문서 구조",
