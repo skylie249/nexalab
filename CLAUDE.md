@@ -859,6 +859,12 @@ export async function POST(req: Request) {
   - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 모두 통과. `next start` 로컬 프로덕션 서버를 띄우고, `/api/seo-check`가 쓰는 것과 동일한 `analyze()` 함수를 직접 호출하는 스크래치 스크립트로 대상 9개 페이지(홈/About/AI Apps/Biz + 툴 8종) × 한/영 = 18개 페이지 전체에서 `geo.aeo.*` 3개 체크가 모두 pass로 나오는 것을 확인(작업 전에는 대부분 warn). Chrome으로 홈/About/견적서 생성기 FAQ 섹션의 실제 렌더링을 스크린샷으로 확인해 리스트·h3 변경으로 인한 시각적 회귀가 없음을 확인
   - **이번 범위에서 하지 않은 것**: 블로그 글 85편 자체의 AEO 구조 개선(외부 자동화 파이프라인 콘텐츠라 범위 밖으로 확정), `/tools/site-check`·`/tools/proposal`·`/tools/business-utility`·`/tools/site-check/all-in-one` 허브 페이지(사용자가 "정적 마케팅 페이지 + 기존 5개 툴 페이지"로 범위를 확정했고, 실제로는 8개 툴 페이지 전부를 처리했으나 허브 페이지 자체는 논의되지 않아 미포함)
 
+- **GA4 설정 점검 후 SPA 라우트 전환 page_view 트래킹 추가** — 사용자가 "GA4 또는 Google Tag 정보가 있는지 검토해달라"고 요청해 코드베이스를 조사: `[locale]/layout.tsx`에 GTM 컨테이너가 아니라 `gtag.js`를 직접 심어둔 방식(측정 ID `G-VD5HTETDVH`, 하드코딩, 2026-08-13 도입)이었고, `next.config.mjs`의 CSP도 `googletagmanager.com`/`google-analytics.com`을 이미 허용 중이라 정상 동작 확인. 카카오 공유 클릭 등 커스텀 이벤트(`window.gtag?.(...)`)도 5개 도구 결과 화면에 이미 있었음
+  - **조사 중 발견한 공백**: 페이지 이동마다 명시적으로 page_view를 보내는 코드가 전혀 없었음 — Next.js App Router는 클라이언트 사이드 라우트 전환 시 전체 리로드가 없어, 기존 `gtag('config', ...)` 호출은 최초 진입 1회만 실행되고 그 이후 인앱 이동이 실제로 집계되는지는 GA4 속성의 "Enhanced measurement → 방문 기록 기반 자동 감지" 설정(코드로 확인 불가한 대시보드 설정)에만 의존하는 상태였음. 사용자 확인 후 안전장치로 코드에서 직접 추적하도록 추가하기로 함
+  - `src/components/GoogleAnalyticsPageView.tsx`(신규): `usePathname()`/`useSearchParams()`로 경로+쿼리 변경을 감지해 `gtag('event', 'page_view', {...})`를 직접 전송. `layout.tsx`의 초기 `gtag('config', 'G-VD5HTETDVH', ...)`에는 `send_page_view: false`를 추가해, 이 컴포넌트가 최초 마운트 시에도 page_view를 보내는 것과 중복 집계되지 않도록 함(최초 진입 포함 모든 페이지뷰를 이 컴포넌트 하나가 전담)
+  - `useSearchParams()` 사용으로 인해 손익 계산기 등 기존 페이지들과 동일하게 `<Suspense fallback={null}>`로 감싸서 `body` 최상단(`ServiceWorkerRegister` 바로 다음)에 배치 — `next build` 결과 `/ko`·`/en` 등 전 페이지가 감싸기 전과 동일하게 정적(`●`) 생성 유지되는 것을 확인(Suspense 경계가 동적 렌더링 전파를 제대로 차단)
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 통과. `next start` 로컬 프로덕션 서버 + Chrome에서 `window.dataLayer` 원문을 직접 읽어 확인 — 최초 진입 시 `config(send_page_view:false)` 다음 이 컴포넌트의 `page_view`(`/ko`) 이벤트 1건만 기록되어 중복이 없음을 확인했고, 헤더의 "About" 링크를 클릭해 페이지 전체 리로드 없이 `/ko/about`으로 전환된 뒤 두 번째 `page_view` 이벤트(정확한 `page_path`/`page_location`/`page_title` 포함)가 추가로 기록되는 것까지 실제 동작으로 확인함
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # 이것은 당신이 알던 그 Next.js가 아닙니다

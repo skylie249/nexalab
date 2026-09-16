@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import Script from "next/script";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -11,6 +12,7 @@ import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import KakaoInit from "@/components/KakaoInit";
+import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { SITE_URL, SITE_NAME, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./layout.module.css";
 
@@ -115,13 +117,19 @@ export default async function LocaleLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-VD5HTETDVH');
+            gtag('config', 'G-VD5HTETDVH', { send_page_view: false });
           `}
         </Script>
         <KakaoInit />
       </head>
       <body suppressHydrationWarning>
         <ServiceWorkerRegister />
+        {/* 자동 page_view는 위 gtag config에서 껐고(send_page_view: false), App Router는
+            페이지 이동 시 전체 리로드가 없어 그 config 호출이 최초 1회만 실행되므로,
+            최초 진입을 포함한 모든 라우트 전환마다 이 컴포넌트가 명시적으로 page_view를 보낸다 */}
+        <Suspense fallback={null}>
+          <GoogleAnalyticsPageView />
+        </Suspense>
         <NextIntlClientProvider>
           <ThemeProvider>
             <div className={styles.appContainer}>
