@@ -18,7 +18,8 @@ export default function QuoteLinkButton({ featureNames }: { featureNames: string
       href={href}
       className={styles.primaryButton}
       onClick={() =>
-        window.gtag?.("event", "feature_to_quote_click", {
+        window.dataLayer?.push({
+          event: "feature_to_quote_click",
           feature_count: featureNames.length,
         })
       }

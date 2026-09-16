@@ -16,6 +16,10 @@ import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { SITE_URL, SITE_NAME, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./layout.module.css";
 
+// 2026-09-16: 직접 심었던 GA4 gtag.js를 걷어내고 GTM 컨테이너로 교체 — GA4 등 실제 태그는
+// 이 코드가 아니라 Google Tag Manager 대시보드에서 구성한다.
+const GTM_ID = "GTM-W24N4CFK";
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -107,26 +111,33 @@ export default async function LocaleLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-VD5HTETDVH"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-VD5HTETDVH', { send_page_view: false });
-          `}
+        <Script id="gtm-head" strategy="afterInteractive">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','${GTM_ID}');`}
         </Script>
         <KakaoInit />
       </head>
       <body suppressHydrationWarning>
+        {/* GTM 공식 설치 가이드가 요구하는 <noscript> 폴백 — JS가 꺼진 브라우저에서도
+            GTM의 페이지뷰 픽셀이 동작하도록 body 최상단에 배치 */}
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+            title="Google Tag Manager"
+          />
+        </noscript>
         <ServiceWorkerRegister />
-        {/* 자동 page_view는 위 gtag config에서 껐고(send_page_view: false), App Router는
-            페이지 이동 시 전체 리로드가 없어 그 config 호출이 최초 1회만 실행되므로,
-            최초 진입을 포함한 모든 라우트 전환마다 이 컴포넌트가 명시적으로 page_view를 보낸다 */}
+        {/* GTM의 GA4 구성 태그가 "All Pages" 트리거로 최초 페이지뷰는 자동 전송한다고 가정하고,
+            이 컴포넌트는 최초 마운트는 건너뛰고 이후 클라이언트 사이드 라우트 전환에서만
+            dataLayer에 커스텀 이벤트를 push한다(중복 집계 방지) — App Router는 페이지 이동 시
+            전체 리로드가 없어 GTM 컨테이너 자체의 최초 로드 신호만으로는 이후 이동을 못 잡기 때문.
+            GTM 대시보드에서 이 이벤트("page_view")를 트리거로 잡아 GA4 이벤트 태그를 연결해야 함 */}
         <Suspense fallback={null}>
           <GoogleAnalyticsPageView />
         </Suspense>

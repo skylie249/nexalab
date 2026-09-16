@@ -159,7 +159,8 @@ export default function SecurityCheckClient() {
             resultUrl={window.location.href}
             imageUrl={absoluteUrl(`/${locale}/opengraph-image`)}
             onShareClick={() =>
-              window.gtag?.("event", "kakao_share_click", {
+              window.dataLayer?.push({
+                event: "kakao_share_click",
                 tool: "security_check",
                 score: result.report.score,
               })
