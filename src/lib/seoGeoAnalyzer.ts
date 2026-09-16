@@ -463,13 +463,17 @@ function checkLlmsTxt(llmsTxt: AnalysisInput["llmsTxt"]): CheckResult[] {
 // 판별: 질문형 소제목 비율, 소제목 직후 답변 문단의 길이(40~60단어), 리스트/표 형태 답변 존재 여부.
 // 모든 페이지가 FAQ 형태일 필요는 없으므로 fail 없이 pass/warn(제안)로만 판정한다.
 
-// <article>이 있으면 그 안에서만, 없으면 <main>, 그것도 없으면 <body> 전체에서 판별
+// <article>이 정확히 1개면 그 안에서만 판별(블로그 글 상세 페이지처럼 본문 전체가 하나의
+// <article>인 경우), 그 외(0개 또는 2개 이상)에는 <main>, 그것도 없으면 <body> 전체에서
+// 판별한다. PostCard.tsx처럼 목록 페이지의 미리보기 카드 하나하나가 각자 <article>로
+// 감싸여 있는 경우(홈/블로그 목록 등) 무조건 "첫 <article>"만 고르면 카드 1개 안으로
+// 분석 범위가 잘못 좁혀져 페이지 전체의 헤딩/리스트를 놓치는 문제가 있어 이렇게 분기함
 // (nav/header/footer는 보통 article/main 밖에 위치하므로 별도로 제거하지 않음 —
 // adsensePrecheckAnalyzer.ts의 extractMainText()와 동일한 우선순위, 다만 여기서는
 // 텍스트가 아니라 구조(헤딩/문단)를 그대로 탐색해야 해서 clone 없이 원본 $를 그대로 씀).
 function getMainContentContainer($: cheerio.CheerioAPI) {
-  const $article = $("article").first();
-  if ($article.length) return $article;
+  const $articles = $("article");
+  if ($articles.length === 1) return $articles.first();
   const $main = $("main").first();
   if ($main.length) return $main;
   return $("body");

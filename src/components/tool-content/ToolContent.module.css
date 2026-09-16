@@ -115,7 +115,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.4rem;
+  margin: 0 0 0.4rem;
 }
 
 .faqAnswer {

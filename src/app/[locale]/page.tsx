@@ -90,12 +90,11 @@ export default async function Home({
 
           {recentPosts.length > 0 && (
             <section className={styles.insightSection}>
-              <div className={styles.insightHeader}>
-                <h2 className={styles.sectionTitle}>{t("insightSectionTitle")}</h2>
-                <Link href="/blog" className={styles.viewAllLink}>
-                  {t("viewAllPostsCta")}
-                </Link>
-              </div>
+              <h2 className={styles.sectionTitle}>{t("insightSectionTitle")}</h2>
+              <p className={styles.sectionSubtitle}>{t("insightSectionSubtitle")}</p>
+              <Link href="/blog" className={styles.viewAllLink}>
+                {t("viewAllPostsCta")}
+              </Link>
               <div className={styles.postList}>
                 {recentPosts.map((post) => (
                   <PostCard key={post.id} {...post} />

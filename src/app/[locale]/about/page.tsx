@@ -125,12 +125,12 @@ export default async function AboutPage({
       <section className={`${styles.audienceSection} glass`}>
         <h2>{t("audienceTitle")}</h2>
         <p>{t("audienceBody")}</p>
-        <div className={styles.tags}>
-          <span className={styles.tag}>{t("audienceRole1")}</span>
-          <span className={styles.tag}>{t("audienceRole2")}</span>
-          <span className={styles.tag}>{t("audienceRole3")}</span>
-          <span className={styles.tag}>{t("audienceRole4")}</span>
-        </div>
+        <ul className={styles.tags}>
+          <li className={styles.tag}>{t("audienceRole1")}</li>
+          <li className={styles.tag}>{t("audienceRole2")}</li>
+          <li className={styles.tag}>{t("audienceRole3")}</li>
+          <li className={styles.tag}>{t("audienceRole4")}</li>
+        </ul>
       </section>
 
       <section className={`${styles.storySection} glass`}>

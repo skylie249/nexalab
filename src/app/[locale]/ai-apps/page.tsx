@@ -114,11 +114,11 @@ export default async function AiAppsPage({
       <section className={`${styles.techSection} glass`}>
         <h2>{t("techStackTitle")}</h2>
         <p>{t("techStackBody")}</p>
-        <div className={styles.tags}>
+        <ul className={styles.tags}>
           {TECH_STACK.map((tech) => (
-            <span key={tech} className={styles.tag}>{tech}</span>
+            <li key={tech} className={styles.tag}>{tech}</li>
           ))}
-        </div>
+        </ul>
       </section>
 
       <section className={`${styles.note} glass`}>

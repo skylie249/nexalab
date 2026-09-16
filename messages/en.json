@@ -93,10 +93,11 @@
   },
   "homeHub": {
     "trustBadge": "100% Free · No Sign-up Required",
-    "hubSectionTitle": "Try the AI Tools Right Now",
-    "hubSectionSubtitle": "From site diagnostics to quotes and profit calculations — all free, one click away",
+    "hubSectionTitle": "Which AI tools can I try for free?",
+    "hubSectionSubtitle": "Type in a URL and get an automatic SEO, GEO, security, and AdSense pre-check — no manual review needed. Or start from a one-line service idea and get a feature list, an AI quote, and a profit estimate in minutes. No sign-up, no payment, and nothing you enter is stored on the server — try it free right now.",
     "toolCardLinkLabel": "Go →",
-    "insightSectionTitle": "Latest Insights",
+    "insightSectionTitle": "What's new on the blog?",
+    "insightSectionSubtitle": "From the trial and error of shipping and running real AI apps to attempts at turning them into a sustainable business — I record what I chose and why, not just the finished result. New posts show up right below, and the full archive lives on the blog page.",
     "viewAllPostsCta": "View All Posts →"
   },
   "blog": {
@@ -121,12 +122,12 @@
     "subtitle": "NexaLab.app is a space where one person handles planning, development, and operations — building AI applications and documenting the process.",
     "role": "Senior Software Engineer / PM",
     "quote": "“Building AI-powered apps and designing their architecture”",
-    "whatCardTitle": "🧪 What I do here",
+    "whatCardTitle": "🧪 What do I do here?",
     "whatCardBody": "I ship real, deployed AI app ideas (<strong>AI Apps</strong>) and turn them into sustainable businesses (<strong>Biz</strong>).",
     "stackCardTitle": "⚙️ Tech I mainly use",
     "storyTitle": "Why I started this blog",
     "storyBody": "I used to feel lost about how to actually put AI to work — plenty of talks and articles out there, but very few honest accounts of building a real service from idea to deployment. So I decided to pick up my own ideas and handle the planning, development, and deployment myself, recording the trial and error along the way as it happened. I believe the decisions and dead ends behind a project are often more useful than the finished result. NexaLab is where that record keeps growing.",
-    "coverageTitle": "What I cover",
+    "coverageTitle": "What do I cover?",
     "coverageAiAppsTitle": "AI Apps",
     "coverageAiAppsDesc": "The build log behind shipping an idea into a real product — prompt design, architecture decisions, and troubleshooting along the way.",
     "coverageBizTitle": "Biz",
@@ -134,7 +135,7 @@
     "coverageToolsTitle": "Free Tools",
     "coverageToolsDesc": "Ready-to-use utilities like the AI quote generator and profit calculator, free to use.",
     "audienceTitle": "Who this is for",
-    "audienceBody": "If you're figuring out how to bring AI tools into your actual work, this is for you.",
+    "audienceBody": "If you're a developer, marketer, solo founder, freelancer, or product manager trying to figure out how AI tools actually fit into your day-to-day work, this is written for you. Every post walks through a real decision or trade-off, not just a finished feature — the kind of detail I wished I could find when I was starting out myself.",
     "audienceRole1": "Developers",
     "audienceRole2": "Marketers",
     "audienceRole3": "Solo founders · Freelancers",
@@ -142,10 +143,10 @@
     "contactTitle": "Get in touch",
     "contactBody": "Feel free to reach out for collaboration, advice, or just to talk.",
     "contactCta": "kimhg249@gmail.com →",
-    "philosophyTitle": "Why the tools are all free",
-    "philosophyBody": "The quote generator, profit calculator, and SEO/GEO checker are all free. Honestly, they also bring in visitors that blog posts alone struggle to reach. That said, I didn't build them carelessly — I made these tools because I needed them myself, and the no-storage principle (nothing you enter is saved on the server) has been in place from day one. Think of it as a balance between ad revenue and visitor trust — I don't want to lose either.",
-    "principleTitle": "How the content gets made",
-    "principleBody": "Blog posts start as an AI-drafted outline that I then review and edit myself. I lean on AI heavily for brainstorming, research, and first drafts, but I always try things against a real, working service before publishing. The four free tools (quote generator, profit calculator, SEO/GEO checker, report checker) get the same treatment — I use them myself and refine them from there. New posts or feature updates land roughly once or twice a week."
+    "philosophyTitle": "Why are the tools all free?",
+    "philosophyBody": "The quote generator, profit calculator, and SEO/GEO checker are all free. Honestly, they also bring in visitors that blog posts alone struggle to reach. I didn't build them carelessly, though — I use them myself, and nothing you enter has ever been saved on the server. It's a balance between ad revenue and visitor trust.",
+    "principleTitle": "How does the content get made?",
+    "principleBody": "Blog posts start as an AI-drafted outline that I then review and edit myself. I lean on AI for brainstorming, research, and first drafts, but I always test things against a real, working service before publishing. The four free tools get the same treatment, with new posts landing roughly once or twice a week."
   },
   "contact": {
     "metaTitle": "Contact - NexaLab.app",
@@ -238,8 +239,8 @@
     "harubiteLongDesc": "Write and log one sentence in a foreign language every day, and AI polishes your phrasing while each entry builds into your own learning history. Instead of a heavy curriculum, it starts from the smallest possible unit — one sentence today — to help you build a habit that actually sticks.",
     "techStackTitle": "Tech I usually build with",
     "techStackBody": "Each service is planned and built solo, on top of the stack below.",
-    "noteTitle": "What this category covers",
-    "noteBody": "From model selection and prompt design to deployment, operations, and troubleshooting — this is where I collect what I've learned running AI apps for real. Related posts are gathered under the <strong>AI Apps</strong> tab on the blog.",
+    "noteTitle": "What does this category cover?",
+    "noteBody": "From model selection and prompt design to deployment, operations, and troubleshooting — this is where I record the trial and error behind running real AI apps, including why I made the calls I did. Related posts are gathered under the <strong>AI Apps</strong> tab on the blog.",
     "cta": "Go to blog →"
   },
   "biz": {
@@ -257,13 +258,13 @@
     "idea3Title": "Surviving as a solo developer",
     "idea3Desc": "The decisions and priorities a developer faces when handling planning, development, and operations alone",
     "idea3LongDesc": "Planning, development, deployment, and operations — down to i18n and admin tooling — all the priorities and trade-offs you have to decide on alone, without a team. I share the judgment calls behind what got built first and what got cut.",
-    "provenTitle": "Things actually built and tested",
-    "provenBody": "Every idea here is something I've actually built and run in production.",
+    "provenTitle": "Why can you trust these examples?",
+    "provenBody": "Every idea here isn't just a thought experiment — I've actually built and run each one in production. From inserting Google AdSense ads to using free tools like the AI Quote Generator and Profit Calculator to bring in traffic, I share the real numbers: approval reviews, early traffic, conversion rates — nothing dressed up to look better than it was.",
     "provenTag1": "Google AdSense",
     "provenTag2": "AI Quote Generator",
     "provenTag3": "Profit Calculator",
-    "noteTitle": "What this category covers",
-    "noteBody": "Posts on monetization, market validation, and operations are gathered under the <strong>Biz</strong> tab on the blog.",
+    "noteTitle": "What does this category cover?",
+    "noteBody": "This category covers what AI can actually turn into a business. I pick niche problems where the market is small but the pain is real, then work through validating a monetization idea and actually running it, recording the reasoning behind each call along the way. Posts are gathered under the <strong>Biz</strong> tab on the blog.",
     "cta": "Go to blog →"
   },
   "postDetail": {
@@ -347,7 +348,7 @@
     "formSubmit": "Analyze with AI",
     "formNote": "Uploaded content is used only to generate this quote. Results are a rough estimate — please have an expert review any real contract.",
     "contentIntroTitle": "Sound familiar?",
-    "contentIntroProblem": "Does writing a single quote take you 30 minutes or more? Figuring out which line items to include, how many days to budget, and what rate is fair takes time away from your actual work every time you start from scratch. Missing an item makes it awkward to bill for it later, and looking up standard pricing conventions for your industry each time is a hassle.",
+    "contentIntroProblem": "Does writing a single quote take you 30 minutes or more? Figuring out which line items to include, how many days to budget, and what rate is fair takes time away from your actual work every time you start from scratch. Missing an item makes it awkward to bill for it later, too.",
     "contentIntroSolution": "Paste in your client's request and the AI Quote Generator drafts a quote in seconds — line items, estimated effort, and the reasoning behind each number.",
     "contentHowToUseTitle": "How it works",
     "contentHowToUseSteps": [
@@ -387,7 +388,7 @@
       },
       {
         "question": "Can I sign a contract based on the AI's numbers?",
-        "answer": "Treat it as a reference estimate only. Always have an expert review the terms before signing."
+        "answer": "No — treat it as a reference estimate only. The AI works from your request document and industry-average day rates to give you a reasonable range with reasoning, but it can't account for every detail or special requirement of your actual project. Before finalizing a contract amount, always have an expert review the terms, or double-check the numbers yourself."
       },
       {
         "question": "Can I use this without a written request document?",
@@ -473,7 +474,7 @@
     "contentFaq": [
       {
         "question": "Is VAT/sales tax factored in automatically?",
-        "answer": "No. Tax matters are outside this reference calculation — please consult a tax professional."
+        "answer": "No. This calculator only subtracts the cost items you enter — labor, subcontractor fees, materials, and platform commissions — from your income to show net profit and margin. It's a simple calculation tool, not a tax tool. VAT and income tax vary a lot by industry and personal situation, so please consult a tax professional for exact figures."
       },
       {
         "question": "Does the formula change by industry?",
@@ -566,7 +567,7 @@
       },
       {
         "question": "How accurate are the results?",
-        "answer": "It's a reference-only static analysis and may not perfectly match real browser rendering."
+        "answer": "It's a reference-only static analysis and may not perfectly match real browser rendering. For checks that need actual rendering, like color contrast or keyboard focus indicators, it analyzes your CSS and estimates as closely as it can, reporting \"not enough information\" instead of a pass or fail when it isn't confident. It's not a guarantee of your search ranking."
       },
       {
         "question": "Does it check color contrast and keyboard access?",
@@ -636,7 +637,7 @@
     "contentFaq": [
       {
         "question": "Does a high score guarantee AdSense approval?",
-        "answer": "No. This score is a reference indicator based on static analysis and does not guarantee an actual review outcome. Platforms keep their review criteria private and can change them at any time."
+        "answer": "No. This score is a reference indicator based on static analysis and does not guarantee an actual review outcome. Platforms keep their review criteria private and can change them at any time, and factors like content quality or site age get weighed too, which automated checks can't fully capture. Use it as a final self-check before your re-review."
       },
       {
         "question": "Why does the policy pages category carry the highest weight?",
@@ -729,7 +730,7 @@
       },
       {
         "question": "Is the service idea I enter stored?",
-        "answer": "No. Your input is only used for AI analysis and isn't stored on our servers. Identical input may be cached briefly (24 hours) in server memory to speed up repeat responses."
+        "answer": "No. Your input is only used for AI analysis and is never written to a database on our servers. If you submit the exact same text again, it may be cached briefly — up to 24 hours — in server memory to speed up the repeat response, and that cache disappears automatically once the server restarts."
       },
       {
         "question": "Could the generated feature list differ from my actual project scope?",
@@ -794,7 +795,7 @@
       },
       {
         "question": "If I get a low grade, will I definitely get hacked?",
-        "answer": "No. This check is a reference-only result based solely on publicly available information, and it may not guarantee or catch every vulnerability. A lower grade simply means more risk factors were found."
+        "answer": "No. This check is a reference-only result based solely on the headers and cookie settings your server already exposes publicly, and it may not guarantee or catch every vulnerability. Deeper issues, like SQL injection or server-side misconfiguration, are outside what this check alone can tell you — a lower grade just means more risk factors were found."
       },
       {
         "question": "Why is the HTTPS item treated as the most critical?",
@@ -852,7 +853,59 @@
     "downloadButton": "⬇️ Download (llms.txt)",
     "placementNote": "📌 Upload this file to your site's root path (e.g. https://yourdomain.com/llms.txt) so AI search tools can understand your site structure more easily.",
     "recheckCta": "💡 Check again with the SEO/GEO checker →",
-    "restartButton": "← Edit values"
+    "restartButton": "← Edit values",
+    "contentIntroTitle": "Sound familiar?",
+    "contentIntroProblem": "Your SEO/GEO checker flagged a missing llms.txt file, but figuring out how to actually create one feels like a chore. There's a standard format to follow, hand-writing the markdown syntax is fiddly, and pulling together a clean list of your site's pages takes time. You shouldn't need to be a developer to get this done.",
+    "contentIntroSolution": "The llms.txt generator only needs your site name, a short summary, and a handful of key pages — then it builds a properly formatted llms.txt file instantly. Copy or download it and drop it on your site's root, and you're done.",
+    "contentHowToUseTitle": "How it works",
+    "contentHowToUseSteps": [
+      {
+        "title": "Enter the basics",
+        "description": "Add your site name, URL, and a one-line summary."
+      },
+      {
+        "title": "Add categories and pages",
+        "description": "Set your key content categories, then add up to 10 key pages."
+      },
+      {
+        "title": "Generate and copy",
+        "description": "Hit generate for a properly formatted llms.txt, then copy it or download the file."
+      },
+      {
+        "title": "Upload it to your site",
+        "description": "Upload the generated file to your site's root path (e.g. /llms.txt) and you're done."
+      }
+    ],
+    "contentRecommendForTitle": "Built for",
+    "contentRecommendFor": [
+      "Anyone whose SEO/GEO checker flagged a missing llms.txt",
+      "Bloggers and solo founders who want better visibility with AI search engines",
+      "Anyone who'd rather not hand-write markdown syntax",
+      "Anyone who wants an llms.txt without needing a developer"
+    ],
+    "contentFaqTitle": "Frequently asked questions",
+    "contentFaq": [
+      {
+        "question": "What exactly is llms.txt?",
+        "answer": "It's a standard markdown file that helps AI search crawlers quickly understand your site's structure and key content."
+      },
+      {
+        "question": "Where do I upload the generated file?",
+        "answer": "Upload it to your site's root path, e.g. https://yourdomain.com/llms.txt."
+      },
+      {
+        "question": "Is what I enter saved on a server?",
+        "answer": "No. This tool runs entirely in your browser with no server API calls, so nothing you enter is ever saved anywhere. Refreshing the page or closing your browser clears your inputs, so copy or download the finished file before you leave. You can generate a new one for free as many times as you like."
+      },
+      {
+        "question": "Does it connect with the SEO/GEO checker?",
+        "answer": "Yes — if the SEO/GEO checker flags a missing llms.txt, it links here with your site name and URL already filled in."
+      },
+      {
+        "question": "How many pages can I add?",
+        "answer": "Up to 10, grouped together by category."
+      }
+    ]
   },
   "reportChecker": {
     "metaTitle": "Free Report Checker - NexaLab.app",
@@ -924,7 +977,7 @@
     "contentFaq": [
       {
         "question": "What does it check?",
-        "answer": "Rule-based checks (leading with the conclusion, sentence length, conjunction overuse, double passives, paragraph length, dated phrasing) plus AI checks."
+        "answer": "Eight rule-based checks — leading with the conclusion, sentence length, conjunction overuse, double passives, paragraph length, dated phrasing, keyword repetition, and heading structure — plus seven AI checks scored against a rubric, together giving you a per-category score and fix hints. The rule checks apply instantly, while the AI checks run through the Gemini API for deeper feedback."
       },
       {
         "question": "Is my document stored anywhere?",

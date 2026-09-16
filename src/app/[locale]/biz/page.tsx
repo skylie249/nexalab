@@ -67,11 +67,11 @@ export default async function BizPage({
       <section className={`${styles.provenSection} glass`}>
         <h2>{t("provenTitle")}</h2>
         <p>{t("provenBody")}</p>
-        <div className={styles.tags}>
+        <ul className={styles.tags}>
           {provenTags.map((tag) => (
-            <span key={tag} className={styles.tag}>{tag}</span>
+            <li key={tag} className={styles.tag}>{tag}</li>
           ))}
-        </div>
+        </ul>
       </section>
 
       <section className={`${styles.note} glass`}>

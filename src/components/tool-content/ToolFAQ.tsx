@@ -35,7 +35,7 @@ export default function ToolFAQ({
       <div className={styles.faqList}>
         {items.map((item) => (
           <div key={item.question} className={styles.faqItem}>
-            <p className={styles.faqQuestion}>{item.question}</p>
+            <h3 className={styles.faqQuestion}>{item.question}</h3>
             <p className={styles.faqAnswer}>{item.answer}</p>
           </div>
         ))}
