@@ -326,6 +326,39 @@
   background-color: var(--bg-secondary);
 }
 
+/* AI 종합 코멘트: 점수 카드 바로 아래 강조 카드로 표시. 부가 기능이라 실패 시 섹션 자체를
+   숨기므로(SeoGeoCheckerClient.tsx 참고) 별도 에러 스타일은 두지 않음 */
+.aiCommentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--accent-color);
+  background-color: color-mix(in srgb, var(--accent-color) 6%, transparent);
+}
+
+.aiCommentLoadingText {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.aiCommentSummary {
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.aiCommentActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
 /* 접근성 치명적 문제 섹션: 다른 카테고리 섹션과 같은 레이아웃이되 붉은 강조 테두리로 최상단 고정 노출 */
 .criticalSection {
   padding: 1rem;

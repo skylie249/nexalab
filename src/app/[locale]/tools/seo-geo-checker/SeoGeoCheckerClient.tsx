@@ -32,6 +32,13 @@ interface ApiSuccess {
   report: AnalysisReport;
 }
 
+interface AiComment {
+  summary: string;
+  topActions: string[];
+}
+
+type AiCommentStatus = "idle" | "loading" | "done" | "unavailable";
+
 const STATUS_ICON: Record<CheckStatus, string> = {
   pass: "✅",
   warn: "⚠️",
@@ -121,6 +128,8 @@ export default function SeoGeoCheckerClient() {
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<ApiSuccess | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [aiComment, setAiComment] = useState<AiComment | null>(null);
+  const [aiCommentStatus, setAiCommentStatus] = useState<AiCommentStatus>("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -158,9 +167,36 @@ export default function SeoGeoCheckerClient() {
         geoScore: apiResult.report.geo.score,
         geoGrade: apiResult.report.geo.grade,
       });
+      void loadAiComment(apiResult.url);
     } catch {
       setStatus("error");
       setErrorMessage(t("errorGeneric"));
+    }
+  }
+
+  // 점수/체크 리포트가 이미 화면에 표시된 뒤 별도로 호출하는 점진적 향상(progressive enhancement)
+  // 요청 — 실패하거나 느려도 위 점검 결과 자체에는 영향을 주지 않고, 이 섹션만 조용히 숨긴다.
+  async function loadAiComment(checkedUrl: string) {
+    setAiCommentStatus("loading");
+    try {
+      const res = await fetch("/api/seo-check/ai-comment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: checkedUrl }),
+      });
+      if (!res.ok) {
+        setAiCommentStatus("unavailable");
+        return;
+      }
+      const data = await res.json();
+      if (data.aiComment) {
+        setAiComment(data.aiComment as AiComment);
+        setAiCommentStatus("done");
+      } else {
+        setAiCommentStatus("unavailable");
+      }
+    } catch {
+      setAiCommentStatus("unavailable");
     }
   }
 
@@ -168,6 +204,8 @@ export default function SeoGeoCheckerClient() {
     setResult(null);
     setStatus("idle");
     setErrorMessage(null);
+    setAiComment(null);
+    setAiCommentStatus("idle");
   }
 
   const groupedChecks = result
@@ -227,6 +265,27 @@ export default function SeoGeoCheckerClient() {
               ❌ {t("failLabel")} {result.report.seo.fail + result.report.geo.fail + (a11y?.fail ?? 0)}
             </span>
           </div>
+
+          {aiCommentStatus === "loading" && (
+            <section className={styles.aiCommentSection}>
+              <h2 className={styles.categoryTitle}>{t("aiCommentTitle")}</h2>
+              <p className={styles.aiCommentLoadingText}>{t("aiCommentLoading")}</p>
+            </section>
+          )}
+          {aiCommentStatus === "done" && aiComment && (
+            <section className={styles.aiCommentSection}>
+              <h2 className={styles.categoryTitle}>{t("aiCommentTitle")}</h2>
+              <p className={styles.aiCommentSummary}>{aiComment.summary}</p>
+              {aiComment.topActions.length > 0 && (
+                <ol className={styles.aiCommentActions}>
+                  {aiComment.topActions.map((action, i) => (
+                    <li key={i}>{action}</li>
+                  ))}
+                </ol>
+              )}
+              <p className={styles.disclaimer}>{t("aiCommentDisclaimer")}</p>
+            </section>
+          )}
 
           <KakaoShareButton
             label={t("kakaoShareButton")}

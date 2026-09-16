@@ -23,6 +23,9 @@ const RATE_LIMITS: Record<string, RateLimitRule> = {
   "/api/quote": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
   "/api/wizard-to-request": { max: 8, windowMs: 24 * 60 * 60 * 1000 },
   "/api/seo-check": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
+  // 원본 점검 결과와 별도로 Gemini/Groq를 호출하는 부가 기능이라 세오-체크 자체보다
+  // 약간 낮은 한도로 제한(24시간 캐시가 있어 동일 URL 반복 호출은 어차피 캐시로 흡수됨).
+  "/api/seo-check/ai-comment": { max: 15, windowMs: 24 * 60 * 60 * 1000 },
   "/api/adsense-precheck": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-check": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-rewrite": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
@@ -94,6 +97,7 @@ export const config = {
     "/api/quote",
     "/api/wizard-to-request",
     "/api/seo-check",
+    "/api/seo-check/ai-comment",
     "/api/adsense-precheck",
     "/api/report-check",
     "/api/report-rewrite",
