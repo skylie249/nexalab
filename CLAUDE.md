@@ -841,6 +841,12 @@ export async function POST(req: Request) {
     1. https://console.groq.com/keys 에서 `GROQ_API_KEY` 발급 후 `.env.local`과 Vercel 환경변수에 등록 (로컬 `.env.local`에는 이미 등록되어 있어 이번 세션 검증에 사용함)
     2. Supabase 대시보드 SQL Editor에서 `supabase/seo-check-ai-comment-cache.sql` 실행 — 실행 전까지는 매 요청마다 캐시 없이 새로 생성(정상 동작, Gemini/Groq 쿼터 절감 효과만 없음)
   - **이번 범위에서 하지 않은 것**: llms.txt 생성기 폴백(위 사유로 범위 제외), 보고서 다듬기/AI 견적서/올인원 진단에 대한 폴백 적용(기획서 2번 표가 각각 조건부/비권장으로 분류) — 필요 시 별도 세션에서 재검토
+- **URL 점검 도구 3종(SEO/GEO 체커·애드센스 사전점검·보안 점검기)의 502/504 응답이 Cloudflare에 의해 빈 에러 페이지로 가려지던 버그 발견·수정** — 위 AI 코멘트 기능 배포 직후 사용자가 SEO/GEO 체커에서 "502 에러가 난다"고 보고해 조사하다가 발견. 이번 세션의 AI 코멘트 변경과는 무관한, 세 도구에 원래부터 있던 기존 버그였음
+  - **재현**: `http://skzic.com/`처럼 대상 사이트의 HTTPS 루트가 순수 `404`(빈 바디)를 반환하는 URL을 점검하면 매번 재현됨. 처음엔 프로덕션 크래시로 의심해 `vercel logs --follow`로 실시간 로그를 걸어두고 재현 요청을 보냈으나 아무 로그도 찍히지 않았고, 이어서 `vercel logs --json`(과거 로그)으로 상태 코드까지 확인하고서야 원인이 드러남: 우리 `/api/seo-check`(`source: "serverless"`) 자체가 정상적으로 실행되어 의도한 대로 `502`를 응답하고 있었음
+  - **근본 원인**: `route.ts`의 `ERROR_MESSAGES`가 `network_error`/`http_error`를 502로, `timeout`을 504로 매핑해왔음(다른 사유는 전부 400) — "대상 사이트를 확인할 수 없다"는 의미로 502/504를 고른 것으로 보이나, Cloudflare는 origin이 502/504/521/522/523/525/526을 반환하면 **기본 설정상 응답 본문을 자체 브랜드 에러 페이지로 치환**한다. 그 결과 우리 앱이 만든 한국어 에러 메시지(`대상 페이지를 불러오지 못했습니다` 등)는 사용자에게 전혀 전달되지 못하고, Cloudflare의 빈 "error code: 502" 텍스트만 보였던 것 — 응답 헤더에 우리 쪽 CSP 헤더나 `x-vercel-id`가 전혀 없다는 점으로 "우리 앱까지 도달은 했으나 Cloudflare가 바디를 가로챘다"는 것을 최종 확인
+  - **조치**: `src/app/api/seo-check/route.ts`·`src/app/api/adsense-precheck/route.ts`·`src/app/api/security-check/route.ts` 세 파일 모두 `network_error`/`http_error`/`timeout`을 402/504 대신 **400**으로 통일(나머지 사유들과 동일 코드) — 클라이언트는 `res.ok` 여부만으로 분기하므로 상태 코드 값 자체를 바꿔도 프런트엔드 로직에는 영향 없음. 세 도구 모두 동일한 `SafeFetchErrorReason` 매핑 패턴을 그대로 복붙해 써왔던 터라 한 번에 같이 고침
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 통과. `next build && next start` 로컬 프로덕션 서버로 `http://skzic.com/`을 다시 점검해 이제 `HTTP 400` + `{"error":"대상 페이지를 불러오지 못했습니다."}`가 정상적으로 반환되는 것을 확인(수정 전에는 동일 로컬 환경에서도 502가 나서, Cloudflare 유무와 무관하게 코드 자체의 문제였음을 재확인)
+  - **참고**: 이 버그는 대상 사이트가 느리거나(timeout) 일시적으로 에러를 반환하거나(http_error) 접속이 안 될 때(network_error) 항상 트리거될 수 있었던, 배포 이후 계속 존재해온 잠재 버그였음 — 이번에 우연히 skzic.com 케이스로 드러난 것일 뿐, AI 코멘트 기능과는 인과관계 없음
 
 <!-- BEGIN:nextjs-agent-rules -->
 

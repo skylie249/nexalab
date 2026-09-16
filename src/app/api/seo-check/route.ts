@@ -14,16 +14,21 @@ const SeoCheckRequestSchema = z.object({
   url: z.string().trim().min(1, "URL을 입력해주세요.").max(2048, "URL이 너무 깁니다."),
 });
 
+// 상태 코드는 전부 4xx로 통일한다 — Cloudflare는 origin이 502/504(및 521/522/523/525/526)를
+// 반환하면 기본 설정상 우리 JSON 응답 본문을 무시하고 자체 "error code: 502" 안내 페이지로
+// 바꿔치기한다(실사용 중 skzic.com처럼 대상 사이트가 404를 반환하는 경우로 실제 재현·확인함).
+// 그 결과 이 API가 정상적으로 동작해 만든 한국어 에러 메시지가 사용자에게 전혀 전달되지 못하고
+// Cloudflare의 빈 502 페이지만 보이는 문제가 있었음 — 5xx를 피하고 400으로 응답해 우회한다.
 const ERROR_MESSAGES: Record<SafeFetchErrorReason, [number, string]> = {
   invalid_url: [400, "올바른 URL 형식이 아닙니다."],
   blocked_protocol: [400, "http 또는 https 주소만 검사할 수 있습니다."],
   blocked_host: [400, "내부망이거나 접근이 제한된 주소는 검사할 수 없습니다."],
   dns_error: [400, "해당 도메인을 찾을 수 없습니다. URL을 다시 확인해주세요."],
-  timeout: [504, "대상 사이트 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해주세요."],
+  timeout: [400, "대상 사이트 응답이 너무 오래 걸립니다. 잠시 후 다시 시도해주세요."],
   too_large: [400, "페이지 용량이 너무 커서 분석할 수 없습니다."],
   too_many_redirects: [400, "리다이렉트가 너무 많아 분석할 수 없습니다."],
-  network_error: [502, "대상 사이트에 접속할 수 없습니다. URL을 다시 확인해주세요."],
-  http_error: [502, "대상 페이지를 불러오지 못했습니다."],
+  network_error: [400, "대상 사이트에 접속할 수 없습니다. URL을 다시 확인해주세요."],
+  http_error: [400, "대상 페이지를 불러오지 못했습니다."],
 };
 
 export async function POST(req: NextRequest) {
