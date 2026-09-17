@@ -24,6 +24,8 @@
   --harubite-text: #b45309;
   /* Live Sub-Apps 카드(Paycheck) 브랜드 색상 텍스트 — 위 harubite-text와 동일한 이유로 라이트/다크 분리 */
   --paycheck-text: #047857;
+  /* Live Sub-Apps 카드(TextKit) 브랜드 색상 텍스트 — 위와 동일한 이유로 라이트/다크 분리 */
+  --textkit-text: #4338ca;
   /* "운영중"/"게시됨" 등 성공(success) 상태 배지 전용 텍스트 색상 — 반투명 에메랄드 배경 위에서
      WCAG AA 대비를 만족하도록 라이트/다크 분리 */
   --success-text: #047857;
@@ -54,6 +56,7 @@
   --tool-purple-text: #a78bfa;
   --harubite-text: #f59e0b;
   --paycheck-text: #34d399;
+  --textkit-text: #a5b4fc;
   --success-text: #10b981;
   --border-color: #334155;
   

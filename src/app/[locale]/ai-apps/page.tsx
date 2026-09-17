@@ -55,6 +55,15 @@ export default async function AiAppsPage({
       color: "#10b981",
       textColor: "var(--paycheck-text)",
     },
+    {
+      name: "TextKit",
+      emoji: "📝",
+      desc: t("textkitDesc"),
+      longDesc: t("textkitLongDesc"),
+      url: "https://text.nexalab.app",
+      color: "#6366f1",
+      textColor: "var(--textkit-text)",
+    },
   ];
 
   return (
