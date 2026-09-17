@@ -46,6 +46,15 @@ export default async function AiAppsPage({
       color: "#f59e0b",
       textColor: "var(--harubite-text)",
     },
+    {
+      name: "Paycheck",
+      emoji: "💰",
+      desc: t("paycheckDesc"),
+      longDesc: t("paycheckLongDesc"),
+      url: "https://paycheck.nexalab.app",
+      color: "#10b981",
+      textColor: "var(--paycheck-text)",
+    },
   ];
 
   return (

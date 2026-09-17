@@ -228,7 +228,7 @@
   },
   "aiApps": {
     "metaTitle": "AI Apps - NexaLab.app",
-    "metaDescription": "AI-powered sub-applications NexaLab plans, builds, and operates solo for real users — Harubite.",
+    "metaDescription": "AI-powered sub-applications NexaLab plans, builds, and operates solo for real users — Harubite, Paycheck.",
     "eyebrow": "AI Apps",
     "title": "From idea to <highlight>real service</highlight>",
     "subtitle": "NexaLab doesn't stop at the blog. The AI ideas covered here get deployed and operated as real services with real users.",
@@ -237,6 +237,8 @@
     "comingSoonLabel": "Coming Soon",
     "harubiteDesc": "Build your own language habit, one sentence a day — start now 🌱",
     "harubiteLongDesc": "Write and log one sentence in a foreign language every day, and AI polishes your phrasing while each entry builds into your own learning history. Instead of a heavy curriculum, it starts from the smallest possible unit — one sentence today — to help you build a habit that actually sticks.",
+    "paycheckDesc": "Enter your salary and instantly see your take-home pay, with state tax rates factored in 💰",
+    "paycheckLongDesc": "Enter your annual salary or hourly wage and this calculator factors in federal tax, state tax, and Social Security to show what you actually take home. It's built for moments like evaluating a job offer or weighing a move to another state, when the gross salary number alone doesn't tell you the real difference in take-home pay.",
     "techStackTitle": "Tech I usually build with",
     "techStackBody": "Each service is planned and built solo, on top of the stack below.",
     "noteTitle": "What does this category cover?",

@@ -22,6 +22,8 @@
      밝아 그대로 재사용(아이콘 배경 틴트(`${app.color}20`)는 텍스트가 아니라 대비 요건 대상이 아니므로
      원래 밝은 브랜드색을 그대로 유지). */
   --harubite-text: #b45309;
+  /* Live Sub-Apps 카드(Paycheck) 브랜드 색상 텍스트 — 위 harubite-text와 동일한 이유로 라이트/다크 분리 */
+  --paycheck-text: #047857;
   /* "운영중"/"게시됨" 등 성공(success) 상태 배지 전용 텍스트 색상 — 반투명 에메랄드 배경 위에서
      WCAG AA 대비를 만족하도록 라이트/다크 분리 */
   --success-text: #047857;
@@ -51,6 +53,7 @@
   --accent-text: #60a5fa;
   --tool-purple-text: #a78bfa;
   --harubite-text: #f59e0b;
+  --paycheck-text: #34d399;
   --success-text: #10b981;
   --border-color: #334155;
   
