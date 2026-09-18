@@ -18,7 +18,7 @@
 
 ## Blog
 - [Blog](https://www.nexalab.app/en/blog): Full post index across AI Apps, Biz, and AI Job News, with category filters and pagination.
-- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback), Paycheck (https://paycheck.nexalab.app, a salary/paycheck calculator that factors in US state tax rates), and TextKit (https://text.nexalab.app, a bundle of everyday text tools: word counter, case converter, markdown preview). Covers model selection, prompt design, deployment, and troubleshooting.
+- [AI Apps](https://www.nexalab.app/en/ai-apps): Build logs for real, deployed AI applications the author runs in production — Harubite (a daily one-sentence foreign-language habit app with AI feedback), Paycheck (https://paycheck.nexalab.app, a salary/paycheck calculator that factors in US state tax rates), TextKit (https://text.nexalab.app, a bundle of everyday text tools: word counter, case converter, markdown preview), and EasyPMS (https://easypms.nexalab.app, a login-free SI project management checklist app that auto-generates a 10-category, ~60-item checklist per project, shareable via a 6-digit code). Covers model selection, prompt design, deployment, and troubleshooting.
 - [Biz](https://www.nexalab.app/en/biz): Notes on turning tech experiments into sustainable, revenue-generating businesses — monetization experiments, AI applied to niche markets, and solo-developer decision-making.
 
 ## About

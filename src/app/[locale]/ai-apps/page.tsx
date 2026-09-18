@@ -64,6 +64,15 @@ export default async function AiAppsPage({
       color: "#6366f1",
       textColor: "var(--textkit-text)",
     },
+    {
+      name: "EasyPMS",
+      emoji: "✅",
+      desc: t("easypmsDesc"),
+      longDesc: t("easypmsLongDesc"),
+      url: "https://easypms.nexalab.app",
+      color: "#0d9488",
+      textColor: "var(--easypms-text)",
+    },
   ];
 
   return (
