@@ -73,6 +73,15 @@ export default async function AiAppsPage({
       color: "#0d9488",
       textColor: "var(--easypms-text)",
     },
+    {
+      name: "Toolbox",
+      emoji: "🧰",
+      desc: t("toolboxDesc"),
+      longDesc: t("toolboxLongDesc"),
+      url: "https://toolbox.nexalab.app",
+      color: "#0369a1",
+      textColor: "var(--toolbox-text)",
+    },
   ];
 
   return (

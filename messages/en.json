@@ -243,6 +243,8 @@
     "textkitLongDesc": "A small collection of everyday text utilities — character/word counting, case conversion, and a live Markdown preview — bundled into one site. It's built so you can handle these little text-formatting tasks instantly, without logging in or searching for yet another one-off tool each time.",
     "easypmsDesc": "Create a project and it auto-generates a 10-category, ~60-item SI checklist your whole team can share ✅",
     "easypmsLongDesc": "Create a project and it instantly builds a practical SI checklist across 10 categories — kickoff prep, contract/scope, requirements, design, development, testing, launch/handover, deliverables, closeout/handoff, and risks/issues — about 60 items in all. No login required: share a 6-digit code so teammates can jump in right from their phones, track progress by category, and freely add, edit, or remove items to fit each project.",
+    "toolboxDesc": "Clean up messy JSON/CSV and split or merge PDFs — a browser-based utility toolbox 🧰",
+    "toolboxLongDesc": "A utility site bundling a JSON/CSV formatter and a PDF split/merge tool in one place. No sign-up required — everything you type or upload is processed entirely in your browser and never sent to or stored on a server.",
     "techStackTitle": "Tech I usually build with",
     "techStackBody": "Each service is planned and built solo, on top of the stack below.",
     "noteTitle": "What does this category cover?",

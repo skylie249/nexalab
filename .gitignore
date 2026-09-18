@@ -11,3 +11,4 @@ scripts/promo-automation/.state/
 reference/
 
 *.md
+.vercel
