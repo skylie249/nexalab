@@ -924,6 +924,7 @@ export async function POST(req: Request) {
 - **영어 빌드로그 8편 추가(초안)**: 도구 페이지에 연결된 빌드로그 8편(`TOOL_BUILD_LOGS`의 고유 slug 전부)을 영어로 번역해 `locale='en'`, `published=false`로 삽입 — 번역은 Claude가 직접 작성, 도구명은 `messages/en.json`의 영어 메뉴 표기에 맞춤. 관리자 화면에서 검토 후 공개하는 방식
   - 원문과 **같은 slug**를 공유하도록 유니크 제약을 `(slug, locale)`로 변경(`supabase/history-entries-slug-locale-unique.sql`, 사용자 실행 완료) — `/ko/history/x` ↔ `/en/history/x`가 언어 전환 버튼으로 연결되고 `TOOL_BUILD_LOGS` 매핑도 그대로 동작
   - 빌드로그 상세는 slug+locale로 조회(`maybeSingle`), `generateStaticParams`는 slug 중복 제거. 관리자 API의 slug 충돌 문구를 "같은 언어에 이미 사용 중인 slug"로 변경
+  - **공개 완료**: `6f4b824` 운영 배포 완료(GitHub commit status로 확인) 후 8편을 `published=true`로 전환. 운영 사이트에서 `/en/history/<slug>` 200(영어 제목), `/ko/history/<slug>` 200 유지, `/en/history` 8건, `/en` 홈 하이라이트 3건 노출 확인. 도구 페이지 하단 섹션은 SSG라 다음 배포 때 영어로 반영됨
   - ⚠️ 이 코드가 배포되기 전에 영어 빌드로그를 공개하면, 이전 배포본의 상세 페이지가 slug만으로 `.single()` 조회해 공개 행이 2개가 되면서 한국어 상세까지 404가 됨 — **반드시 배포 후 공개할 것**
   - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 slug 중복 상태에서 `/ko/history/<slug>` 200(한국어 제목), `/en/history/<slug>` 404(초안이라 정상), `/ko` 도구 페이지 빌드로그 섹션 유지, `/en` 홈 안내 문구 유지 확인. 영어 글을 공개한 상태의 렌더링은 확인 못함(프로덕션에 노출되므로 임시 공개하지 않음)
 
