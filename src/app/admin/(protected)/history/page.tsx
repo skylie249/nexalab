@@ -9,12 +9,13 @@ interface AdminHistoryRow {
   title: string;
   published: boolean;
   work_date: string;
+  locale: string;
 }
 
 async function getHistoryEntries(): Promise<AdminHistoryRow[]> {
   const { data, error } = await supabaseAdmin
     .from("history_entries")
-    .select("id, slug, title, published, work_date")
+    .select("id, slug, title, published, work_date, locale")
     .order("work_date", { ascending: false });
 
   if (error) {
@@ -51,7 +52,7 @@ export default async function AdminHistoryPage() {
                 <div className={styles.rowInfo}>
                   <span className={styles.rowTitle}>{entry.title}</span>
                   <span className={styles.rowMeta}>
-                    {entry.work_date} · /history/{entry.slug}
+                    {entry.work_date} · /{entry.locale}/history/{entry.slug}
                   </span>
                 </div>
               </div>

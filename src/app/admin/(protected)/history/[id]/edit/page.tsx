@@ -6,7 +6,7 @@ import styles from "../../../posts/page.module.css";
 async function getHistoryEntry(id: string) {
   const { data, error } = await supabaseAdmin
     .from("history_entries")
-    .select("slug, title, summary, content, work_date, published")
+    .select("slug, title, summary, content, work_date, locale, published")
     .eq("id", id)
     .single();
 
@@ -28,6 +28,7 @@ export default async function EditHistoryPage({ params }: { params: Promise<{ id
     summary: entry.summary || "",
     content: entry.content || "",
     work_date: entry.work_date || "",
+    locale: entry.locale === "en" ? "en" : "ko",
     published: entry.published || false,
   };
 

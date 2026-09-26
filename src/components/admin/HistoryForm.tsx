@@ -14,6 +14,7 @@ export interface HistoryFormInitialData {
   summary: string;
   content: string;
   work_date: string;
+  locale: "ko" | "en";
   published: boolean;
 }
 
@@ -29,6 +30,7 @@ const emptyData: HistoryFormInitialData = {
   summary: "",
   content: "",
   work_date: new Date().toISOString().slice(0, 10),
+  locale: "ko",
   published: false,
 };
 
@@ -41,6 +43,7 @@ export default function HistoryForm({ mode, entryId, initialData }: HistoryFormP
   const [summary, setSummary] = useState(data.summary);
   const [content, setContent] = useState(data.content);
   const [workDate, setWorkDate] = useState(data.work_date);
+  const [locale, setLocale] = useState(data.locale);
   const [published, setPublished] = useState(data.published);
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export default function HistoryForm({ mode, entryId, initialData }: HistoryFormP
     e.preventDefault();
     setError(null);
 
-    const payload = { slug, title, summary, content, work_date: workDate, published };
+    const payload = { slug, title, summary, content, work_date: workDate, locale, published };
 
     setIsSubmitting(true);
 
@@ -94,6 +97,21 @@ export default function HistoryForm({ mode, entryId, initialData }: HistoryFormP
         <p className={styles.hint}>
           소문자 영문/숫자/하이픈만 사용하세요. /history/{slug || "…"} 로 노출됩니다.
           {mode === "edit" && " 발행 후 slug를 바꾸면 기존 공개 링크가 깨집니다."}
+        </p>
+      </div>
+
+      <div className={styles.field}>
+        <label htmlFor="locale">언어</label>
+        <select
+          id="locale"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value as HistoryFormInitialData["locale"])}
+        >
+          <option value="ko">한국어</option>
+          <option value="en">English</option>
+        </select>
+        <p className={styles.hint}>
+          선택한 언어 페이지(/{locale}/history/…)에만 노출됩니다. 다른 언어 페이지에서는 목록에 나오지 않고 상세는 404입니다.
         </p>
       </div>
 

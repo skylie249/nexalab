@@ -918,7 +918,7 @@ export async function POST(req: Request) {
 - **빌드로그를 언어별로 분리**: `/en` 홈의 "What did I learn while building these tools?" 섹션에 한국어 빌드로그가 그대로 노출되던 문제. `history_entries`에 언어 구분이 없어 모든 로케일에 같은 한국어 글이 나오던 것 → `locale` 컬럼 도입(`supabase/history-entries-locale.sql`, 기본값 'ko', **사용자 실행 필요**)
   - `src/lib/history.ts`의 `queryHistoryByLocale()`: locale로 필터링하고, 컬럼이 아직 없으면(42703) 전부 한국어로 간주해 ko는 필터 없이 재조회, en은 "없음" 처리 — SQL 실행 전에 배포해도 동작
   - 홈/블로그 하이라이트(`BuildLogHighlights`)는 해당 언어 빌드로그가 없으면 섹션을 숨기지 않고 "No build logs are available in English yet." 안내 표시(블로그는 필터 없는 1페이지에서만 섹션 렌더링). `/en/history` 목록은 기존 빈 상태 문구, 상세 `/en/history/<한국어 slug>`는 404(글 상세와 같은 원칙), 도구 페이지 "How was this tool built?" 섹션은 숨김, sitemap은 글 언어의 로케일 경로만 포함
-  - 관리자 빌드로그 작성 폼에는 언어 선택을 아직 넣지 않음(SQL 실행 전 저장이 깨지지 않도록) — 영어 빌드로그는 SQL 실행 후 대시보드에서 `locale='en'`으로 지정하거나 폼 확장 필요
+  - SQL 실행 완료(사용자). 이후 관리자 빌드로그 폼(`HistoryForm.tsx`)에 언어 선택(한국어/English, 기본 한국어) 추가 — `historySchema.ts`의 `locale`(ko|en, 기본 ko)로 검증 후 저장, 수정 화면은 기존 값을 불러오고 관리자 목록에 `/{locale}/history/{slug}` 경로 표시. 검증: `tsc`/`lint`/`next build` 통과, 스키마 기본값·거부값과 service-role 조회를 실제 DB로 확인(관리자 로그인 후 실제 저장은 브라우저로 미확인)
   - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 `/en`·`/en/blog` 안내 문구, `/ko` 빌드로그 3건 유지, `/en/tools/quote-generator` 빌드로그 섹션 숨김·`/ko`는 유지, `/en/history/<slug>` 404·`/ko` 200 확인
 
 # 이것은 당신이 알던 그 Next.js가 아닙니다
