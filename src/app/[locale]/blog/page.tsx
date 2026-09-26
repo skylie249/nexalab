@@ -205,7 +205,7 @@ export default async function BlogPage({
   const showBuildLogs = page === 1 && !activeCategory;
   const [{ posts, totalCount }, recentBuildLogs] = await Promise.all([
     getPosts(activeCategory?.id, page, locale, pageSize),
-    showBuildLogs ? getRecentHistoryEntries(3) : Promise.resolve([]),
+    showBuildLogs ? getRecentHistoryEntries(locale, 3) : Promise.resolve([]),
   ]);
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -244,7 +244,7 @@ export default async function BlogPage({
             <p className={styles.blogSubtitle}>{tBlog("pageSubtitle")}</p>
           </header>
 
-          <BuildLogHighlights entries={recentBuildLogs} locale={locale} />
+          {showBuildLogs && <BuildLogHighlights entries={recentBuildLogs} locale={locale} />}
 
           <div className={styles.filterTabs}>
             <Link

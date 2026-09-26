@@ -47,7 +47,7 @@ export default async function Home({
 
   const [recentPosts, recentBuildLogs] = await Promise.all([
     getRecentPosts(locale, 3),
-    getRecentHistoryEntries(3),
+    getRecentHistoryEntries(locale, 3),
   ]);
 
   const hubTools: HubToolCardData[] = [

@@ -11,6 +11,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { supabase } from "@/lib/supabase";
+import { historyEntryLocale } from "@/lib/history";
 import type { Locale } from "@/i18n/routing";
 import { SITE_NAME, absoluteUrl, buildAlternates } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -26,7 +27,8 @@ export async function generateStaticParams() {
   }
 }
 
-const getHistoryEntry = cache(async (slug: string) => {
+// 다른 언어로 작성된 빌드로그는 없는 것으로 취급 (글 상세와 동일하게 언어가 섞여 보이지 않게)
+const getHistoryEntry = cache(async (slug: string, locale: string) => {
   try {
     const { data } = await supabase
       .from("history_entries")
@@ -34,6 +36,7 @@ const getHistoryEntry = cache(async (slug: string) => {
       .eq("slug", slug)
       .eq("published", true)
       .single();
+    if (!data || historyEntryLocale(data) !== locale) return null;
     return data;
   } catch {
     console.error("Supabase fetch error, using fallback mock data.");
@@ -47,7 +50,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const entry = await getHistoryEntry(slug);
+  const entry = await getHistoryEntry(slug, locale);
 
   if (!entry) {
     return { robots: { index: false, follow: false } };
@@ -90,7 +93,7 @@ export default async function HistoryDetail({
   const t = await getTranslations("history");
   const dateLocale = resolvedParams.locale === "en" ? "en-US" : "ko-KR";
 
-  const entry = await getHistoryEntry(resolvedParams.slug);
+  const entry = await getHistoryEntry(resolvedParams.slug, resolvedParams.locale);
 
   if (!entry) {
     notFound();

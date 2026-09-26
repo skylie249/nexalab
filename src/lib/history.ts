@@ -7,29 +7,52 @@ export interface HistoryEntrySummary {
   work_date: string;
 }
 
-// 홈·블로그 목록 상단의 "빌드로그" 하이라이트용 최신 N개
-export async function getRecentHistoryEntries(limit = 3): Promise<HistoryEntrySummary[]> {
-  const { data, error } = await supabase
-    .from("history_entries")
-    .select("slug, title, summary, work_date")
-    .eq("published", true)
-    .order("work_date", { ascending: false })
-    .limit(limit);
+// locale 컬럼(supabase/history-entries-locale.sql) 도입 전 빌드로그는 전부 한국어로 작성됐다.
+export const HISTORY_DEFAULT_LOCALE = "ko";
 
-  if (error || !data) return [];
-  return data as HistoryEntrySummary[];
+export function historyEntryLocale(entry: { locale?: string | null }): string {
+  return entry.locale ?? HISTORY_DEFAULT_LOCALE;
 }
 
-export async function getHistoryEntrySummary(slug: string): Promise<HistoryEntrySummary | null> {
-  const { data, error } = await supabase
-    .from("history_entries")
-    .select("slug, title, summary, work_date")
-    .eq("slug", slug)
-    .eq("published", true)
-    .maybeSingle();
+// 빌드로그를 locale로 거른다. 컬럼이 아직 없으면(PostgREST 42703) 전부 한국어로 간주해
+// ko는 필터 없이 재조회하고, 다른 로케일은 null(해당 언어 빌드로그 없음)을 돌려준다.
+export async function queryHistoryByLocale<R extends { error: { code?: string } | null }>(
+  locale: string,
+  build: (filterLocale: boolean) => PromiseLike<R>,
+): Promise<R | null> {
+  const result = await build(true);
+  if (result.error?.code !== "42703") return result;
+  return locale === HISTORY_DEFAULT_LOCALE ? build(false) : null;
+}
 
-  if (error || !data) return null;
-  return data as HistoryEntrySummary;
+// 홈·블로그 목록 상단의 "빌드로그" 하이라이트용 최신 N개 (현재 로케일로 작성된 것만)
+export async function getRecentHistoryEntries(locale: string, limit = 3): Promise<HistoryEntrySummary[]> {
+  const result = await queryHistoryByLocale(locale, (filterLocale) => {
+    let query = supabase
+      .from("history_entries")
+      .select("slug, title, summary, work_date")
+      .eq("published", true);
+    if (filterLocale) query = query.eq("locale", locale);
+    return query.order("work_date", { ascending: false }).limit(limit);
+  });
+
+  if (!result || result.error || !result.data) return [];
+  return result.data as HistoryEntrySummary[];
+}
+
+export async function getHistoryEntrySummary(slug: string, locale: string): Promise<HistoryEntrySummary | null> {
+  const result = await queryHistoryByLocale(locale, (filterLocale) => {
+    let query = supabase
+      .from("history_entries")
+      .select("slug, title, summary, work_date")
+      .eq("slug", slug)
+      .eq("published", true);
+    if (filterLocale) query = query.eq("locale", locale);
+    return query.maybeSingle();
+  });
+
+  if (!result || result.error || !result.data) return null;
+  return result.data as HistoryEntrySummary;
 }
 
 // 도구 페이지 하단 "이 도구는 어떻게 만들었나요?"에 연결할 출시 빌드로그.
@@ -49,6 +72,6 @@ export const TOOL_BUILD_LOGS = {
 
 export type ToolWithBuildLog = keyof typeof TOOL_BUILD_LOGS;
 
-export function getToolBuildLog(tool: ToolWithBuildLog) {
-  return getHistoryEntrySummary(TOOL_BUILD_LOGS[tool]);
+export function getToolBuildLog(tool: ToolWithBuildLog, locale: string) {
+  return getHistoryEntrySummary(TOOL_BUILD_LOGS[tool], locale);
 }

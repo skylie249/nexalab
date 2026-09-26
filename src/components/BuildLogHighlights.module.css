@@ -36,3 +36,12 @@
   flex-direction: column;
   gap: 1rem;
 }
+
+.empty {
+  padding: 1.25rem;
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}

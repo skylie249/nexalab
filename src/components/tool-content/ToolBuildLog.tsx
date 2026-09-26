@@ -1,12 +1,12 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getToolBuildLog, type ToolWithBuildLog } from "@/lib/history";
 import styles from "./ToolContent.module.css";
 
 // 도구 페이지 하단: 이 도구를 만든 과정을 기록한 빌드로그로 연결 (도구 ↔ 빌드로그 내부 링크).
-// 연결된 빌드로그가 비공개/삭제됐으면 섹션 자체를 숨긴다.
+// 연결된 빌드로그가 비공개/삭제됐거나 현재 언어로 작성되지 않았으면 섹션 자체를 숨긴다.
 export default async function ToolBuildLog({ tool }: { tool: ToolWithBuildLog }) {
-  const entry = await getToolBuildLog(tool);
+  const entry = await getToolBuildLog(tool, await getLocale());
   if (!entry) return null;
 
   const t = await getTranslations("buildLog");

@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import HistoryCard from "@/components/HistoryCard";
 import JsonLd from "@/components/JsonLd";
 import { supabase } from "@/lib/supabase";
+import { queryHistoryByLocale } from "@/lib/history";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -41,17 +42,23 @@ interface HistoryEntry {
   work_date: string;
 }
 
-async function getHistoryEntries(page: number) {
+async function getHistoryEntries(page: number, locale: string) {
   const from = (page - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
-  const { data, count, error } = await supabase
-    .from("history_entries")
-    .select("id, slug, title, summary, work_date", { count: "exact" })
-    .eq("published", true)
-    .order("work_date", { ascending: false })
-    .range(from, to);
+  const result = await queryHistoryByLocale(locale, (filterLocale) => {
+    let query = supabase
+      .from("history_entries")
+      .select("id, slug, title, summary, work_date", { count: "exact" })
+      .eq("published", true);
+    if (filterLocale) query = query.eq("locale", locale);
+    return query.order("work_date", { ascending: false }).range(from, to);
+  });
 
+  // 현재 언어로 작성된 빌드로그가 없음 (locale 컬럼 도입 전 = 전부 한국어)
+  if (!result) return { entries: [] as HistoryEntry[], totalCount: 0 };
+
+  const { data, count, error } = result;
   if (error) {
     console.error("Error fetching history entries:", error);
     return { entries: [] as HistoryEntry[], totalCount: 0 };
@@ -100,7 +107,7 @@ export default async function HistoryPage({
   const resolvedSearchParams = await searchParams;
   const page = Math.max(1, parseInt(resolvedSearchParams.page || "1", 10) || 1);
 
-  const { entries, totalCount } = await getHistoryEntries(page);
+  const { entries, totalCount } = await getHistoryEntries(page, locale);
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const dateLocale = locale === "en" ? "en-US" : "ko-KR";
 

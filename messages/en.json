@@ -1189,6 +1189,7 @@
     "sectionTitle": "What did I learn while building these tools?",
     "sectionSubtitle": "Build logs recorded in order of the work date — the real problems, trade-offs, and decisions behind planning, shipping, and running NexaLab.app's free tools, including the bugs that blocked me, features I dropped, and incidents I had to handle.",
     "viewAll": "View all build logs →",
+    "emptyState": "No build logs are available in English yet.",
     "toolSectionTitle": "How was this tool built?"
   }
 }

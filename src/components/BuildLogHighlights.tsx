@@ -13,8 +13,6 @@ export default async function BuildLogHighlights({
   entries: HistoryEntrySummary[];
   locale: string;
 }) {
-  if (entries.length === 0) return null;
-
   const t = await getTranslations("buildLog");
   const dateLocale = locale === "en" ? "en-US" : "ko-KR";
 
@@ -22,20 +20,27 @@ export default async function BuildLogHighlights({
     <section className={styles.section}>
       <h2 className={styles.title}>{t("sectionTitle")}</h2>
       <p className={styles.subtitle}>{t("sectionSubtitle")}</p>
-      <Link href="/history" className={styles.viewAllLink}>
-        {t("viewAll")}
-      </Link>
-      <div className={styles.list}>
-        {entries.map((entry) => (
-          <HistoryCard
-            key={entry.slug}
-            slug={entry.slug}
-            title={entry.title}
-            summary={entry.summary}
-            date={new Date(entry.work_date).toLocaleDateString(dateLocale)}
-          />
-        ))}
-      </div>
+      {entries.length === 0 ? (
+        // 현재 언어로 작성된 빌드로그가 없으면 다른 언어 글로 채우지 않고 없다고 안내한다
+        <p className={styles.empty}>{t("emptyState")}</p>
+      ) : (
+        <>
+          <Link href="/history" className={styles.viewAllLink}>
+            {t("viewAll")}
+          </Link>
+          <div className={styles.list}>
+            {entries.map((entry) => (
+              <HistoryCard
+                key={entry.slug}
+                slug={entry.slug}
+                title={entry.title}
+                summary={entry.summary}
+                date={new Date(entry.work_date).toLocaleDateString(dateLocale)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 }

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
 import { SITE_URL, isLocaleIndexable } from "@/lib/seo";
 import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
+import { historyEntryLocale } from "@/lib/history";
 
 // 정적 생성이면 배포 시점 목록에 고정되어 새 글·is_indexable 변경이 재배포 전까지 반영되지 않는다.
 // 1시간마다 재생성(ISR)해 DB 변경을 따라가게 한다.
@@ -45,6 +46,7 @@ interface PostRow {
 interface HistoryRow {
   slug: string;
   work_date: string;
+  locale?: string | null;
 }
 
 function maxDate(dates: Date[]): Date | undefined {
@@ -77,21 +79,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const historyEntries: MetadataRoute.Sitemap = [];
-  const historyDates: Date[] = [];
+  const historyDatesByLocale: Record<string, Date[]> = { ko: [], en: [] };
 
   try {
-    const { data } = await supabase
+    const withLocale = await supabase
       .from("history_entries")
-      .select("slug, work_date")
+      .select("slug, work_date, locale")
       .eq("published", true);
+    // locale 컬럼 적용 전(42703)이면 전부 한국어 빌드로그로 간주
+    const { data } =
+      withLocale.error?.code === "42703"
+        ? await supabase.from("history_entries").select("slug, work_date").eq("published", true)
+        : withLocale;
 
     // created_at/updated_at은 일괄 시드 시각이라 실제 작업일(work_date)을 lastmod로 사용
     for (const entry of (data || []) as HistoryRow[]) {
+      const locale = historyEntryLocale(entry);
+      if (!(LOCALES as readonly string[]).includes(locale)) continue;
       const lastModified = new Date(entry.work_date);
-      historyDates.push(lastModified);
-      for (const locale of LOCALES) {
-        historyEntries.push({ url: `${SITE_URL}/${locale}/history/${entry.slug}`, lastModified });
-      }
+      historyDatesByLocale[locale]?.push(lastModified);
+      historyEntries.push({ url: `${SITE_URL}/${locale}/history/${entry.slug}`, lastModified });
     }
   } catch {
     // Supabase unreachable at build time — fall back to the static entries.
@@ -100,7 +107,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [];
   for (const locale of LOCALES) {
     const latestPost = maxDate(latestPostByLocale[locale]);
-    const latestHistory = maxDate(historyDates);
+    const latestHistory = maxDate(historyDatesByLocale[locale] ?? []);
     staticEntries.push(
       { url: `${SITE_URL}/${locale}`, lastModified: maxDate([latestPost, latestHistory].filter((d): d is Date => !!d)) },
       { url: `${SITE_URL}/${locale}/blog`, lastModified: latestPost },
