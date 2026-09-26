@@ -8,6 +8,8 @@ import PostCard from "@/components/PostCard";
 import JsonLd from "@/components/JsonLd";
 import { supabase } from "@/lib/supabase";
 import { queryIndexablePosts } from "@/lib/postIndexing";
+import { getRecentHistoryEntries } from "@/lib/history";
+import BuildLogHighlights from "@/components/BuildLogHighlights";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -198,7 +200,12 @@ export default async function BlogPage({
     ? categories.find((c) => c.slug === categorySlug) || null
     : null;
 
-  const { posts, totalCount } = await getPosts(activeCategory?.id, page, locale, pageSize);
+  // 빌드로그 하이라이트는 필터 없는 첫 페이지에만 노출 (페이지를 넘길 때마다 반복되지 않게)
+  const showBuildLogs = page === 1 && !activeCategory;
+  const [{ posts, totalCount }, recentBuildLogs] = await Promise.all([
+    getPosts(activeCategory?.id, page, locale, pageSize),
+    showBuildLogs ? getRecentHistoryEntries(3) : Promise.resolve([]),
+  ]);
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   // Only the first post of the first page is presented as "featured".
@@ -235,6 +242,8 @@ export default async function BlogPage({
             <h1 className={styles.blogTitle}>{tBlog("pageTitle")}</h1>
             <p className={styles.blogSubtitle}>{tBlog("pageSubtitle")}</p>
           </header>
+
+          <BuildLogHighlights entries={recentBuildLogs} locale={locale} />
 
           <div className={styles.filterTabs}>
             <Link

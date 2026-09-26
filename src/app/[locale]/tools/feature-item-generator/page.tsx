@@ -69,6 +69,7 @@ export default async function FeatureItemGeneratorPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="feature-item-generator"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

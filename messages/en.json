@@ -1184,5 +1184,11 @@
     "introSolution": "Business Utility Tools brings together the Profit Calculator and Report Checker in one place. The Profit Calculator computes instantly as you type numbers, and the Report Checker uses AI to check sentence structure and tone. Both are free, and nothing you enter is stored on our server.",
     "crossSellText": "Need to put together a quote first?",
     "crossSellButton": "See Proposal & Quote Tools →"
+  },
+  "buildLog": {
+    "sectionTitle": "What did I learn while building these tools?",
+    "sectionSubtitle": "Build logs recorded in order of the work date — the real problems, trade-offs, and decisions behind planning, shipping, and running NexaLab.app's free tools, including the bugs that blocked me, features I dropped, and incidents I had to handle.",
+    "viewAll": "View all build logs →",
+    "toolSectionTitle": "How was this tool built?"
   }
 }

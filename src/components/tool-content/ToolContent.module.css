@@ -148,3 +148,21 @@
   flex-direction: column;
   gap: 2.5rem;
 }
+
+.buildLogSummary {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.buildLogAllLink {
+  align-self: flex-end;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-text);
+}
+
+.buildLogAllLink:hover {
+  text-decoration: underline;
+}

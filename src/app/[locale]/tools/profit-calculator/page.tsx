@@ -65,6 +65,7 @@ export default async function ProfitCalculatorPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="profit-calculator"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

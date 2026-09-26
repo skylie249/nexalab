@@ -893,6 +893,13 @@ export async function POST(req: Request) {
   - **Task 4 영어판 noindex**: `src/lib/seo.ts`의 `INDEX_EN_LOCALE`(env `INDEX_EN_LOCALE=true`로 복구). false면 `[locale]/layout.tsx`가 /en 전체에 `noindex, follow`, `buildAlternates()`가 hreflang 생략(canonical은 자기 자신 유지), sitemap에서 /en 제외. 언어 전환 버튼은 그대로
   - **검증**: `tsc`/`lint`/`next build` 통과. `next start` 로컬 프로덕션으로 글 상세·홈·블로그·도구 페이지 "AdSense Banner" 0건 + adsbygoogle.js 유지, sitemap 59 URL 전부 /ko·hreflang 0·lastmod 빌드시각 없음, `/en/tools/quote-generator` noindex·`/ko` index + 자기 canonical, 컬럼 없는 상태에서 목록 정상 노출 확인. SQL 실행 후 배포 환경에서 테스트 글 1편을 false로 바꿔 글 상세 `noindex, follow`·블로그 목록·홈 피드·대시보드 제외 확인(확인 후 true로 원복). 이때 sitemap이 빌드 시 1회만 생성되는 정적 라우트라 재배포 전까지 DB 변경이 반영되지 않는 기존 문제를 발견 → `sitemap.ts`에 `revalidate = 3600` 추가, 광고 여백 제거의 모바일/데스크톱 실브라우저 확인은 이번에 하지 않음
 
+- **2순위 Task 5: 빌드로그(`/history`)를 대표 콘텐츠로 노출**
+  - `src/components/BuildLogHighlights.tsx`(최신 3개, 기존 `HistoryCard` 재사용) — 홈은 "최신 글" 섹션 위, `/blog`는 헤더 아래(필터 없는 1페이지에서만)
+  - 도구 페이지 하단 "이 도구는 어떻게 만들었나요?": `ToolContentWrapper`의 `buildLogTool` prop → `tool-content/ToolBuildLog.tsx`. 도구↔빌드로그 매핑은 `src/lib/history.ts`의 `TOOL_BUILD_LOGS`(SEO/GEO 체커는 최초 출시 기록이 없어 접근성 점검 추가 기록으로, 올인원 진단은 허브 재구성 기록으로 연결). 연결된 빌드로그가 비공개면 섹션 숨김. 허브 3종(site-check/proposal/business-utility)은 `ToolContentWrapper`를 안 써서 제외
+  - 도구 페이지는 SSG라 빌드로그 제목/요약은 빌드 시점 값 — 빌드로그를 고치거나 비공개로 돌리면 재배포해야 도구 페이지에 반영됨
+  - 문구는 `messages/*.json`의 `buildLog` 네임스페이스(내비 라벨은 기존대로 "연혁" 유지)
+  - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 홈·/blog(1페이지만)·도구 9개 페이지에서 올바른 `/history/<slug>` 링크 확인, Chrome으로 홈 섹션·견적서 생성기 하단 섹션 렌더링 확인(데스크톱 폭만)
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.

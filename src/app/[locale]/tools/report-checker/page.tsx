@@ -64,6 +64,7 @@ export default async function ReportCheckerPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="report-checker"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

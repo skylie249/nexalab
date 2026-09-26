@@ -64,6 +64,7 @@ export default async function AllInOnePage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="all-in-one"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

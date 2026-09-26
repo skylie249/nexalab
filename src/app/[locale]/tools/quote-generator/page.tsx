@@ -65,6 +65,7 @@ export default async function QuoteGeneratorPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="quote-generator"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

@@ -65,6 +65,7 @@ export default async function LlmsTxtGeneratorPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="llms-txt-generator"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

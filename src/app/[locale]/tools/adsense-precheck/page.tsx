@@ -65,6 +65,7 @@ export default async function AdsensePrecheckPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="adsense-precheck"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

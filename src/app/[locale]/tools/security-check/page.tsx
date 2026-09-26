@@ -65,6 +65,7 @@ export default async function SecurityCheckPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="security-check"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

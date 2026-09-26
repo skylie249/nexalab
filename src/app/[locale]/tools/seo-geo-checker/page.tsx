@@ -65,6 +65,7 @@ export default async function SeoGeoCheckerPage({
       </header>
 
       <ToolContentWrapper
+        buildLogTool="seo-geo-checker"
         introTitle={t("contentIntroTitle")}
         introProblem={t("contentIntroProblem")}
         introSolution={t("contentIntroSolution")}

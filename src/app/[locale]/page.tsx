@@ -5,7 +5,9 @@ import Hero from "@/components/Hero";
 import Sidebar from "@/components/Sidebar";
 import PostCard from "@/components/PostCard";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
+import BuildLogHighlights from "@/components/BuildLogHighlights";
 import { getRecentPosts } from "@/lib/posts";
+import { getRecentHistoryEntries } from "@/lib/history";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -43,7 +45,10 @@ export default async function Home({
   const t = await getTranslations("homeHub");
   const tHeader = await getTranslations("header");
 
-  const recentPosts = await getRecentPosts(locale, 3);
+  const [recentPosts, recentBuildLogs] = await Promise.all([
+    getRecentPosts(locale, 3),
+    getRecentHistoryEntries(3),
+  ]);
 
   const hubTools: HubToolCardData[] = [
     {
@@ -87,6 +92,8 @@ export default async function Home({
             <p className={styles.sectionSubtitle}>{t("hubSectionSubtitle")}</p>
             <HubToolGrid tools={hubTools} linkLabel={t("toolCardLinkLabel")} />
           </section>
+
+          <BuildLogHighlights entries={recentBuildLogs} locale={locale} />
 
           {recentPosts.length > 0 && (
             <section className={styles.insightSection}>
