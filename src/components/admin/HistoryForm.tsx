@@ -111,7 +111,7 @@ export default function HistoryForm({ mode, entryId, initialData }: HistoryFormP
           <option value="en">English</option>
         </select>
         <p className={styles.hint}>
-          선택한 언어 페이지(/{locale}/history/…)에만 노출됩니다. 다른 언어 페이지에서는 목록에 나오지 않고 상세는 404입니다.
+          선택한 언어 페이지(/{locale}/history/…)에만 노출됩니다. 번역본은 원문과 같은 slug로 저장하면 언어 전환 버튼으로 서로 연결됩니다.
         </p>
       </div>
 

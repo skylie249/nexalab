@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json({ error: "이미 사용 중인 slug입니다." }, { status: 409 });
+      return NextResponse.json({ error: "같은 언어에 이미 사용 중인 slug입니다." }, { status: 409 });
     }
     console.error("history update error:", error);
     return NextResponse.json({ error: "연혁 수정 중 오류가 발생했습니다." }, { status: 500 });

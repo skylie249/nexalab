@@ -921,6 +921,12 @@ export async function POST(req: Request) {
   - SQL 실행 완료(사용자). 이후 관리자 빌드로그 폼(`HistoryForm.tsx`)에 언어 선택(한국어/English, 기본 한국어) 추가 — `historySchema.ts`의 `locale`(ko|en, 기본 ko)로 검증 후 저장, 수정 화면은 기존 값을 불러오고 관리자 목록에 `/{locale}/history/{slug}` 경로 표시. 검증: `tsc`/`lint`/`next build` 통과, 스키마 기본값·거부값과 service-role 조회를 실제 DB로 확인(관리자 로그인 후 실제 저장은 브라우저로 미확인)
   - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 `/en`·`/en/blog` 안내 문구, `/ko` 빌드로그 3건 유지, `/en/tools/quote-generator` 빌드로그 섹션 숨김·`/ko`는 유지, `/en/history/<slug>` 404·`/ko` 200 확인
 
+- **영어 빌드로그 8편 추가(초안)**: 도구 페이지에 연결된 빌드로그 8편(`TOOL_BUILD_LOGS`의 고유 slug 전부)을 영어로 번역해 `locale='en'`, `published=false`로 삽입 — 번역은 Claude가 직접 작성, 도구명은 `messages/en.json`의 영어 메뉴 표기에 맞춤. 관리자 화면에서 검토 후 공개하는 방식
+  - 원문과 **같은 slug**를 공유하도록 유니크 제약을 `(slug, locale)`로 변경(`supabase/history-entries-slug-locale-unique.sql`, 사용자 실행 완료) — `/ko/history/x` ↔ `/en/history/x`가 언어 전환 버튼으로 연결되고 `TOOL_BUILD_LOGS` 매핑도 그대로 동작
+  - 빌드로그 상세는 slug+locale로 조회(`maybeSingle`), `generateStaticParams`는 slug 중복 제거. 관리자 API의 slug 충돌 문구를 "같은 언어에 이미 사용 중인 slug"로 변경
+  - ⚠️ 이 코드가 배포되기 전에 영어 빌드로그를 공개하면, 이전 배포본의 상세 페이지가 slug만으로 `.single()` 조회해 공개 행이 2개가 되면서 한국어 상세까지 404가 됨 — **반드시 배포 후 공개할 것**
+  - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 slug 중복 상태에서 `/ko/history/<slug>` 200(한국어 제목), `/en/history/<slug>` 404(초안이라 정상), `/ko` 도구 페이지 빌드로그 섹션 유지, `/en` 홈 안내 문구 유지 확인. 영어 글을 공개한 상태의 렌더링은 확인 못함(프로덕션에 노출되므로 임시 공개하지 않음)
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.

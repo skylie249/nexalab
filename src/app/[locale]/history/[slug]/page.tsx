@@ -11,7 +11,6 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { supabase } from "@/lib/supabase";
-import { historyEntryLocale } from "@/lib/history";
 import type { Locale } from "@/i18n/routing";
 import { SITE_NAME, absoluteUrl, buildAlternates } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -21,22 +20,23 @@ export const revalidate = 60;
 export async function generateStaticParams() {
   try {
     const { data } = await supabase.from("history_entries").select("slug").eq("published", true);
-    return data?.map((entry) => ({ slug: entry.slug })) || [];
+    // 같은 slug가 언어별로 하나씩 있을 수 있어 중복 제거 (로케일은 상위 [locale]이 채움)
+    return [...new Set((data || []).map((entry) => entry.slug))].map((slug) => ({ slug }));
   } catch {
     return [];
   }
 }
 
-// 다른 언어로 작성된 빌드로그는 없는 것으로 취급 (글 상세와 동일하게 언어가 섞여 보이지 않게)
+// 현재 언어로 작성된 빌드로그만 조회 — 같은 slug의 번역본이 없으면 404 (언어가 섞여 보이지 않게)
 const getHistoryEntry = cache(async (slug: string, locale: string) => {
   try {
     const { data } = await supabase
       .from("history_entries")
       .select("*")
       .eq("slug", slug)
+      .eq("locale", locale)
       .eq("published", true)
-      .single();
-    if (!data || historyEntryLocale(data) !== locale) return null;
+      .maybeSingle();
     return data;
   } catch {
     console.error("Supabase fetch error, using fallback mock data.");

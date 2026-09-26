@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json({ error: "이미 사용 중인 slug입니다." }, { status: 409 });
+      return NextResponse.json({ error: "같은 언어에 이미 사용 중인 slug입니다." }, { status: 409 });
     }
     console.error("history insert error:", error);
     return NextResponse.json({ error: "연혁 저장 중 오류가 발생했습니다." }, { status: 500 });
