@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { queryIndexablePosts } from "@/lib/postIndexing";
 
 export interface DashboardPost {
   id: string;
@@ -26,13 +27,15 @@ function categoryName(row: RawPostRow): string {
 }
 
 export async function getRecentPosts(locale: string, limit = 3): Promise<DashboardPost[]> {
-  const { data, error } = await supabase
-    .from("posts")
-    .select("id, title, excerpt, content, tags, created_at, categories!inner(name, locale)")
-    .eq("published", true)
-    .eq("categories.locale", locale)
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  const { data, error } = await queryIndexablePosts((filterIndexable) => {
+    let query = supabase
+      .from("posts")
+      .select("id, title, excerpt, content, tags, created_at, categories!inner(name, locale)")
+      .eq("published", true)
+      .eq("categories.locale", locale);
+    if (filterIndexable) query = query.eq("is_indexable", true);
+    return query.order("created_at", { ascending: false }).limit(limit);
+  });
 
   if (error || !data) return [];
 

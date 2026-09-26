@@ -886,6 +886,13 @@ export async function POST(req: Request) {
 
 <!-- BEGIN:nextjs-agent-rules -->
 
+- **색인 0건 + 애드센스 재심사 대비 1순위(Task 1~4) 처리** (핸드오프 문서 기준)
+  - **Task 1 광고 자리표시 제거**: `AdSenseMock`(“Google AdSense Banner [Ad #1]…” 박스 렌더링) 삭제 → `src/components/AdSlot.tsx` + `src/lib/adsense.ts`. `NEXT_PUBLIC_ADSENSE_APPROVED`가 `"true"`이고 `ADSENSE_SLOTS`에 광고 단위 ID가 있을 때만 `<ins class="adsbygoogle">` 렌더링, 아니면 래퍼(여백/sticky)까지 `null`. `<head>`의 adsbygoogle.js 스크립트와 `ads.txt`는 유지. **승인 후**: Vercel env `NEXT_PUBLIC_ADSENSE_APPROVED=true` + `ADSENSE_SLOTS` 채우고 재배포
+  - **Task 2 sitemap lastmod**: 원인은 2026-09-26 중복 글 병합 스크립트(07:56 UTC)가 149행의 `updated_at`을 일괄 갱신한 것(트리거 아님 — 백업값으로 되돌린 뒤 값이 유지되는 것으로 확인). 비공개 121편은 `.content-backup` 백업값으로 복원. 공개 병합 28편은 DB값 유지하고 `src/lib/postIndexing.ts`의 `getPostLastModified()`가 일괄 시각(`BULK_UPDATE_MARKERS`)이면 `created_at`을 쓰도록 함(글 상세 `modifiedTime`/`dateModified`도 동일 함수). 빌드로그는 일괄 시드된 `updated_at` 대신 `work_date`. 정적 페이지는 빌드 시각 대신 lastmod 생략(홈·/blog·/history만 최신 글/빌드로그 날짜). changefreq/priority 제거. **앞으로 일괄 UPDATE 스크립트는 `updated_at`을 건드리지 말 것**
+  - **Task 3 `is_indexable`**: `supabase/posts-is-indexable.sql`(사용자 실행 필요). false인 글은 `noindex, follow` + sitemap 제외 + 홈 피드/블로그 목록/대시보드 추천 제외(URL 직접 접근 가능). 목록 쿼리는 `queryIndexablePosts()`로 감싸 컬럼이 아직 없으면(PostgREST 42703) 필터 없이 재조회 — SQL 실행 전 배포해도 목록이 비지 않음. 분류용 CSV: `npm run posts:audit` → `posts-audit-YYYYMMDD.csv`(gitignore, 비공개 글 포함, `published_at` 컬럼이 없어 `created_at` 사용)
+  - **Task 4 영어판 noindex**: `src/lib/seo.ts`의 `INDEX_EN_LOCALE`(env `INDEX_EN_LOCALE=true`로 복구). false면 `[locale]/layout.tsx`가 /en 전체에 `noindex, follow`, `buildAlternates()`가 hreflang 생략(canonical은 자기 자신 유지), sitemap에서 /en 제외. 언어 전환 버튼은 그대로
+  - **검증**: `tsc`/`lint`/`next build` 통과. `next start` 로컬 프로덕션으로 글 상세·홈·블로그·도구 페이지 "AdSense Banner" 0건 + adsbygoogle.js 유지, sitemap 59 URL 전부 /ko·hreflang 0·lastmod 빌드시각 없음, `/en/tools/quote-generator` noindex·`/ko` index + 자기 canonical, 컬럼 없는 상태에서 목록 정상 노출 확인. **`is_indexable=false` 실제 동작(noindex 메타·목록 제외)은 SQL 실행 후 재확인 필요**, 광고 여백 제거의 모바일/데스크톱 실브라우저 확인은 이번에 하지 않음
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.

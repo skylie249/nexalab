@@ -13,7 +13,7 @@ import JsonLd from "@/components/JsonLd";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import KakaoInit from "@/components/KakaoInit";
 import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
-import { SITE_URL, SITE_NAME, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
+import { SITE_URL, SITE_NAME, NOINDEX_FOLLOW, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter, isLocaleIndexable } from "@/lib/seo";
 import styles from "./layout.module.css";
 
 // 2026-09-16: 직접 심었던 GA4 gtag.js를 걷어내고 GTM 컨테이너로 교체 — GA4 등 실제 태그는
@@ -49,11 +49,15 @@ export async function generateMetadata({
     alternates: buildAlternates(locale as Locale, "/"),
     openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/" }),
     twitter: buildTwitter({ title, description, locale: locale as Locale }),
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: { index: true, follow: true, "max-image-preview": "large" },
-    },
+    // 영어판은 INDEX_EN_LOCALE=true 전까지 noindex, follow (src/lib/seo.ts 참고).
+    // 하위 페이지가 robots를 직접 지정하지 않으면 이 값을 그대로 상속한다.
+    robots: isLocaleIndexable(locale)
+      ? {
+          index: true,
+          follow: true,
+          googleBot: { index: true, follow: true, "max-image-preview": "large" },
+        }
+      : NOINDEX_FOLLOW,
     icons: { icon: "/icon.svg", apple: "/icons/apple-touch-icon.png" },
     manifest: "/manifest.webmanifest",
     appleWebApp: {

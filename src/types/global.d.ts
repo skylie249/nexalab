@@ -25,6 +25,7 @@ declare global {
     // dataLayer.push({event: "...", ...})로 커스텀 이벤트를 전달한다. 실제로 GA4에
     // 도달하려면 GTM 대시보드에서 이 이벤트 이름을 매칭하는 트리거 + 태그를 만들어야 함.
     dataLayer?: Record<string, unknown>[];
+    adsbygoogle?: unknown[];
     Kakao?: {
       init: (jsKey: string) => void;
       isInitialized: () => boolean;

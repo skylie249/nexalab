@@ -3,7 +3,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import AdSenseMock from "@/components/AdSenseMock";
+import AdSlot from "@/components/AdSlot";
 import Sidebar from "@/components/Sidebar";
 import JsonLd from "@/components/JsonLd";
 import ReactMarkdown from "react-markdown";
@@ -69,7 +69,7 @@ export async function generateMetadata({
       locale: locale === "ko" ? "ko_KR" : "en_US",
       type: "article",
       publishedTime: entry.created_at,
-      modifiedTime: entry.updated_at || entry.created_at,
+      modifiedTime: entry.work_date,
       authors: ["Kim Ho-gyun"],
     },
     twitter: {
@@ -107,7 +107,7 @@ export default async function HistoryDetail({
           headline: entry.title,
           description: entry.summary,
           datePublished: entry.created_at,
-          dateModified: entry.updated_at || entry.created_at,
+          dateModified: entry.work_date,
           author: { "@type": "Person", name: "Kim Ho-gyun", url: absoluteUrl(`/${resolvedParams.locale}/about`) },
           publisher: {
             "@type": "Organization",
@@ -143,7 +143,7 @@ export default async function HistoryDetail({
           <p className={styles.date}>{new Date(entry.work_date).toLocaleDateString(dateLocale)}</p>
         </header>
 
-        <AdSenseMock id="Ad #1" type="Horizontal / Responsive" width="100%" height="90px" />
+        <AdSlot placement="articleTop" className={styles.topAd} />
 
         <article className={styles.articleContent}>
           <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
@@ -151,9 +151,7 @@ export default async function HistoryDetail({
           </ReactMarkdown>
         </article>
 
-        <div className={styles.multiplexAds}>
-          <AdSenseMock id="Ad #4" type="Multiplex / Sponsor" width="100%" height="300px" />
-        </div>
+        <AdSlot placement="articleBottom" className={styles.multiplexAds} />
       </section>
 
       <div className={styles.sidebarWrapper}>

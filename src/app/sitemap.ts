@@ -1,105 +1,108 @@
 import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
-import { SITE_URL } from "@/lib/seo";
+import { SITE_URL, isLocaleIndexable } from "@/lib/seo";
+import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
 
-const LOCALES = ["ko", "en"] as const;
+const LOCALES = (["ko", "en"] as const).filter(isLocaleIndexable);
 
-const STATIC_PATHS: {
-  path: string;
-  changeFrequency: NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
-  priority: number;
-}[] = [
-  { path: "", changeFrequency: "daily", priority: 1 },
-  { path: "/blog", changeFrequency: "daily", priority: 0.9 },
-  { path: "/history", changeFrequency: "weekly", priority: 0.7 },
-  { path: "/tools/quote-generator", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/profit-calculator", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/seo-geo-checker", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/llms-txt-generator", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/report-checker", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/adsense-precheck", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/feature-item-generator", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/security-check", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/site-check", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/tools/site-check/all-in-one", changeFrequency: "monthly", priority: 0.9 },
-  { path: "/tools/proposal", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/tools/business-utility", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/ai-apps", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/biz", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/about", changeFrequency: "monthly", priority: 0.5 },
-  { path: "/contact", changeFrequency: "yearly", priority: 0.4 },
-  { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
+// lastmod는 "실제 내용이 바뀐 날짜"만 넣는다. 빌드 시각을 넣으면 매 배포마다 전 URL이 같은 시각으로
+// 바뀌어 구글이 lastmod 신호 자체를 무시하게 된다. 콘텐츠 목록 페이지(홈/블로그/빌드로그)는 최신 글
+// 날짜를 따르고, 나머지 정적 페이지는 신뢰할 만한 수정일이 없으므로 lastmod를 생략한다.
+// (changefreq/priority는 구글이 사용하지 않아 넣지 않음)
+const STATIC_PATHS = [
+  "/tools/quote-generator",
+  "/tools/profit-calculator",
+  "/tools/seo-geo-checker",
+  "/tools/llms-txt-generator",
+  "/tools/report-checker",
+  "/tools/adsense-precheck",
+  "/tools/feature-item-generator",
+  "/tools/security-check",
+  "/tools/site-check",
+  "/tools/site-check/all-in-one",
+  "/tools/proposal",
+  "/tools/business-utility",
+  "/ai-apps",
+  "/biz",
+  "/about",
+  "/contact",
+  "/privacy",
 ];
-
-function languageAlternates(path: string) {
-  return {
-    ko: `${SITE_URL}/ko${path}`,
-    en: `${SITE_URL}/en${path}`,
-  };
-}
 
 interface PostRow {
   id: string;
   created_at: string;
-  updated_at: string;
+  updated_at: string | null;
+  is_indexable?: boolean | null;
   categories: { locale?: string } | { locale?: string }[] | null;
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
-  const entries: MetadataRoute.Sitemap = [];
+interface HistoryRow {
+  slug: string;
+  work_date: string;
+}
 
-  for (const { path, changeFrequency, priority } of STATIC_PATHS) {
-    for (const locale of LOCALES) {
-      entries.push({
-        url: `${SITE_URL}/${locale}${path}`,
-        lastModified: now,
-        changeFrequency,
-        priority,
-        alternates: { languages: languageAlternates(path) },
-      });
-    }
-  }
+function maxDate(dates: Date[]): Date | undefined {
+  if (dates.length === 0) return undefined;
+  return new Date(Math.max(...dates.map((d) => d.getTime())));
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const postEntries: MetadataRoute.Sitemap = [];
+  const latestPostByLocale: Record<string, Date[]> = { ko: [], en: [] };
 
   try {
+    // select("*")로 가져와 is_indexable을 코드에서 거른다 — 컬럼 추가 SQL 실행 전에도 에러 없이 동작.
     const { data: posts } = await supabase
       .from("posts")
-      .select("id, created_at, updated_at, categories(locale)")
+      .select("*, categories(locale)")
       .eq("published", true);
 
     for (const post of (posts || []) as PostRow[]) {
+      if (!isPostIndexable(post)) continue;
       const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
       const locale = categoryData?.locale === "en" ? "en" : "ko";
-      entries.push({
-        url: `${SITE_URL}/${locale}/posts/${post.id}`,
-        lastModified: new Date(post.updated_at ?? post.created_at),
-        changeFrequency: "monthly",
-        priority: 0.6,
-      });
+      if (!isLocaleIndexable(locale)) continue;
+      const lastModified = getPostLastModified(post);
+      latestPostByLocale[locale].push(lastModified);
+      postEntries.push({ url: `${SITE_URL}/${locale}/posts/${post.id}`, lastModified });
     }
   } catch {
-    // Supabase unreachable at build time — fall back to the static entries above.
+    // Supabase unreachable at build time — fall back to the static entries.
   }
 
+  const historyEntries: MetadataRoute.Sitemap = [];
+  const historyDates: Date[] = [];
+
   try {
-    const { data: historyEntries } = await supabase
+    const { data } = await supabase
       .from("history_entries")
-      .select("slug, created_at, updated_at")
+      .select("slug, work_date")
       .eq("published", true);
 
-    for (const entry of historyEntries || []) {
+    // created_at/updated_at은 일괄 시드 시각이라 실제 작업일(work_date)을 lastmod로 사용
+    for (const entry of (data || []) as HistoryRow[]) {
+      const lastModified = new Date(entry.work_date);
+      historyDates.push(lastModified);
       for (const locale of LOCALES) {
-        entries.push({
-          url: `${SITE_URL}/${locale}/history/${entry.slug}`,
-          lastModified: new Date(entry.updated_at ?? entry.created_at),
-          changeFrequency: "monthly",
-          priority: 0.6,
-        });
+        historyEntries.push({ url: `${SITE_URL}/${locale}/history/${entry.slug}`, lastModified });
       }
     }
   } catch {
-    // Supabase unreachable at build time — fall back to the static entries above.
+    // Supabase unreachable at build time — fall back to the static entries.
   }
 
-  return entries;
+  const staticEntries: MetadataRoute.Sitemap = [];
+  for (const locale of LOCALES) {
+    const latestPost = maxDate(latestPostByLocale[locale]);
+    const latestHistory = maxDate(historyDates);
+    staticEntries.push(
+      { url: `${SITE_URL}/${locale}`, lastModified: maxDate([latestPost, latestHistory].filter((d): d is Date => !!d)) },
+      { url: `${SITE_URL}/${locale}/blog`, lastModified: latestPost },
+      { url: `${SITE_URL}/${locale}/history`, lastModified: latestHistory },
+      ...STATIC_PATHS.map((path) => ({ url: `${SITE_URL}/${locale}${path}` })),
+    );
+  }
+
+  return [...staticEntries, ...postEntries, ...historyEntries];
 }

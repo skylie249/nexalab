@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import PostCard from "@/components/PostCard";
 import JsonLd from "@/components/JsonLd";
 import { supabase } from "@/lib/supabase";
+import { queryIndexablePosts } from "@/lib/postIndexing";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -123,19 +124,17 @@ async function getPosts(
   const to = from + pageSize - 1;
 
   // categories!inner: 카테고리가 현재 로케일에 속한 글만 노출 (카테고리는 언어별로 분리 운영)
-  let query = supabase
-    .from("posts")
-    .select("*, categories!inner(name, slug)", { count: "exact" })
-    .eq("published", true)
-    .eq("categories.locale", locale)
-    .order("created_at", { ascending: false })
-    .range(from, to);
-
-  if (categoryId) {
-    query = query.eq("category_id", categoryId);
-  }
-
-  const { data, count, error } = await query;
+  // is_indexable=false 글은 목록에서 제외 (URL 직접 접근은 가능, noindex 처리됨)
+  const { data, count, error } = await queryIndexablePosts((filterIndexable) => {
+    let query = supabase
+      .from("posts")
+      .select("*, categories!inner(name, slug)", { count: "exact" })
+      .eq("published", true)
+      .eq("categories.locale", locale);
+    if (filterIndexable) query = query.eq("is_indexable", true);
+    if (categoryId) query = query.eq("category_id", categoryId);
+    return query.order("created_at", { ascending: false }).range(from, to);
+  });
 
   if (error) {
     console.error("Error fetching posts:", error);

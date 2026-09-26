@@ -3,7 +3,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import ArticleHeader from "@/components/ArticleHeader";
-import AdSenseMock from "@/components/AdSenseMock";
+import AdSlot from "@/components/AdSlot";
 import TagList from "@/components/TagList";
 import Sidebar from "@/components/Sidebar";
 import JsonLd from "@/components/JsonLd";
@@ -13,7 +13,8 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import { supabase } from "@/lib/supabase";
 import type { Locale } from "@/i18n/routing";
-import { SITE_NAME, absoluteUrl, buildAlternates } from "@/lib/seo";
+import { NOINDEX_FOLLOW, SITE_NAME, absoluteUrl, buildAlternates, isLocaleIndexable } from "@/lib/seo";
+import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
 import { calculateReadTimeMinutes } from "@/lib/readTime";
 import PostViewTracker from "@/components/PostViewTracker";
 import styles from "./page.module.css";
@@ -67,10 +68,13 @@ export async function generateMetadata({
   const title = `${post.title} - ${SITE_NAME}`;
   const description = buildDescription(post);
   const url = absoluteUrl(`/${locale}/posts/${id}`);
+  // is_indexable=false 글과 영어판(INDEX_EN_LOCALE=false)은 noindex, follow — URL 직접 접근은 그대로 가능
+  const indexable = isPostIndexable(post) && isLocaleIndexable(locale);
 
   return {
     title,
     description,
+    ...(indexable ? {} : { robots: NOINDEX_FOLLOW }),
     alternates: buildAlternates(locale as Locale, `/posts/${id}`),
     openGraph: {
       title: post.title,
@@ -80,7 +84,7 @@ export async function generateMetadata({
       locale: locale === "ko" ? "ko_KR" : "en_US",
       type: "article",
       publishedTime: post.created_at,
-      modifiedTime: post.updated_at || post.created_at,
+      modifiedTime: getPostLastModified(post).toISOString(),
       authors: ["Kim Ho-gyun"],
       tags: post.tags || [],
     },
@@ -122,7 +126,7 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
           description: buildDescription(post),
           image: absoluteUrl(`/${resolvedParams.locale}/posts/${resolvedParams.id}/opengraph-image`),
           datePublished: post.created_at,
-          dateModified: post.updated_at || post.created_at,
+          dateModified: getPostLastModified(post).toISOString(),
           author: { "@type": "Person", name: "Kim Ho-gyun", url: absoluteUrl(`/${resolvedParams.locale}/about`) },
           publisher: {
             "@type": "Organization",
@@ -157,7 +161,7 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
         />
         <PostViewTracker postId={resolvedParams.id} />
 
-        <AdSenseMock id="Ad #1" type="Horizontal / Responsive" width="100%" height="90px" />
+        <AdSlot placement="articleTop" className={styles.topAd} />
 
         <article className={styles.articleContent}>
           <ReactMarkdown
@@ -178,9 +182,7 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
 
         <TagList tags={post.tags || []} />
 
-        <div className={styles.multiplexAds}>
-          <AdSenseMock id="Ad #4" type="Multiplex / Sponsor" width="100%" height="300px" />
-        </div>
+        <AdSlot placement="articleBottom" className={styles.multiplexAds} />
       </section>
 
       <div className={styles.sidebarWrapper}>

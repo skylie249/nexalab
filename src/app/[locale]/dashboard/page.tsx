@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import { supabase } from "@/lib/supabase";
+import { queryIndexablePosts } from "@/lib/postIndexing";
 import { getRecentPosts } from "@/lib/posts";
 import styles from "./page.module.css";
 import DashboardClient, { type SeoRelatedPost } from "./DashboardClient";
@@ -32,14 +33,16 @@ export async function generateMetadata({
 // SEO 점수만 낮고 GEO는 양호할 때 "메타데이터·구조화 데이터부터 손봐보세요" 추천 CTA가 연결할 글.
 // SEO/GEO 관련 태그가 달린 글이 없으면 이 추천 자체를 노출하지 않는다(억지로 무관한 글에 연결하지 않음).
 async function getSeoRelatedPost(locale: string): Promise<SeoRelatedPost | null> {
-  const { data, error } = await supabase
-    .from("posts")
-    .select("id, title, categories!inner(locale)")
-    .eq("published", true)
-    .eq("categories.locale", locale)
-    .overlaps("tags", ["SEO", "GEO", "SEO/GEO"])
-    .order("created_at", { ascending: false })
-    .limit(1);
+  const { data, error } = await queryIndexablePosts((filterIndexable) => {
+    let query = supabase
+      .from("posts")
+      .select("id, title, categories!inner(locale)")
+      .eq("published", true)
+      .eq("categories.locale", locale)
+      .overlaps("tags", ["SEO", "GEO", "SEO/GEO"]);
+    if (filterIndexable) query = query.eq("is_indexable", true);
+    return query.order("created_at", { ascending: false }).limit(1);
+  });
 
   if (error || !data || data.length === 0) return null;
   return { id: data[0].id, title: data[0].title };

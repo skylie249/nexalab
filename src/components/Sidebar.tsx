@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import AdSenseMock from "./AdSenseMock";
+import AdSlot from "./AdSlot";
 import styles from "./Sidebar.module.css";
 
 export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boolean }) {
@@ -27,11 +27,9 @@ export default function Sidebar({ isPostDetail = false }: { isPostDetail?: boole
 
       {/* 2. AdSense Display Ad */}
       {!isPostDetail ? (
-        <AdSenseMock id="Ad #1" type="Square Banner" width="300px" height="250px" />
+        <AdSlot placement="sidebar" />
       ) : (
-        <div className={styles.stickyAd}>
-          <AdSenseMock id="Ad #2" type="Sidebar Sticky Banner" width="300px" height="600px" />
-        </div>
+        <AdSlot placement="sidebarSticky" className={styles.stickyAd} />
       )}
     </aside>
   );
