@@ -3,6 +3,10 @@ import { supabase } from "@/lib/supabase";
 import { SITE_URL, isLocaleIndexable } from "@/lib/seo";
 import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
 
+// 정적 생성이면 배포 시점 목록에 고정되어 새 글·is_indexable 변경이 재배포 전까지 반영되지 않는다.
+// 1시간마다 재생성(ISR)해 DB 변경을 따라가게 한다.
+export const revalidate = 3600;
+
 const LOCALES = (["ko", "en"] as const).filter(isLocaleIndexable);
 
 // lastmod는 "실제 내용이 바뀐 날짜"만 넣는다. 빌드 시각을 넣으면 매 배포마다 전 URL이 같은 시각으로
