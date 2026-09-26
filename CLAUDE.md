@@ -873,6 +873,17 @@ export async function POST(req: Request) {
   - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 통과(정적 페이지 수 변화 없음). `next start` 로컬 프로덕션 서버로 GTM 헤드 스크립트와 `<noscript>` 폴백이 실제 렌더링된 HTML에 모두 포함되는 것을 curl로 확인. Chrome에서 실제 `window.dataLayer` 원문을 읽어, 최초 진입 시 GTM 자체 컨테이너 이벤트(`gtm.js`/`gtm.dom`/`gtm.load`)만 기록되고 우리 쪽 `page_view`는 전송되지 않는 것(중복 방지 의도대로 동작)을 확인했고, "About" 링크를 클릭해 전체 리로드 없이 `/ko/about`으로 전환된 직후 정확한 `page_path`를 담은 `page_view` 이벤트 1건이 새로 추가되는 것까지 확인
   - **사용자 작업 필요(GTM 대시보드, 코드 밖)**: (1) GA4 구성 태그를 만들고 트리거를 "All Pages"로 설정(최초 페이지뷰 자동 전송 유지) (2) 커스텀 이벤트 트리거를 이름 `page_view`로 만들고 GA4 이벤트 태그(이벤트명 `page_view`)를 연결해 SPA 라우트 전환을 잡을 것 (3) `kakao_share_click`/`feature_to_quote_click` 이벤트도 계속 추적하려면 각각 커스텀 이벤트 트리거 + GA4 이벤트 태그를 추가로 구성할 것 — 안 만들면 해당 이벤트들은 `dataLayer`에 push는 되지만 GA4로는 전달되지 않음
 
+### 2026-09-26
+- **자동 생성 글 전수 점검 → 중복 주제 병합 + 비공개 처리 (공개 155편 → 34편)**
+  - 점검 결과 "얇은 글"(한글 공백 제외 1,000자 미만)은 2편뿐이었고, 진짜 문제는 **같은 5부작 시리즈를 외부 자동 포스터(Repo A)가 반복 재생성한 대량 중복**이었음 — 예: 비즈니스 카테고리 34편 중 약 28편이 같은 "IoT 다회용기 순환 물류" 사업 아이템의 1~5일차 재탕, AI Apps 97편은 직무 5종(재무/기획/개발/UIUX/업무자동화) × 5부작의 반복, 영문 AI Job News 24편은 "Agentic Shift" 주제 5개 테마의 반복. 애드센스 "가치가 별로 없는 콘텐츠"/대량 생성 콘텐츠 판정 리스크가 가장 큰 부분이라 판단
+  - 분류: Gemini로 글마다 (시리즈 주제, 1~5부 파트)를 분류 + AI Apps는 태그로 직무 확정, 영문 뉴스는 제목 테마(briefing/launches/cases/policy/outlook)로 묶음 → 34개 클러스터. 클러스터마다 조회수 최다(동률 시 최초 발행) 글을 대표 글로 지정(기존 URL 유지)
+  - 병합: 멤버가 2편 이상인 28개 클러스터는 모든 멤버 본문을 Gemini(`gemini-2.5-flash`, 쿼터 소진 시 `gemini-3.1-flash-lite`)에 넣어 "원고에 있는 내용만 사용, 새 수치·사례 창작 금지, 인사말·연재 표현 제거, 질문형 소제목 + 핵심 요약" 규칙으로 한 편으로 재작성해 대표 글의 title/excerpt/content를 교체. 나머지 121편은 `published=false`(삭제 아님, 복구 가능)
+  - 리다이렉트: `src/data/merged-post-redirects.json`(locale별 {병합된 id: 대표 id}) + `next.config.mjs`의 `redirects()`로 옛 URL을 대표 글로 영구 리다이렉트(Next는 308로 응답, 검색엔진에는 301과 동일하게 취급)
+  - 백업: 작업 전 posts 전체 원본을 `.content-backup/posts-2026-09-26-before-merge.json`(gitignore, 로컬 전용)에 저장 — 대표 글 28편의 원래 본문 복구가 필요하면 이 파일 사용
+  - **품질 메모**: `biz:circular_logistics` 3~5부 병합본 3편은 2.5-flash 일일 쿼터 소진으로 lite 모델 결과(1,360~1,590자)를 그대로 사용 — 얇은 글 기준은 넘지만 다른 병합본(3,000~5,000자)보다 짧아, 쿼터 회복 후 재생성 권장. 영문 병합본 중 lite 결과 4편도 600~670단어로 목표(1,100단어)보다 짧음
+  - **근본 원인은 이 저장소 밖**: Repo A(자동 포스터)가 같은 시리즈를 계속 재생성하는 한 중복은 다시 쌓임 — Repo A 쪽에서 주제 로테이션/기존 주제 중복 체크가 필요
+  - 검증: `tsc --noEmit`, `npm run lint`, `next build` 통과. anon 키로 공개 글 34편(ai-apps 22 / biz-ideas 7 / ai-job-news 5), 최소 1,230자 확인. `next start`로 병합된 옛 URL → 대표 글 308, 대표 글 200 확인
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # 이것은 당신이 알던 그 Next.js가 아닙니다

@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import createNextIntlPlugin from "next-intl/plugin";
@@ -5,6 +6,13 @@ import createNextIntlPlugin from "next-intl/plugin";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+// 자동 생성 글 중복 정리(2026-09-26)로 대표 글에 병합된 뒤 비공개 처리된 글 → 대표 글 301 매핑.
+// 형식: { "<locale>": { "<병합된 글 id>": "<대표 글 id>" } } — 이미 색인·공유된 옛 URL이 404가
+// 되지 않고 검색엔진이 신호를 대표 글로 옮기도록 영구 리다이렉트한다.
+const mergedPostRedirects = JSON.parse(
+  readFileSync(new URL("./src/data/merged-post-redirects.json", import.meta.url), "utf8")
+);
 
 // 이 프로젝트가 실제로 로드하는 서드파티 출처만 허용하는 CSP. 사이트 대부분이 정적 생성(SSG)이라
 // nonce 기반 엄격 CSP(Next 공식 가이드가 권장하는 방식)는 전체를 동적 렌더링으로 바꿔야 해서
@@ -44,6 +52,15 @@ const nextConfig = {
   },
   // X-Powered-By: Next.js 헤더 제거 — 프레임워크/버전 정보를 불필요하게 노출하지 않기 위함.
   poweredByHeader: false,
+  async redirects() {
+    return Object.entries(mergedPostRedirects).flatMap(([locale, map]) =>
+      Object.entries(map).map(([from, to]) => ({
+        source: `/${locale}/posts/${from}`,
+        destination: `/${locale}/posts/${to}`,
+        permanent: true,
+      }))
+    );
+  },
   async headers() {
     return [
       {

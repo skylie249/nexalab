@@ -12,3 +12,6 @@ reference/
 
 *.md
 .vercel
+
+# 자동 생성 글 병합 작업 전 Supabase posts 원본 백업(복구용, 로컬 전용)
+.content-backup/
