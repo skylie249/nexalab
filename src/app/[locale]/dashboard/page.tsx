@@ -36,7 +36,7 @@ async function getSeoRelatedPost(locale: string): Promise<SeoRelatedPost | null>
   const { data, error } = await queryIndexablePosts((filterIndexable) => {
     let query = supabase
       .from("posts")
-      .select("id, title, categories!inner(locale)")
+      .select("id, slug, title, categories!inner(locale)")
       .eq("published", true)
       .eq("categories.locale", locale)
       .overlaps("tags", ["SEO", "GEO", "SEO/GEO"]);
@@ -45,7 +45,7 @@ async function getSeoRelatedPost(locale: string): Promise<SeoRelatedPost | null>
   });
 
   if (error || !data || data.length === 0) return null;
-  return { id: data[0].id, title: data[0].title };
+  return { slug: data[0].slug, title: data[0].title };
 }
 
 export default async function DashboardPage({

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import ArticleHeader from "@/components/ArticleHeader";
 import AdSlot from "@/components/AdSlot";
@@ -16,6 +16,7 @@ import type { Locale } from "@/i18n/routing";
 import { NOINDEX_FOLLOW, SITE_NAME, absoluteUrl, buildAlternates, isLocaleIndexable } from "@/lib/seo";
 import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
 import { calculateReadTimeMinutes } from "@/lib/readTime";
+import { decodeSlugParam, isUuid } from "@/lib/postSlug";
 import PostViewTracker from "@/components/PostViewTracker";
 import styles from "./page.module.css";
 
@@ -25,26 +26,38 @@ export const revalidate = 60;
 
 export async function generateStaticParams() {
   try {
-    const { data: posts } = await supabase.from('posts').select('id').eq('published', true);
-    return posts?.map((post) => ({ id: post.id })) || [];
+    const { data: posts } = await supabase.from('posts').select('slug').eq('published', true);
+    return posts?.map((post) => ({ slug: post.slug })) || [];
   } catch {
     return [];
   }
 }
 
-const getPost = cache(async (id: string) => {
+const getPost = cache(async (slugParam: string) => {
   try {
     const { data } = await supabase
       .from('posts')
       .select('*, categories(name, locale)')
-      .eq('id', id)
+      .eq('slug', decodeSlugParam(slugParam))
       .eq('published', true)
-      .single();
+      .maybeSingle();
     return data;
   } catch {
     console.error("Supabase fetch error, using fallback mock data.");
     return null;
   }
+});
+
+// 예전 UUID URL로 들어온 경우 slug를 찾아 영구 리다이렉트 (배포 후 새로 발행된 글은
+// next.config.mjs의 빌드 시점 301 목록에 없으므로 여기서 처리)
+const getSlugById = cache(async (id: string) => {
+  const { data } = await supabase
+    .from('posts')
+    .select('slug')
+    .eq('id', id)
+    .eq('published', true)
+    .maybeSingle();
+  return (data?.slug as string | undefined) ?? null;
 });
 
 function buildDescription(post: { excerpt?: string; content?: string }): string {
@@ -56,10 +69,10 @@ function buildDescription(post: { excerpt?: string; content?: string }): string 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ locale: string; id: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { locale, id } = await params;
-  const post = await getPost(id);
+  const { locale, slug: slugParam } = await params;
+  const post = await getPost(slugParam);
 
   if (!post || (post.categories?.locale && post.categories.locale !== locale)) {
     return { robots: { index: false, follow: false } };
@@ -67,7 +80,8 @@ export async function generateMetadata({
 
   const title = `${post.title} - ${SITE_NAME}`;
   const description = buildDescription(post);
-  const url = absoluteUrl(`/${locale}/posts/${id}`);
+  const slug = post.slug as string;
+  const url = absoluteUrl(`/${locale}/posts/${slug}`);
   // is_indexable=false 글과 영어판(INDEX_EN_LOCALE=false)은 noindex, follow — URL 직접 접근은 그대로 가능
   const indexable = isPostIndexable(post) && isLocaleIndexable(locale);
 
@@ -75,7 +89,7 @@ export async function generateMetadata({
     title,
     description,
     ...(indexable ? {} : { robots: NOINDEX_FOLLOW }),
-    alternates: buildAlternates(locale as Locale, `/posts/${id}`),
+    alternates: buildAlternates(locale as Locale, `/posts/${slug}`),
     openGraph: {
       title: post.title,
       description,
@@ -96,15 +110,18 @@ export async function generateMetadata({
   };
 }
 
-export default async function PostDetail({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function PostDetail({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const resolvedParams = await params;
   setRequestLocale(resolvedParams.locale);
   const dateLocale = resolvedParams.locale === "en" ? "en-US" : "ko-KR";
 
-  const post = await getPost(resolvedParams.id);
+  const post = await getPost(resolvedParams.slug);
 
-  // Fallback Mock Data for UI testing without real DB
   if (!post) {
+    if (isUuid(resolvedParams.slug)) {
+      const slug = await getSlugById(resolvedParams.slug);
+      if (slug) permanentRedirect(`/${resolvedParams.locale}/posts/${encodeURIComponent(slug)}`);
+    }
     notFound();
   }
 
@@ -113,7 +130,8 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
     notFound();
   }
 
-  const postUrl = absoluteUrl(`/${resolvedParams.locale}/posts/${resolvedParams.id}`);
+  const slug = post.slug as string;
+  const postUrl = absoluteUrl(`/${resolvedParams.locale}/posts/${slug}`);
   const categoryName = post.categories?.name || "Uncategorized";
 
   return (
@@ -124,7 +142,7 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
           "@type": "BlogPosting",
           headline: post.title,
           description: buildDescription(post),
-          image: absoluteUrl(`/${resolvedParams.locale}/posts/${resolvedParams.id}/opengraph-image`),
+          image: absoluteUrl(`/${resolvedParams.locale}/posts/${slug}/opengraph-image`),
           datePublished: post.created_at,
           dateModified: getPostLastModified(post).toISOString(),
           author: { "@type": "Person", name: "Kim Ho-gyun", url: absoluteUrl(`/${resolvedParams.locale}/about`) },
@@ -159,7 +177,7 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
           readTimeMinutes={calculateReadTimeMinutes(post.content || "")}
           hits={post.views?.toLocaleString() || "0"}
         />
-        <PostViewTracker postId={resolvedParams.id} />
+        <PostViewTracker postId={post.id} />
 
         <AdSlot placement="articleTop" className={styles.topAd} />
 

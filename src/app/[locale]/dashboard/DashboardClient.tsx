@@ -15,13 +15,14 @@ import {
 import { formatWon } from "@/lib/formatCurrency";
 import type { DashboardPost } from "@/lib/posts";
 import PostCard from "@/components/PostCard";
+import { postPath } from "@/lib/postSlug";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import styles from "./page.module.css";
 
 export type { DashboardPost };
 
 export interface SeoRelatedPost {
-  id: string;
+  slug: string;
   title: string;
 }
 
@@ -144,7 +145,7 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
     recommendations.push({
       key: "seo-low",
       text: t("recoSeoLow"),
-      href: `/posts/${seoRelatedPost.id}`,
+      href: postPath(seoRelatedPost.slug),
       ctaLabel: t("recoSeoLowCta"),
     });
   }

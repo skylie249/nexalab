@@ -93,6 +93,7 @@ interface Category {
 
 interface Post {
   id: string;
+  slug: string;
   title: string;
   content?: string;
   excerpt?: string;
@@ -215,7 +216,7 @@ export default async function BlogPage({
   const dateLocale = locale === "en" ? "en-US" : "ko-KR";
 
   const mapPostToCard = (post: Post) => ({
-    id: post.id,
+    slug: post.slug,
     category: post.categories?.name || t("uncategorized"),
     date: new Date(post.created_at).toLocaleDateString(dateLocale),
     title: post.title,

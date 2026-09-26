@@ -40,8 +40,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   revalidatePath("/ko");
   revalidatePath("/en");
-  revalidatePath(`/ko/posts/${id}`);
-  revalidatePath(`/en/posts/${id}`);
+  // 글 URL이 slug 기반이라 id로는 경로를 알 수 없음 — 글 상세 라우트 전체를 재검증
+  revalidatePath("/[locale]/posts/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }
@@ -62,8 +62,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 
   revalidatePath("/ko");
   revalidatePath("/en");
-  revalidatePath(`/ko/posts/${id}`);
-  revalidatePath(`/en/posts/${id}`);
+  // 글 URL이 slug 기반이라 id로는 경로를 알 수 없음 — 글 상세 라우트 전체를 재검증
+  revalidatePath("/[locale]/posts/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }

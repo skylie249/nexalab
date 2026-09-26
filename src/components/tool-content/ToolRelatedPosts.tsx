@@ -1,8 +1,9 @@
 import { Link } from "@/i18n/navigation";
+import { postPath } from "@/lib/postSlug";
 import styles from "./ToolContent.module.css";
 
 export interface RelatedPost {
-  id: string;
+  slug: string;
   title: string;
 }
 
@@ -20,7 +21,7 @@ export default function ToolRelatedPosts({
       <h2 className={styles.sectionTitle}>{title}</h2>
       <div className={styles.relatedList}>
         {posts.map((post) => (
-          <Link key={post.id} href={`/posts/${post.id}`} className={styles.relatedLink}>
+          <Link key={post.slug} href={postPath(post.slug)} className={styles.relatedLink}>
             {post.title}
           </Link>
         ))}

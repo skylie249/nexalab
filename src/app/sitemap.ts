@@ -35,6 +35,7 @@ const STATIC_PATHS = [
 
 interface PostRow {
   id: string;
+  slug: string;
   created_at: string;
   updated_at: string | null;
   is_indexable?: boolean | null;
@@ -69,7 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       if (!isLocaleIndexable(locale)) continue;
       const lastModified = getPostLastModified(post);
       latestPostByLocale[locale].push(lastModified);
-      postEntries.push({ url: `${SITE_URL}/${locale}/posts/${post.id}`, lastModified });
+      postEntries.push({ url: `${SITE_URL}/${locale}/posts/${encodeURIComponent(post.slug)}`, lastModified });
     }
   } catch {
     // Supabase unreachable at build time — fall back to the static entries.

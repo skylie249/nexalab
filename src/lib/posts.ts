@@ -3,6 +3,7 @@ import { queryIndexablePosts } from "@/lib/postIndexing";
 
 export interface DashboardPost {
   id: string;
+  slug: string;
   category: string;
   date: string;
   title: string;
@@ -12,6 +13,7 @@ export interface DashboardPost {
 
 interface RawPostRow {
   id: string;
+  slug: string;
   title: string;
   excerpt: string | null;
   content: string | null;
@@ -30,7 +32,7 @@ export async function getRecentPosts(locale: string, limit = 3): Promise<Dashboa
   const { data, error } = await queryIndexablePosts((filterIndexable) => {
     let query = supabase
       .from("posts")
-      .select("id, title, excerpt, content, tags, created_at, categories!inner(name, locale)")
+      .select("id, slug, title, excerpt, content, tags, created_at, categories!inner(name, locale)")
       .eq("published", true)
       .eq("categories.locale", locale);
     if (filterIndexable) query = query.eq("is_indexable", true);
@@ -42,6 +44,7 @@ export async function getRecentPosts(locale: string, limit = 3): Promise<Dashboa
   const dateLocale = locale === "en" ? "en-US" : "ko-KR";
   return (data as RawPostRow[]).map((post) => ({
     id: post.id,
+    slug: post.slug,
     category: categoryName(post),
     date: new Date(post.created_at).toLocaleDateString(dateLocale),
     title: post.title,

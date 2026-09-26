@@ -900,6 +900,15 @@ export async function POST(req: Request) {
   - 문구는 `messages/*.json`의 `buildLog` 네임스페이스(내비 라벨은 기존대로 "연혁" 유지)
   - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 홈·/blog(1페이지만)·도구 9개 페이지에서 올바른 `/history/<slug>` 링크 확인, Chrome으로 홈 섹션·견적서 생성기 하단 섹션 렌더링 확인(데스크톱 폭만)
 
+- **2순위 Task 6: 글 URL을 UUID → 영문 slug로 전환**
+  - 라우트 `src/app/[locale]/posts/[id]` → `[slug]`(opengraph-image 포함). 조회는 `posts.slug`(기존 NOT NULL 컬럼 재사용), 퍼센트 인코딩된 한글 slug도 `decodeSlugParam()`으로 처리(`src/lib/postSlug.ts`)
+  - 공개 글 34편 slug를 Gemini로 만든 영문 키워드 slug로 교체(사용자 확인 후 적용, `updated_at` 미변경). 원래 slug 156행 백업: `.content-backup/post-slugs-before-2026-09-26.json`
+  - UUID URL 리다이렉트: 배포 시점 공개 글은 `next.config.mjs` `redirects()`가 빌드 때 Supabase REST로 id→{slug,locale}을 받아 301 생성(글 로케일 경로만). 병합된 옛 글(`merged-post-redirects.json`)도 대표 글의 slug로 바로 301(체인 없음). 빌드 이후 발행된 글의 UUID URL은 글 상세 페이지가 `permanentRedirect`(308). **DB slug를 바꾼 뒤에는 재배포해야 301 목록·SSG가 갱신됨**
+  - slug로 바뀐 곳: PostCard(`id`→`slug` prop)·`lib/posts.ts`·블로그 목록·대시보드 추천·`ToolRelatedPosts`·sitemap·canonical/JSON-LD·홍보 자동화 글 URL. 조회수 API(`/api/posts/[id]/view`)와 관리자 API는 id 유지, 관리자 수정/삭제 재검증은 `revalidatePath("/[locale]/posts/[slug]", "page")`
+  - `supabase/posts-slug-unique.sql`(유니크 인덱스, 사용자 실행 필요 — 적용 시점 중복 0건 확인)
+  - **남은 과제**: Repo A는 여전히 긴 한글 slug를 생성 — 규칙 변경 요청은 로컬 메모 `repo-a-slug-handoff.md`(gitignore). 관리자 글 생성(`api/admin/posts/route.ts`의 `generateSlug`)도 "한글 제목+무작위 8자" 그대로
+  - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 UUID URL 301 → slug 200, 병합 옛 URL 301 → 대표 글 slug(단일 홉), canonical·내부 링크·sitemap이 slug 기준인지 확인(한글 slug 상태에서 1차, 영문 slug 적용 후 재확인)
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.

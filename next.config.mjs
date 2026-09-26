@@ -14,6 +14,27 @@ const mergedPostRedirects = JSON.parse(
   readFileSync(new URL("./src/data/merged-post-redirects.json", import.meta.url), "utf8")
 );
 
+// 공개 글 id → { slug, locale } (redirects()용). next.config는 앱 코드를 import할 수 없어 REST로 직접 조회.
+async function fetchPublishedPostSlugs() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return new Map();
+  try {
+    const res = await fetch(`${url}/rest/v1/posts?select=id,slug,categories(locale)&published=eq.true`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+    if (!res.ok) return new Map();
+    const rows = await res.json();
+    return new Map(
+      rows
+        .filter((r) => r.slug && r.slug !== r.id)
+        .map((r) => [r.id, { slug: r.slug, locale: r.categories?.locale === "en" ? "en" : "ko" }])
+    );
+  } catch {
+    return new Map();
+  }
+}
+
 // 이 프로젝트가 실제로 로드하는 서드파티 출처만 허용하는 CSP. 사이트 대부분이 정적 생성(SSG)이라
 // nonce 기반 엄격 CSP(Next 공식 가이드가 권장하는 방식)는 전체를 동적 렌더링으로 바꿔야 해서
 // 채택하지 않음 — 대신 next.config의 고정 헤더 방식(공식 문서의 "Without Nonces" 절)을 사용하고
@@ -53,13 +74,26 @@ const nextConfig = {
   // X-Powered-By: Next.js 헤더 제거 — 프레임워크/버전 정보를 불필요하게 노출하지 않기 위함.
   poweredByHeader: false,
   async redirects() {
-    return Object.entries(mergedPostRedirects).flatMap(([locale, map]) =>
+    // 글 URL을 /posts/<uuid> → /posts/<slug>로 바꾸면서(2026-09-26) 옛 UUID URL은 slug URL로 301.
+    // 빌드 시점의 공개 글 id→slug 표를 Supabase에서 받아 만든다. 빌드 이후 새로 발행된 글의 UUID URL은
+    // 글 상세 페이지가 permanentRedirect로 처리하고, Supabase에 못 닿으면(env 없는 CI 등) 그쪽이 전부 맡는다.
+    const slugById = await fetchPublishedPostSlugs();
+    const toPostPath = (locale, id) =>
+      `/${locale}/posts/${slugById.has(id) ? encodeURIComponent(slugById.get(id).slug) : id}`;
+
+    const merged = Object.entries(mergedPostRedirects).flatMap(([locale, map]) =>
       Object.entries(map).map(([from, to]) => ({
         source: `/${locale}/posts/${from}`,
-        destination: `/${locale}/posts/${to}`,
-        permanent: true,
+        destination: toPostPath(locale, to),
+        statusCode: 301,
       }))
     );
+    const uuidToSlug = [...slugById].map(([id, { locale }]) => ({
+      source: `/${locale}/posts/${id}`,
+      destination: toPostPath(locale, id),
+      statusCode: 301,
+    }));
+    return [...merged, ...uuidToSlug];
   },
   async headers() {
     return [

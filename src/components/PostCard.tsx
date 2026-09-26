@@ -1,8 +1,9 @@
 import { Link } from "@/i18n/navigation";
+import { postPath } from "@/lib/postSlug";
 import styles from "./PostCard.module.css";
 
 interface PostCardProps {
-  id: string;
+  slug: string;
   category: string;
   date: string;
   title: string;
@@ -11,7 +12,7 @@ interface PostCardProps {
   isFeatured?: boolean;
 }
 
-export default function PostCard({ id, category, date, title, summary, tags, isFeatured = false }: PostCardProps) {
+export default function PostCard({ slug, category, date, title, summary, tags, isFeatured = false }: PostCardProps) {
   return (
     <article className={`${styles.card} ${isFeatured ? styles.featured : ''} glass`}>
       <div className={styles.content}>
@@ -19,7 +20,7 @@ export default function PostCard({ id, category, date, title, summary, tags, isF
           <span className={styles.category}>{category}</span>
           <span className={styles.date}>{date}</span>
         </div>
-        <Link href={`/posts/${id}`}>
+        <Link href={postPath(slug)}>
           <h3 className={styles.title}>{title}</h3>
         </Link>
         <p className={styles.summary}>{summary}</p>

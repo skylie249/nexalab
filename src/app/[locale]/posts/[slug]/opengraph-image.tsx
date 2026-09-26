@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { createClient } from '@supabase/supabase-js';
+import { decodeSlugParam } from '@/lib/postSlug';
 
 export const alt = 'NexaLab 포스팅 대표 이미지';
 export const size = {
@@ -8,7 +9,7 @@ export const size = {
 };
 export const contentType = 'image/png';
 
-export default async function Image({ params }: { params: Promise<{ locale: string; id: string }> }) {
+export default async function Image({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const resolvedParams = await params;
 
   const supabase = createClient(
@@ -22,7 +23,7 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
     const { data } = await supabase
       .from('posts')
       .select('title, categories(name)')
-      .eq('id', resolvedParams.id)
+      .eq('slug', decodeSlugParam(resolvedParams.slug))
       .single();
     if (data) {
       postTitle = data.title;

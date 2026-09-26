@@ -13,8 +13,8 @@ const SITE_URL = "https://www.nexalab.app";
 // Gemini 프롬프트에 넘길 본문 스니펫 길이 제한(토큰/쿼터 절약용)
 const CONTENT_SNIPPET_LENGTH = 2000;
 
-function buildPostUrl(locale: "ko" | "en", id: string): string {
-  return `${SITE_URL}/${locale}/posts/${id}`;
+function buildPostUrl(locale: "ko" | "en", slug: string): string {
+  return `${SITE_URL}/${locale}/posts/${encodeURIComponent(slug)}`;
 }
 
 function writeHasNewPosts(value: boolean): void {
@@ -60,7 +60,7 @@ async function main() {
   // RLS 정책(supabase-rls.sql)이 published=true인 글만 anon 키로 조회 가능하게 해준다.
   const { data, error } = await supabase
     .from("posts")
-    .select("id, title, excerpt, content, updated_at, categories(locale)")
+    .select("id, slug, title, excerpt, content, updated_at, categories(locale)")
     .eq("id", postId)
     .eq("published", true)
     .maybeSingle();
@@ -88,7 +88,7 @@ async function main() {
     title: data.title,
     excerpt: data.excerpt ?? "",
     content: (data.content ?? "").slice(0, CONTENT_SNIPPET_LENGTH),
-    url: buildPostUrl(locale, data.id),
+    url: buildPostUrl(locale, data.slug),
     locale,
     updatedAt: data.updated_at,
   };
