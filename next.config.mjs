@@ -45,14 +45,17 @@ async function fetchPublishedPostSlugs() {
 // 전환 추적, 다른 마케팅 픽셀)를 추가로 구성하면 그 태그가 쓰는 도메인을 여기 CSP에도
 // 수동으로 추가해야 한다 — GTM 컨테이너 안의 태그 설정은 코드가 아니라 대시보드에만 있어서
 // 이 파일에서 자동으로 알 수 없음.
+// - *.adtrafficquality.google: 애드센스 광고 품질(sodar) 검사 스크립트·요청·프레임
+// - static.cloudflareinsights.com / cloudflareinsights.com: Cloudflare Web Analytics 비콘
+//   (Cloudflare 프록시가 HTML에 자동 삽입 — 코드에 없는 스크립트라 차단 로그로만 드러났음)
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://t1.kakaocdn.net https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com",
+  "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://t1.kakaocdn.net https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com https://*.adtrafficquality.google https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://*.kakao.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net",
-  "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://www.google.com https://www.googletagmanager.com",
+  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://*.kakao.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.adtrafficquality.google https://cloudflareinsights.com",
+  "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://www.google.com https://www.googletagmanager.com https://*.adtrafficquality.google",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

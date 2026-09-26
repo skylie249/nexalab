@@ -259,8 +259,14 @@
   }
 }
 
+/* 메뉴가 열리면 body 스크롤이 잠기므로(Header.tsx), 아코디언을 펼쳐 화면보다 길어진 메뉴는
+   메뉴 자체가 스크롤돼야 한다. 고정 max-height(50rem)였을 때 375×667 등 작은 화면에서
+   하단 항목이 화면 밖에 남아 누를 수 없었음. 4rem ≈ 헤더 높이. */
 .mobileNavOpen {
-  max-height: 50rem;
+  max-height: calc(100vh - 4rem);
+  max-height: calc(100dvh - 4rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-top: 1px solid var(--border-color);
 }
 

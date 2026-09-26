@@ -909,6 +909,12 @@ export async function POST(req: Request) {
   - **남은 과제**: Repo A는 여전히 긴 한글 slug를 생성 — 규칙 변경 요청은 로컬 메모 `repo-a-slug-handoff.md`(gitignore). 관리자 글 생성(`api/admin/posts/route.ts`의 `generateSlug`)도 "한글 제목+무작위 8자" 그대로
   - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 UUID URL 301 → slug 200, 병합 옛 URL 301 → 대표 글 slug(단일 홉), canonical·내부 링크·sitemap이 slug 기준인지 확인(한글 slug 상태에서 1차, 영문 slug 적용 후 재확인)
 
+- **3순위(디자인 리뷰 2026-09-10 지적 사항) 처리**
+  - **404 페이지**: 이미 `ea40373`에서 다크 브랜드 톤 + "홈으로 돌아가기 / AI 도구 보기" CTA로 교체돼 있어 추가 작업 없음
+  - **375px 모바일 햄버거 메뉴**: 버튼 탭 자체는 운영 사이트·로컬 모두 정상(버튼이 뷰포트 안, 가로 스크롤 없음, JS 예외 없음)으로 재현 안 됨. 대신 375×667에서 아코디언 2개를 모두 열면 메뉴 높이(726px)가 화면을 넘는데, 메뉴가 열리면 body 스크롤이 잠기고 `.mobileNav`는 `overflow: hidden`이라 하단 항목("연혁" 등)을 누를 수 없던 문제를 발견 → `.mobileNavOpen`을 `max-height: calc(100dvh - 4rem)` + `overflow-y: auto` + `overscroll-behavior: contain`으로 변경
+  - **CSP**: 운영 사이트 콘솔에서 실제 차단 확인 — Cloudflare Web Analytics 비콘(`static.cloudflareinsights.com`, Cloudflare가 HTML에 자동 삽입)과 애드센스 sodar(`ep1.adtrafficquality.google`). `script-src`에 두 스크립트 출처, `connect-src`에 `*.adtrafficquality.google`·`cloudflareinsights.com`, `frame-src`에 `*.adtrafficquality.google` 추가
+  - **모바일 검증 방법(중요)**: Chrome 확장의 resize 도구는 여전히 뷰포트에 반영 안 되고, 같은 출처 iframe도 우리 CSP `frame-src`에 `'self'`가 없어 막힘. 대신 로컬 Edge 헤드리스를 CDP(`--remote-debugging-port` + Node 내장 WebSocket)로 띄워 `Emulation.setDeviceMetricsOverride`(375×667/740, mobile) + `Input.dispatchTouchEvent`로 탭하고 `Runtime.evaluate`로 측정·`Page.captureScreenshot`으로 확인함 — 앞으로 모바일 폭 검증은 이 방식 사용 권장(Chrome은 이 PC에 없음, Edge 경로 `C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe`)
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.
