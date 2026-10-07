@@ -54,7 +54,7 @@ const CSP_DIRECTIVES = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' https://fonts.gstatic.com",
-  "connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://*.kakao.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.adtrafficquality.google https://cloudflareinsights.com",
+  "connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://*.googletagmanager.com https://*.kakao.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.adtrafficquality.google https://cloudflareinsights.com",
   "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://www.google.com https://www.googletagmanager.com https://*.adtrafficquality.google",
   "object-src 'none'",
   "base-uri 'self'",
@@ -96,7 +96,9 @@ const nextConfig = {
       destination: toPostPath(locale, id),
       statusCode: 301,
     }));
-    return [...merged, ...uuidToSlug];
+    // 블로그 목록 페이지(/blog) 삭제(2026-10-07) — 외부 링크·색인된 URL은 홈으로 보냄
+    const removedBlog = { source: "/:locale(ko|en)/blog", destination: "/:locale", statusCode: 301 };
+    return [removedBlog, ...merged, ...uuidToSlug];
   },
   async headers() {
     return [

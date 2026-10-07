@@ -293,8 +293,7 @@ export default function AllInOneClient() {
             resultUrl={window.location.href}
             imageUrl={absoluteUrl(`/${locale}/opengraph-image`)}
             onShareClick={() =>
-              window.dataLayer?.push({
-                event: "kakao_share_click",
+              window.gtag?.("event", "kakao_share_click", {
                 tool: "all_in_one_check",
               })
             }

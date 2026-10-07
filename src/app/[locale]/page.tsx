@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import Hero from "@/components/Hero";
 import Sidebar from "@/components/Sidebar";
-import PostCard from "@/components/PostCard";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import BuildLogHighlights from "@/components/BuildLogHighlights";
-import { getRecentPosts } from "@/lib/posts";
 import { getRecentHistoryEntries } from "@/lib/history";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./page.module.css";
 
-// 최근 글 3개만 보여주는 단순 쿼리라 device-aware 페이지네이션(/blog로 이동)이 더 이상
-// 필요 없어져 60초 ISR로 되돌림 (dashboard/page.tsx와 동일 패턴)
+// 빌드로그 하이라이트가 새 기록을 반영하도록 60초 ISR
 export const revalidate = 60;
 
 export async function generateMetadata({
@@ -45,10 +41,7 @@ export default async function Home({
   const t = await getTranslations("homeHub");
   const tHeader = await getTranslations("header");
 
-  const [recentPosts, recentBuildLogs] = await Promise.all([
-    getRecentPosts(locale, 3),
-    getRecentHistoryEntries(locale, 3),
-  ]);
+  const recentBuildLogs = await getRecentHistoryEntries(locale, 3);
 
   const hubTools: HubToolCardData[] = [
     {
@@ -94,21 +87,6 @@ export default async function Home({
           </section>
 
           <BuildLogHighlights entries={recentBuildLogs} locale={locale} />
-
-          {recentPosts.length > 0 && (
-            <section className={styles.insightSection}>
-              <h2 className={styles.sectionTitle}>{t("insightSectionTitle")}</h2>
-              <p className={styles.sectionSubtitle}>{t("insightSectionSubtitle")}</p>
-              <Link href="/blog" className={styles.viewAllLink}>
-                {t("viewAllPostsCta")}
-              </Link>
-              <div className={styles.postList}>
-                {recentPosts.map((post) => (
-                  <PostCard key={post.id} {...post} />
-                ))}
-              </div>
-            </section>
-          )}
         </section>
 
         <div className={styles.sidebarWrapper}>

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Suspense } from "react";
 import Script from "next/script";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -12,12 +11,14 @@ import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import KakaoInit from "@/components/KakaoInit";
-import GoogleAnalyticsPageView from "@/components/GoogleAnalyticsPageView";
 import { SITE_URL, SITE_NAME, NOINDEX_FOLLOW, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter, isLocaleIndexable } from "@/lib/seo";
 import styles from "./layout.module.css";
 
-// 2026-09-16: 직접 심었던 GA4 gtag.js를 걷어내고 GTM 컨테이너로 교체 — GA4 등 실제 태그는
-// 이 코드가 아니라 Google Tag Manager 대시보드에서 구성한다.
+// GA4는 gtag.js로 직접 설치한다(2026-10-07). 2026-09-16에 GTM으로 옮겼으나 공개된 GTM 컨테이너에
+// GA4 태그가 하나도 없어 수집이 전혀 안 되고 있었음. GTM 컨테이너는 다른 태그용으로 그대로 두되,
+// GTM에 GA4 태그를 추가하면 페이지뷰가 두 번 집계되므로 GA4는 이 코드에서만 관리할 것.
+// 페이지 이동(App Router 클라이언트 전환)은 GA4 향상된 측정의 "방문 기록 이벤트 기반 페이지 변경"이 잡는다.
+const GA_MEASUREMENT_ID = "G-VD5HTETDVH";
 const GTM_ID = "GTM-W24N4CFK";
 
 export function generateStaticParams() {
@@ -115,6 +116,17 @@ export default async function LocaleLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', '${GA_MEASUREMENT_ID}');`}
+        </Script>
         <Script id="gtm-head" strategy="afterInteractive">
           {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
           new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -137,14 +149,6 @@ export default async function LocaleLayout({
           />
         </noscript>
         <ServiceWorkerRegister />
-        {/* GTM의 GA4 구성 태그가 "All Pages" 트리거로 최초 페이지뷰는 자동 전송한다고 가정하고,
-            이 컴포넌트는 최초 마운트는 건너뛰고 이후 클라이언트 사이드 라우트 전환에서만
-            dataLayer에 커스텀 이벤트를 push한다(중복 집계 방지) — App Router는 페이지 이동 시
-            전체 리로드가 없어 GTM 컨테이너 자체의 최초 로드 신호만으로는 이후 이동을 못 잡기 때문.
-            GTM 대시보드에서 이 이벤트("page_view")를 트리거로 잡아 GA4 이벤트 태그를 연결해야 함 */}
-        <Suspense fallback={null}>
-          <GoogleAnalyticsPageView />
-        </Suspense>
         <NextIntlClientProvider>
           <ThemeProvider>
             <div className={styles.appContainer}>

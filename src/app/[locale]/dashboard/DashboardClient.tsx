@@ -13,28 +13,11 @@ import {
   type SeoHistoryEntry,
 } from "@/lib/dashboardHistory";
 import { formatWon } from "@/lib/formatCurrency";
-import type { DashboardPost } from "@/lib/posts";
-import PostCard from "@/components/PostCard";
-import { postPath } from "@/lib/postSlug";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import styles from "./page.module.css";
 
-export type { DashboardPost };
-
-export interface SeoRelatedPost {
-  slug: string;
-  title: string;
-}
-
-interface Props {
-  posts: DashboardPost[];
-  seoRelatedPost: SeoRelatedPost | null;
-}
-
 // 지침서 5번 CTA 규칙 표의 임계값
 const GEO_SCORE_LOW_THRESHOLD = 60;
-const SEO_SCORE_LOW_THRESHOLD = 60;
-const GEO_SCORE_HEALTHY_THRESHOLD = 75;
 const STALE_QUOTE_DAYS = 7;
 
 interface Recommendation {
@@ -52,7 +35,7 @@ interface ToolGroup {
   tools: HubToolCardData[];
 }
 
-export default function DashboardClient({ posts, seoRelatedPost }: Props) {
+export default function DashboardClient() {
   const t = useTranslations("dashboard");
   const tHeader = useTranslations("header");
   const tIndustries = useTranslations("industries");
@@ -136,19 +119,6 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
     }
   }
 
-  if (
-    latestSeo &&
-    latestSeo.seoScore < SEO_SCORE_LOW_THRESHOLD &&
-    latestSeo.geoScore >= GEO_SCORE_HEALTHY_THRESHOLD &&
-    seoRelatedPost
-  ) {
-    recommendations.push({
-      key: "seo-low",
-      text: t("recoSeoLow"),
-      href: postPath(seoRelatedPost.slug),
-      ctaLabel: t("recoSeoLowCta"),
-    });
-  }
 
   // AI 도구 8종 + 올인원 진단을 "왜 이 도구를 찾아왔는가" 기준 3그룹으로 묶어서 보여준다
   // (유틸기능_그룹화_올인원진단_기획서.md의 그룹 기준) — 헤더의 "AI 도구" 드롭다운에는
@@ -364,17 +334,6 @@ export default function DashboardClient({ posts, seoRelatedPost }: Props) {
                   {reco.ctaLabel}
                 </Link>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {posts.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>{t("sectionBlogTitle")}</h2>
-          <div className={styles.blogGrid}>
-            {posts.map((post) => (
-              <PostCard key={post.id} {...post} />
             ))}
           </div>
         </section>

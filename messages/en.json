@@ -5,7 +5,6 @@
   },
   "header": {
     "navDashboard": "📁 My Diagnostics",
-    "navBlog": "Blog",
     "navAiApps": "AI Apps",
     "navBiz": "Biz",
     "navQuoteGenerator": "AI Quote",
@@ -95,16 +94,7 @@
     "trustBadge": "100% Free · No Sign-up Required",
     "hubSectionTitle": "Which AI tools can I try for free?",
     "hubSectionSubtitle": "Type in a URL and get an automatic SEO, GEO, security, and AdSense pre-check — no manual review needed. Or start from a one-line service idea and get a feature list, an AI quote, and a profit estimate in minutes. No sign-up, no payment, and nothing you enter is stored on the server — try it free right now.",
-    "toolCardLinkLabel": "Go →",
-    "insightSectionTitle": "What's new on the blog?",
-    "insightSectionSubtitle": "From the trial and error of shipping and running real AI apps to attempts at turning them into a sustainable business — I record what I chose and why, not just the finished result. New posts show up right below, and the full archive lives on the blog page.",
-    "viewAllPostsCta": "View All Posts →"
-  },
-  "blog": {
-    "metaTitle": "Blog - NexaLab.app",
-    "metaDescription": "Browse every post across AI Apps, Biz, and AI Job News in one place.",
-    "pageTitle": "Blog",
-    "pageSubtitle": "Build logs, business ideas, and AI industry news, all in one place."
+    "toolCardLinkLabel": "Go →"
   },
   "history": {
     "metaTitle": "History - NexaLab.app",
@@ -248,8 +238,7 @@
     "techStackTitle": "Tech I usually build with",
     "techStackBody": "Each service is planned and built solo, on top of the stack below.",
     "noteTitle": "What does this category cover?",
-    "noteBody": "From model selection and prompt design to deployment, operations, and troubleshooting — this is where I record the trial and error behind running real AI apps, including why I made the calls I did. Related posts are gathered under the <strong>AI Apps</strong> tab on the blog.",
-    "cta": "Go to blog →"
+    "noteBody": "From model selection and prompt design to deployment, operations, and troubleshooting — this is where I record the trial and error behind running real AI apps, including why I made the calls I did. I would rather show what broke and how I fixed it than present a polished success story."
   },
   "biz": {
     "metaTitle": "Biz - NexaLab.app",
@@ -272,8 +261,7 @@
     "provenTag2": "AI Quote Generator",
     "provenTag3": "Profit Calculator",
     "noteTitle": "What does this category cover?",
-    "noteBody": "This category covers what AI can actually turn into a business. I pick niche problems where the market is small but the pain is real, then work through validating a monetization idea and actually running it, recording the reasoning behind each call along the way. Posts are gathered under the <strong>Biz</strong> tab on the blog.",
-    "cta": "Go to blog →"
+    "noteBody": "This category covers what AI can actually turn into a business. I pick niche problems where the market is small but the pain is real, then work through validating a monetization idea and actually running it, recording the reasoning behind each call along the way."
   },
   "postDetail": {
     "readTimeSuffix": "{minutes} min read",
@@ -1051,10 +1039,7 @@
     "recoProfitNegative": "Want to review your cost structure? Check your quote too",
     "recoProfitNegativeCta": "Generate a quote →",
     "recoQuoteStale": "How's the profit looking on that project?",
-    "recoQuoteStaleCta": "Check profit →",
-    "recoSeoLow": "Start with your metadata and structured data",
-    "recoSeoLowCta": "Read the related post →",
-    "sectionBlogTitle": "📚 Recent posts"
+    "recoQuoteStaleCta": "Check profit →"
   },
   "allInOneCheck": {
     "metaTitle": "All-in-One Site Check - NexaLab.app",

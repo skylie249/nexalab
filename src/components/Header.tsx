@@ -248,7 +248,6 @@ export default function Header() {
                 ))}
               </div>
             </li>
-            <li><Link href="/blog">{t("navBlog")}</Link></li>
             <li className={styles.dropdownItem} ref={aboutDropdownRef}>
               <button
                 type="button"
@@ -342,7 +341,6 @@ export default function Header() {
               ))}
             </ul>
           </li>
-          <li><Link href="/blog" onClick={closeMenu}>{t("navBlog")}</Link></li>
           <li className={styles.mobileAccordionItem}>
             <button
               type="button"

@@ -929,6 +929,19 @@ export async function POST(req: Request) {
   - ⚠️ 이 코드가 배포되기 전에 영어 빌드로그를 공개하면, 이전 배포본의 상세 페이지가 slug만으로 `.single()` 조회해 공개 행이 2개가 되면서 한국어 상세까지 404가 됨 — **반드시 배포 후 공개할 것**
   - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 slug 중복 상태에서 `/ko/history/<slug>` 200(한국어 제목), `/en/history/<slug>` 404(초안이라 정상), `/ko` 도구 페이지 빌드로그 섹션 유지, `/en` 홈 안내 문구 유지 확인. 영어 글을 공개한 상태의 렌더링은 확인 못함(프로덕션에 노출되므로 임시 공개하지 않음)
 
+### 2026-10-07
+- **블로그 목록 페이지(`/blog`) 삭제** (사용자 요청): `src/app/[locale]/blog/` 삭제, 헤더(데스크톱/모바일) "블로그" 메뉴 제거, sitemap의 `/{locale}/blog` 항목 제거, `public/llms.txt`의 Blog 줄 제거
+  - `/blog`로 가던 링크 정리: 홈 "전체 글 보기", AI Apps·Biz 페이지의 "블로그로 가기" 버튼과 각 CSS 제거. 블로그 탭을 안내하던 문장(AI Apps·Biz `noteBody`, 홈 `insightSectionSubtitle`)도 고쳐 씀 — AEO 답변 문단 기준(40~60단어)이 유지되도록 길이 조정. `blog` 메시지 네임스페이스 삭제
+  - `next.config.mjs` `redirects()`에 `/:locale(ko|en)/blog` → `/:locale` 301 추가(쿼리스트링은 그대로 따라감)
+  - 이제 전체 글 목록 페이지가 없어 글은 홈의 최근 3편, 대시보드 추천, sitemap으로만 노출됨
+  - 검증: `tsc`/`lint`/`next build` 통과, `next start`로 `/ko/blog`·`/en/blog` 301 → 홈, sitemap에 `/blog` 0건, 홈·AI Apps·Biz에 `/blog` 링크 0건 확인
+- **글 목록 노출 전부 제거** (사용자 요청): 홈 "최근 글 3편" 섹션, 대시보드 "최근 블로그 글" 섹션과 "SEO 관련 글 보기" 추천(CTA 규칙 4번)을 삭제. 이제 안 쓰는 `PostCard`, `src/lib/posts.ts`, `ToolRelatedPosts`(+ `ToolContentWrapper`의 `relatedPosts` props), 관련 메시지 키·CSS도 삭제. 대시보드는 Supabase 조회가 없어져 `revalidate` 제거(완전 정적). 글 상세 페이지(`/posts/[slug]`)와 sitemap의 글 URL은 그대로 둠
+- **GA4 수집 안 됨 → gtag.js 직접 설치로 복구**: 공개된 GTM 컨테이너(`GTM-W24N4CFK`)의 `gtm.js`를 받아보니 태그가 하나도 없어(GA4 `googtag`/`gaawe` 없음) 2026-09-16 GTM 전환 이후 GA4로 아무것도 전송되지 않고 있었음
+  - `[locale]/layout.tsx`에 `G-VD5HTETDVH` gtag.js 로더 + 초기화 스크립트 추가(`window.gtag` 노출). GTM 컨테이너 로드는 그대로 유지 — **GTM에 GA4 태그를 추가하면 페이지뷰가 이중 집계되므로 GA4는 코드에서만 관리할 것**
+  - `GoogleAnalyticsPageView`(dataLayer에 `page_view` 객체 push) 삭제 — SPA 페이지 이동은 GA4 향상된 측정(방문 기록 기반 페이지 변경, 기본 ON)이 처리. 커스텀 이벤트 6곳(`kakao_share_click` 5곳, `feature_to_quote_click`)은 `window.gtag?.("event", name, params)`로 전환
+  - CSP `connect-src`에 `*.google-analytics.com`·`*.analytics.google.com`·`*.googletagmanager.com` 추가(지역별 수집 엔드포인트 대비)
+  - 검증: 로컬 `next start` + 헤드리스 Edge(CDP)로 `/ko` 진입 시 `google-analytics.com/g/collect`에 `tid=G-VD5HTETDVH en=page_view` 전송, 링크 클릭으로 클라이언트 전환 후 두 번째 `page_view` 전송, CSP 위반 0건 확인. GA4 실시간 보고서에서의 확인은 배포 후 사용자가 해야 함
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.

@@ -166,12 +166,3 @@
   text-wrap: balance;
 }
 
-.cta {
-  display: inline-block;
-  font-weight: 600;
-  color: var(--accent-text);
-}
-
-.cta:hover {
-  color: var(--accent-hover);
-}

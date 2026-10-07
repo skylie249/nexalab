@@ -110,7 +110,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const latestHistory = maxDate(historyDatesByLocale[locale] ?? []);
     staticEntries.push(
       { url: `${SITE_URL}/${locale}`, lastModified: maxDate([latestPost, latestHistory].filter((d): d is Date => !!d)) },
-      { url: `${SITE_URL}/${locale}/blog`, lastModified: latestPost },
       { url: `${SITE_URL}/${locale}/history`, lastModified: latestHistory },
       ...STATIC_PATHS.map((path) => ({ url: `${SITE_URL}/${locale}${path}` })),
     );

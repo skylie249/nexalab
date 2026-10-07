@@ -3,7 +3,6 @@ import ToolIntro from "./ToolIntro";
 import ToolHowToUse, { type HowToUseStep } from "./ToolHowToUse";
 import ToolRecommendFor from "./ToolRecommendFor";
 import ToolFAQ, { type FaqItem } from "./ToolFAQ";
-import ToolRelatedPosts, { type RelatedPost } from "./ToolRelatedPosts";
 import ToolBuildLog from "./ToolBuildLog";
 import type { ToolWithBuildLog } from "@/lib/history";
 import styles from "./ToolContent.module.css";
@@ -18,8 +17,6 @@ export default function ToolContentWrapper({
   recommendFor,
   faqTitle,
   faq,
-  relatedPostsTitle,
-  relatedPosts = [],
   buildLogTool,
   children,
 }: {
@@ -32,8 +29,6 @@ export default function ToolContentWrapper({
   recommendFor: string[];
   faqTitle: string;
   faq: FaqItem[];
-  relatedPostsTitle?: string;
-  relatedPosts?: RelatedPost[];
   buildLogTool?: ToolWithBuildLog;
   children: ReactNode;
 }) {
@@ -44,9 +39,6 @@ export default function ToolContentWrapper({
       <ToolHowToUse title={howToUseTitle} steps={howToUseSteps} />
       <ToolRecommendFor title={recommendForTitle} items={recommendFor} />
       <ToolFAQ title={faqTitle} items={faq} />
-      {relatedPostsTitle && (
-        <ToolRelatedPosts title={relatedPostsTitle} posts={relatedPosts} />
-      )}
       {buildLogTool && <ToolBuildLog tool={buildLogTool} />}
     </div>
   );

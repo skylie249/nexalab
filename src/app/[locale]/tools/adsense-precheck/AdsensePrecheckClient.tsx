@@ -196,8 +196,7 @@ export default function AdsensePrecheckClient() {
             resultUrl={window.location.href}
             imageUrl={absoluteUrl(`/${locale}/opengraph-image`)}
             onShareClick={() =>
-              window.dataLayer?.push({
-                event: "kakao_share_click",
+              window.gtag?.("event", "kakao_share_click", {
                 tool: "adsense_precheck",
                 score: result.report.score,
               })

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -81,7 +80,6 @@ export default async function BizPage({
             strong: (chunks) => <strong>{chunks}</strong>,
           })}
         </p>
-        <Link href="/blog" className={styles.cta}>{t("cta")}</Link>
       </section>
     </div>
   );

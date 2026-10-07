@@ -21,10 +21,9 @@ interface KakaoFeedTemplate {
 
 declare global {
   interface Window {
-    // GTM 마이그레이션(2026-09-16) 이후: gtag()를 직접 호출하지 않고 GTM/GA4 공용 계약인
-    // dataLayer.push({event: "...", ...})로 커스텀 이벤트를 전달한다. 실제로 GA4에
-    // 도달하려면 GTM 대시보드에서 이 이벤트 이름을 매칭하는 트리거 + 태그를 만들어야 함.
-    dataLayer?: Record<string, unknown>[];
+    // GA4 gtag.js (layout.tsx에서 직접 설치) — 커스텀 이벤트는 gtag("event", name, params)로 보낸다.
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
     adsbygoogle?: unknown[];
     Kakao?: {
       init: (jsKey: string) => void;
