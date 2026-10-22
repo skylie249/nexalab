@@ -1,6 +1,6 @@
 # NexaLab.app
 
-> NexaLab.app is a solo-built AI application build log and tech lab, run by a senior software engineer (Developers). It documents building, deploying, and monetizing real AI applications, and ships free practical tools for freelancers and solo entrepreneurs. Primary audience: employees and solo business owners aged roughly 25–35. Content is available in Korean (default) and English at /ko and /en.
+> NexaLab.app is a solo-built AI application build log and tech lab, run by an independent senior software engineer. It documents building, deploying, and monetizing real AI applications, and ships free practical tools for freelancers and solo entrepreneurs. Primary audience: employees and solo business owners aged roughly 25–35. Content is available in Korean (default) and English at /ko and /en.
 
 ## Free Tools
 - [AI Quote Generator](https://www.nexalab.app/en/tools/quote-generator): Paste in a service request (RFP), or answer a short wizard if you don't have one, and AI drafts a quote with line items, estimated effort, a reasoning note per item, and a total range (not a single fixed price). Free, no login, nothing uploaded is stored.
