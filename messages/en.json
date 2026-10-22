@@ -136,7 +136,7 @@
     "philosophyTitle": "Why are the tools all free?",
     "philosophyBody": "The quote generator, profit calculator, and SEO/GEO checker are all free. Honestly, they also bring in visitors that blog posts alone struggle to reach. I didn't build them carelessly, though — I use them myself, and nothing you enter has ever been saved on the server. It's a balance between ad revenue and visitor trust.",
     "principleTitle": "How does the content get made?",
-    "principleBody": "Blog posts start as an AI-drafted outline that I then review and edit myself. I lean on AI for brainstorming, research, and first drafts, but I always test things against a real, working service before publishing. The four free tools get the same treatment, with new posts landing roughly once or twice a week."
+    "principleBody": "Blog posts start as an AI-drafted outline that I then review and edit myself. I lean on AI for brainstorming, research, and first drafts, but I always test things against a real, working service before publishing. The eight free tools across site checks, proposals, and business utilities get the same treatment, and new posts or updates go up whenever something has actually been built and tested rather than on a fixed schedule."
   },
   "contact": {
     "metaTitle": "Contact - NexaLab.app",
@@ -175,7 +175,7 @@
     "eyebrow": "Privacy Policy",
     "title": "Privacy Policy",
     "updatedLabel": "Last updated",
-    "updatedDate": "August 24, 2026",
+    "updatedDate": "October 22, 2026",
     "intro": "NexaLab.app (the \"Site\") is a blog and free utility service planned, built, and operated individually by Kim Ho-gyun (the \"Operator\"). The Operator takes user privacy seriously, and this Privacy Policy explains transparently what information is collected and how it is used.",
     "section1Title": "1. Information We Collect",
     "section1AutoTitle": "Automatically collected information",
@@ -209,10 +209,10 @@
     "section7Body": "The Site is designed around a \"no-storage\" principle that avoids storing personal information whenever possible, fundamentally reducing the risk of a leak. Features that require database write access use server-only keys that are never exposed to the client (browser).",
     "section8Title": "8. Children's Privacy",
     "section8Body": "The Site does not offer services specifically targeted at children under 14 and does not knowingly collect information from children.",
-    "section9Title": "9. Privacy Contact",
+    "section9Title": "10. Privacy Contact",
     "section9Body": "For any privacy-related inquiries, please contact us using the information below.",
     "section9Name": "Kim Ho-gyun (Operator)",
-    "section10Title": "10. Changes to This Policy",
+    "section10Title": "9. Changes to This Policy",
     "section10Body": "Any changes to this Privacy Policy will be announced on the Site.",
     "contactCta": "kimhg249@gmail.com →"
   },

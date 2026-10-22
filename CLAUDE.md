@@ -942,6 +942,14 @@ export async function POST(req: Request) {
   - CSP `connect-src`에 `*.google-analytics.com`·`*.analytics.google.com`·`*.googletagmanager.com` 추가(지역별 수집 엔드포인트 대비)
   - 검증: 로컬 `next start` + 헤드리스 Edge(CDP)로 `/ko` 진입 시 `google-analytics.com/g/collect`에 `tid=G-VD5HTETDVH en=page_view` 전송, 링크 클릭으로 클라이언트 전환 후 두 번째 `page_view` 전송, CSP 위반 0건 확인. GA4 실시간 보고서에서의 확인은 배포 후 사용자가 해야 함
 
+### 2026-10-22
+- **운영 배포 상태 확인**: 외부 점검 메모가 "운영 sitemap이 UUID 주소·/blog 포함, /ko/ai-apps에 블로그 링크 남음"이라고 했으나 직접 확인 결과 운영은 이미 최신 코드(sitemap은 slug 주소·/blog 없음, `cf-cache-status: DYNAMIC`, ai-apps/about에 /blog 링크 없음) — 배포·캐시 조치 불필요
+- **개인정보처리방침 조항 번호 정정**: 화면은 "고지의 의무" 다음에 "보호책임자" 박스를 두는 구조라 번호가 10→9 순으로 보이던 것을 메시지 키 번호만 바꿔 9. 고지의 의무 / 10. 보호책임자로 정정, 개정일 2026-10-22로 갱신(한/영)
+- **About `principleBody`**: "무료 도구 4종" → "3개 분야 8가지 무료 도구", 지키지 못하던 "주 1~2회" 업데이트 주기 문구를 "정해진 주기 없이 만들고 검증한 것이 생길 때"로 변경(한/영)
+- **빌드로그 게시일**: `history/[slug]/page.tsx`의 OG `publishedTime`·JSON-LD `datePublished`를 `created_at`(일괄 시드 시각) → `work_date`로 변경
+- **공개 글 33편 전부 비공개 처리**(사용자 결정): 모두 일반론형 AI 생성 글이라 `published=false`로 전환(`updated_at` 미변경 확인, 삭제 아님). 전환 전 id/slug/updated_at 백업: `.content-backup/published-posts-before-2026-10-22.json` — 복구는 이 id 목록으로 `published=true`. 이제 공개 글 0편이라 글 상세는 전부 404, sitemap에서도 빠짐(빌드 시점 UUID→slug 301 목록도 비어 옛 UUID URL은 상세 페이지 리다이렉트 없이 404). 0편 상태로 `next build` 통과 확인
+- `/biz`는 글 목록이 아니라 자체 콘텐츠가 있는 정적 소개 페이지라 메뉴·sitemap에 유지
+
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
 이 버전에는 호환성이 깨지는(breaking) 변경사항이 있습니다 — API, 컨벤션, 파일 구조가 모두 학습 데이터와 다를 수 있습니다. 코드를 작성하기 전에 `node_modules/next/dist/docs/`(이 파일의 위치 기준으로 경로가 결정됨 — 모노레포에서는 저장소 루트에서 `next` 패키지가 보이지 않을 수 있음)에서 관련 가이드를 먼저 읽으세요. Deprecation(사용 중단) 안내를 반드시 준수하세요.

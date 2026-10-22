@@ -71,7 +71,7 @@ export async function generateMetadata({
       siteName: SITE_NAME,
       locale: locale === "ko" ? "ko_KR" : "en_US",
       type: "article",
-      publishedTime: entry.created_at,
+      publishedTime: entry.work_date,
       modifiedTime: entry.work_date,
       authors: ["Kim Ho-gyun"],
     },
@@ -109,7 +109,7 @@ export default async function HistoryDetail({
           "@type": "Article",
           headline: entry.title,
           description: entry.summary,
-          datePublished: entry.created_at,
+          datePublished: entry.work_date,
           dateModified: entry.work_date,
           author: { "@type": "Person", name: "Kim Ho-gyun", url: absoluteUrl(`/${resolvedParams.locale}/about`) },
           publisher: {
