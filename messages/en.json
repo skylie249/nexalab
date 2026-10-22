@@ -176,7 +176,7 @@
     "title": "Privacy Policy",
     "updatedLabel": "Last updated",
     "updatedDate": "October 22, 2026",
-    "intro": "NexaLab.app (the \"Site\") is a blog and free utility service planned, built, and operated individually by Kim Ho-gyun (the \"Operator\"). The Operator takes user privacy seriously, and this Privacy Policy explains transparently what information is collected and how it is used.",
+    "intro": "NexaLab.app (the \"Site\") is a blog and free utility service planned, built, and operated individually by Developers (the \"Operator\"). The Operator takes user privacy seriously, and this Privacy Policy explains transparently what information is collected and how it is used.",
     "section1Title": "1. Information We Collect",
     "section1AutoTitle": "Automatically collected information",
     "section1AutoBody": "When you visit the Site, Google Analytics and Google AdSense may automatically collect information such as your IP address, cookies, browser/device information, pages visited, and time spent on the Site.",
@@ -211,7 +211,7 @@
     "section8Body": "The Site does not offer services specifically targeted at children under 14 and does not knowingly collect information from children.",
     "section9Title": "10. Privacy Contact",
     "section9Body": "For any privacy-related inquiries, please contact us using the information below.",
-    "section9Name": "Kim Ho-gyun (Operator)",
+    "section9Name": "Developers (Operator)",
     "section10Title": "9. Changes to This Policy",
     "section10Body": "Any changes to this Privacy Policy will be announced on the Site.",
     "contactCta": "kimhg249@gmail.com →"
