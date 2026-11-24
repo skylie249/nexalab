@@ -873,23 +873,6 @@ export async function POST(req: Request) {
   - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 통과(정적 페이지 수 변화 없음). `next start` 로컬 프로덕션 서버로 GTM 헤드 스크립트와 `<noscript>` 폴백이 실제 렌더링된 HTML에 모두 포함되는 것을 curl로 확인. Chrome에서 실제 `window.dataLayer` 원문을 읽어, 최초 진입 시 GTM 자체 컨테이너 이벤트(`gtm.js`/`gtm.dom`/`gtm.load`)만 기록되고 우리 쪽 `page_view`는 전송되지 않는 것(중복 방지 의도대로 동작)을 확인했고, "About" 링크를 클릭해 전체 리로드 없이 `/ko/about`으로 전환된 직후 정확한 `page_path`를 담은 `page_view` 이벤트 1건이 새로 추가되는 것까지 확인
   - **사용자 작업 필요(GTM 대시보드, 코드 밖)**: (1) GA4 구성 태그를 만들고 트리거를 "All Pages"로 설정(최초 페이지뷰 자동 전송 유지) (2) 커스텀 이벤트 트리거를 이름 `page_view`로 만들고 GA4 이벤트 태그(이벤트명 `page_view`)를 연결해 SPA 라우트 전환을 잡을 것 (3) `kakao_share_click`/`feature_to_quote_click` 이벤트도 계속 추적하려면 각각 커스텀 이벤트 트리거 + GA4 이벤트 태그를 추가로 구성할 것 — 안 만들면 해당 이벤트들은 `dataLayer`에 push는 되지만 GA4로는 전달되지 않음
 
-### 2026-11-24
-- **사이트 전체 UV/PV(일별 순방문자/페이지뷰) 통계 기록 기능 신규 추가** — GA4/GTM과는 별개로, 관리자 화면에서 바로 확인할 수 있는 경량 자체 통계
-  - `supabase/site-stats.sql`(신규, **사용자가 Supabase SQL Editor에서 직접 실행 필요**): `site_daily_stats(date, pv, uv)` 테이블 + 원자적 증가용 `increment_pv`/`increment_uv` RPC 함수. anon/authenticated에는 테이블·함수 권한을 아예 주지 않고 `service_role`에만 EXECUTE를 허용 — 기록(API)과 조회(관리자 페이지) 모두 `supabaseAdmin`(service-role)으로만 접근하며, 방문자 개인을 식별할 수 있는 정보(IP, 쿠키 값 등)는 이 테이블에 전혀 저장하지 않음(날짜별 pv/uv 숫자만 누적)
-  - `src/components/SiteStatsTracker.tsx`(신규, `[locale]/layout.tsx`의 `<ServiceWorkerRegister />` 다음에 마운트): `usePathname()`으로 경로 변경(최초 진입 포함)마다 `/api/stats/track`을 호출해 PV를 1회, 같은 브라우저에서 localStorage(`nexalab_uv_date`) 기준 KST 오늘 날짜가 처음이면 UV도 함께 1회 집계. `useSearchParams()`를 쓰지 않아 Suspense 경계가 필요 없고, 기존 SSG 페이지들의 정적 생성에 영향이 없음(빌드로 확인)
-  - `src/app/api/stats/track/route.ts`(신규): 클라이언트가 보낸 `isNewVisitorToday` 플래그만 받고 IP 등 식별 정보는 전혀 받지 않음 — 서버가 계산한 KST 기준 오늘 날짜의 pv(+uv) 카운터만 증가시킨다. RPC 호출이 실패해도(예: SQL 미실행) 항상 200으로 응답하는 best-effort 패턴(`/api/posts/[id]/view` 등 기존 공개 집계 엔드포인트와 동일한 설계)
-  - `/admin/stats`(신규): 기존 `(protected)` 레이아웃의 로그인 가드를 그대로 재사용하는 관리자 전용 페이지. 최근 30일 일별 PV/UV 표 + 최근 7일/30일 합계 카드. `/admin` 상단 내비게이션에 "통계" 링크 추가
-  - UV는 정밀한 중복 제거가 아니라 "같은 브라우저가 오늘 처음 접속했는지"를 클라이언트가 판단해 서버에 알려주는 근사치다(기존 기능들의 "best-effort 집계" 철학과 동일) — IP 기반 식별 등 더 정교한 방식은 개인 식별 정보 비수집 원칙상 쓰지 않음
-  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(`/admin/stats`·`/api/stats/track` Dynamic 라우트 생성 확인, 다른 도구 페이지는 기존대로 SSG 유지 확인) 모두 통과. `next start` 로컬 프로덕션 서버로 `/api/stats/track`을 직접 호출해 RPC 함수가 아직 없는 상태(SQL 미실행)에서도 200 `{"ok":true}` 응답 + 에러는 서버 로그에만 남는 graceful degradation을 확인했고, `/admin/stats`에 미로그인 상태로 접근 시 `/admin/login`으로 307 리다이렉트되는 것도 확인함
-  - **사용자 작업 필요**: Supabase 대시보드 SQL Editor에서 `supabase/site-stats.sql` 실행 — 실행 전까지는 통계가 실제로 기록되지 않고(에러만 서버 로그에 남음) `/admin/stats`에는 "아직 집계된 통계가 없습니다" 안내만 표시됨
-
-- **AI 견적서 생성기의 "웹/앱 개발" 업종 견적 방식을 전통적 팀 분업 → AI 바이브코딩/시민 개발자 방식 기준으로 변경**
-  - 기존에는 PM/기획자/디자이너/퍼블리셔/개발자처럼 역할을 쪼갠 전통적인 팀 분업을 전제로 항목(기획, UI/UX 디자인, 프론트엔드, 백엔드 등)을 분류했는데, 이를 1인 개발자(또는 소규모 팀)가 AI 코딩 도구의 도움을 받아 기획부터 배포까지 전 과정을 직접 수행하는 "바이브 코딩/시민 개발자" 방식으로 바꿔달라는 요청에 따른 변경
-  - `src/lib/quotePresets.ts`의 `web_dev` 프리셋만 수정(design/marketing/video 등 다른 업종은 변경 없음): `promptContext`에 "PM/기획/디자인/퍼블리싱/개발로 역할을 나눈 전통적 분업이 아니라 1인 개발자가 Claude Code·Cursor·v0·Lovable 같은 AI 코딩 도구의 도움을 받아 전 과정을 수행한다"는 전제와, 항목을 역할이 아니라 작업 단계(기획·화면설계/UI 디자인/기능 구현/외부 연동/테스트·배포/유지보수) 기준으로 분류하고 AI 도구 활용으로 공수(일)가 단축된다는 점을 반영하라는 지침을 추가. `sampleTasks`도 "AI 보조 기획 및 화면 설계", "AI 코드 어시스턴트 기반 기능 구현(프론트+백엔드 통합)" 등으로 교체
-  - 일당(`defaultDailyRate`/`minDailyRate`/`maxDailyRate`) 숫자 자체는 바꾸지 않음 — 기존 출처(한국SW산업협회 평균임금)를 그대로 쓰되, 역할별로 별도 담당자를 두지 않아 항목 수·총 공수가 자연히 줄어드는 방식으로 견적 하락을 반영(여러 전문가 역할의 일당을 합산하던 기존 방식보다 낮은 총액이 나오게 됨)
-  - `messages/ko.json`·`en.json`의 `quoteGenerator.contentFaq`에 "웹/앱 개발 견적은 어떤 개발 방식을 기준으로 하나요?" FAQ 항목을 추가 — 왜 전통적인 에이전시 견적보다 낮은 금액이 나올 수 있는지 사용자가 오해하지 않도록 명시
-  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 통과. 로컬 `GEMINI_API_KEY`로 `next start` 프로덕션 서버에 실제 한국어 RFP 샘플(세탁소 예약 웹사이트)을 보내 `/api/quote`를 end-to-end 호출 — summary가 "AI 코딩 도구를 활용하여 기획부터 배포까지 N일 공수로 산정"으로 시작하고, 항목이 PM/퍼블리싱 같은 역할 분리 없이 기획/설계·디자인·개발·연동·운영으로 통합 분류되며, reason에 Cursor·v0·Vercel 등 실제 AI 도구명이 근거로 명시되는 것을 확인함(총 견적도 1,575,000~1,925,000원 수준으로 소규모 1인 개발 전제에 맞게 낮게 산출됨)
-
 ### 2026-09-26
 - **자동 생성 글 전수 점검 → 중복 주제 병합 + 비공개 처리 (공개 155편 → 34편)**
   - 점검 결과 "얇은 글"(한글 공백 제외 1,000자 미만)은 2편뿐이었고, 진짜 문제는 **같은 5부작 시리즈를 외부 자동 포스터(Repo A)가 반복 재생성한 대량 중복**이었음 — 예: 비즈니스 카테고리 34편 중 약 28편이 같은 "IoT 다회용기 순환 물류" 사업 아이템의 1~5일차 재탕, AI Apps 97편은 직무 5종(재무/기획/개발/UIUX/업무자동화) × 5부작의 반복, 영문 AI Job News 24편은 "Agentic Shift" 주제 5개 테마의 반복. 애드센스 "가치가 별로 없는 콘텐츠"/대량 생성 콘텐츠 판정 리스크가 가장 큰 부분이라 판단
@@ -966,6 +949,23 @@ export async function POST(req: Request) {
 - **빌드로그 게시일**: `history/[slug]/page.tsx`의 OG `publishedTime`·JSON-LD `datePublished`를 `created_at`(일괄 시드 시각) → `work_date`로 변경
 - **공개 글 33편 전부 비공개 처리**(사용자 결정): 모두 일반론형 AI 생성 글이라 `published=false`로 전환(`updated_at` 미변경 확인, 삭제 아님). 전환 전 id/slug/updated_at 백업: `.content-backup/published-posts-before-2026-10-22.json` — 복구는 이 id 목록으로 `published=true`. 이제 공개 글 0편이라 글 상세는 전부 404, sitemap에서도 빠짐(빌드 시점 UUID→slug 301 목록도 비어 옛 UUID URL은 상세 페이지 리다이렉트 없이 404). 0편 상태로 `next build` 통과 확인
 - `/biz`는 글 목록이 아니라 자체 콘텐츠가 있는 정적 소개 페이지라 메뉴·sitemap에 유지
+
+### 2026-11-24
+- **사이트 전체 UV/PV(일별 순방문자/페이지뷰) 통계 기록 기능 신규 추가** — GA4/GTM과는 별개로, 관리자 화면에서 바로 확인할 수 있는 경량 자체 통계
+  - `supabase/site-stats.sql`(신규, **사용자가 Supabase SQL Editor에서 직접 실행 필요**): `site_daily_stats(date, pv, uv)` 테이블 + 원자적 증가용 `increment_pv`/`increment_uv` RPC 함수. anon/authenticated에는 테이블·함수 권한을 아예 주지 않고 `service_role`에만 EXECUTE를 허용 — 기록(API)과 조회(관리자 페이지) 모두 `supabaseAdmin`(service-role)으로만 접근하며, 방문자 개인을 식별할 수 있는 정보(IP, 쿠키 값 등)는 이 테이블에 전혀 저장하지 않음(날짜별 pv/uv 숫자만 누적)
+  - `src/components/SiteStatsTracker.tsx`(신규, `[locale]/layout.tsx`의 `<ServiceWorkerRegister />` 다음에 마운트): `usePathname()`으로 경로 변경(최초 진입 포함)마다 `/api/stats/track`을 호출해 PV를 1회, 같은 브라우저에서 localStorage(`nexalab_uv_date`) 기준 KST 오늘 날짜가 처음이면 UV도 함께 1회 집계. `useSearchParams()`를 쓰지 않아 Suspense 경계가 필요 없고, 기존 SSG 페이지들의 정적 생성에 영향이 없음(빌드로 확인)
+  - `src/app/api/stats/track/route.ts`(신규): 클라이언트가 보낸 `isNewVisitorToday` 플래그만 받고 IP 등 식별 정보는 전혀 받지 않음 — 서버가 계산한 KST 기준 오늘 날짜의 pv(+uv) 카운터만 증가시킨다. RPC 호출이 실패해도(예: SQL 미실행) 항상 200으로 응답하는 best-effort 패턴(`/api/posts/[id]/view` 등 기존 공개 집계 엔드포인트와 동일한 설계)
+  - `/admin/stats`(신규): 기존 `(protected)` 레이아웃의 로그인 가드를 그대로 재사용하는 관리자 전용 페이지. 최근 30일 일별 PV/UV 표 + 최근 7일/30일 합계 카드. `/admin` 상단 내비게이션에 "통계" 링크 추가
+  - UV는 정밀한 중복 제거가 아니라 "같은 브라우저가 오늘 처음 접속했는지"를 클라이언트가 판단해 서버에 알려주는 근사치다(기존 기능들의 "best-effort 집계" 철학과 동일) — IP 기반 식별 등 더 정교한 방식은 개인 식별 정보 비수집 원칙상 쓰지 않음
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build`(`/admin/stats`·`/api/stats/track` Dynamic 라우트 생성 확인, 다른 도구 페이지는 기존대로 SSG 유지 확인) 모두 통과. `next start` 로컬 프로덕션 서버로 `/api/stats/track`을 직접 호출해 RPC 함수가 아직 없는 상태(SQL 미실행)에서도 200 `{"ok":true}` 응답 + 에러는 서버 로그에만 남는 graceful degradation을 확인했고, `/admin/stats`에 미로그인 상태로 접근 시 `/admin/login`으로 307 리다이렉트되는 것도 확인함. 이후 사용자가 Supabase SQL Editor에서 직접 실행 완료 — 실행 후 `/api/stats/track`을 다시 호출해 `site_daily_stats`에 오늘 날짜 행(pv/uv 모두 1)이 실제로 쌓이는 것까지 service-role 조회로 재확인함
+  - **사용자 작업 필요**: ~~Supabase 대시보드 SQL Editor에서 `supabase/site-stats.sql` 실행~~ — **완료**(사용자가 직접 실행, 위 검증에서 반영 확인)
+
+- **AI 견적서 생성기의 "웹/앱 개발" 업종 견적 방식을 전통적 팀 분업 → AI 바이브코딩/시민 개발자 방식 기준으로 변경**
+  - 기존에는 PM/기획자/디자이너/퍼블리셔/개발자처럼 역할을 쪼갠 전통적인 팀 분업을 전제로 항목(기획, UI/UX 디자인, 프론트엔드, 백엔드 등)을 분류했는데, 이를 1인 개발자(또는 소규모 팀)가 AI 코딩 도구의 도움을 받아 기획부터 배포까지 전 과정을 직접 수행하는 "바이브 코딩/시민 개발자" 방식으로 바꿔달라는 요청에 따른 변경
+  - `src/lib/quotePresets.ts`의 `web_dev` 프리셋만 수정(design/marketing/video 등 다른 업종은 변경 없음): `promptContext`에 "PM/기획/디자인/퍼블리싱/개발로 역할을 나눈 전통적 분업이 아니라 1인 개발자가 Claude Code·Cursor·v0·Lovable 같은 AI 코딩 도구의 도움을 받아 전 과정을 수행한다"는 전제와, 항목을 역할이 아니라 작업 단계(기획·화면설계/UI 디자인/기능 구현/외부 연동/테스트·배포/유지보수) 기준으로 분류하고 AI 도구 활용으로 공수(일)가 단축된다는 점을 반영하라는 지침을 추가. `sampleTasks`도 "AI 보조 기획 및 화면 설계", "AI 코드 어시스턴트 기반 기능 구현(프론트+백엔드 통합)" 등으로 교체
+  - 일당(`defaultDailyRate`/`minDailyRate`/`maxDailyRate`) 숫자 자체는 바꾸지 않음 — 기존 출처(한국SW산업협회 평균임금)를 그대로 쓰되, 역할별로 별도 담당자를 두지 않아 항목 수·총 공수가 자연히 줄어드는 방식으로 견적 하락을 반영(여러 전문가 역할의 일당을 합산하던 기존 방식보다 낮은 총액이 나오게 됨)
+  - `messages/ko.json`·`en.json`의 `quoteGenerator.contentFaq`에 "웹/앱 개발 견적은 어떤 개발 방식을 기준으로 하나요?" FAQ 항목을 추가 — 왜 전통적인 에이전시 견적보다 낮은 금액이 나올 수 있는지 사용자가 오해하지 않도록 명시
+  - **검증**: `npx tsc --noEmit`, `npm run lint`, `next build` 통과. 로컬 `GEMINI_API_KEY`로 `next start` 프로덕션 서버에 실제 한국어 RFP 샘플(세탁소 예약 웹사이트)을 보내 `/api/quote`를 end-to-end 호출 — summary가 "AI 코딩 도구를 활용하여 기획부터 배포까지 N일 공수로 산정"으로 시작하고, 항목이 PM/퍼블리싱 같은 역할 분리 없이 기획/설계·디자인·개발·연동·운영으로 통합 분류되며, reason에 Cursor·v0·Vercel 등 실제 AI 도구명이 근거로 명시되는 것을 확인함(총 견적도 1,575,000~1,925,000원 수준으로 소규모 1인 개발 전제에 맞게 낮게 산출됨)
 
 # 이것은 당신이 알던 그 Next.js가 아닙니다
 
