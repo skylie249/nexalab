@@ -10,6 +10,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import SiteStatsTracker from "@/components/SiteStatsTracker";
 import KakaoInit from "@/components/KakaoInit";
 import { SITE_URL, SITE_NAME, NOINDEX_FOLLOW, absoluteUrl, buildAlternates, buildOpenGraph, buildTwitter, isLocaleIndexable } from "@/lib/seo";
 import styles from "./layout.module.css";
@@ -149,6 +150,7 @@ export default async function LocaleLayout({
           />
         </noscript>
         <ServiceWorkerRegister />
+        <SiteStatsTracker />
         <NextIntlClientProvider>
           <ThemeProvider>
             <div className={styles.appContainer}>

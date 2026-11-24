@@ -27,6 +27,7 @@ export default async function ProtectedAdminLayout({ children }: { children: Rea
             <Link href="/admin/posts/new">새 글 작성</Link>
             <Link href="/admin/history">연혁 목록</Link>
             <Link href="/admin/history/new">새 연혁 작성</Link>
+            <Link href="/admin/stats">통계</Link>
             <Link href="/" target="_blank">
               사이트 보기 ↗
             </Link>

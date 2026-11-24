@@ -375,6 +375,10 @@
         "answer": "Rates reflect standard conventions for web/app development, design, marketing, and video production."
       },
       {
+        "question": "What development approach does the web/app development quote assume?",
+        "answer": "Instead of a traditional team split across separate PM, planning, design, markup, and engineering roles, it assumes a single developer handling everything from planning to deployment with the help of AI coding tools (a \"vibe coding\" / citizen-developer workflow). Since no separate specialist is billed for each role, the estimated effort and total can come out lower than a traditional agency quote."
+      },
+      {
         "question": "How many quotes can I generate for free?",
         "answer": "There's a daily per-IP limit to prevent abuse; otherwise it's completely free."
       },
