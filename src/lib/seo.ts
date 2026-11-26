@@ -11,35 +11,33 @@ function normalizePath(pathname: string): string {
   return pathname === "/" ? "" : pathname;
 }
 
-/**
- * 영어판(/en/*) 색인 스위치. 번역 품질 검수 전에는 한국어판이 먼저 색인되도록 false(기본):
- * /en 전 페이지 noindex, sitemap에서 /en URL 제외, hreflang alternates 미출력.
- * 언어 전환 등 사용자 기능은 영향 없음. 되돌리려면 환경변수 INDEX_EN_LOCALE=true 후 재배포.
- */
-export const INDEX_EN_LOCALE = process.env.INDEX_EN_LOCALE === "true";
-
-export function isLocaleIndexable(locale: string): boolean {
-  return locale !== "en" || INDEX_EN_LOCALE;
-}
-
 export const NOINDEX_FOLLOW = { index: false, follow: true } as const;
 
 /**
- * canonical(자기 자신) + hreflang alternates. localePrefix: "always"라 모든 경로가 /ko·/en 양쪽에 존재.
- * 영어판이 noindex인 동안에는 noindex 페이지를 가리키는 hreflang이 충돌 신호가 되므로 languages를 생략.
+ * 영문판(/en) 제거(2026-11-26) 이후 로케일이 ko 하나뿐이라 항상 색인 가능.
+ * 함수로 남겨둔 건 호출부(여러 page.tsx)를 이번에 전부 바꾸지 않기 위함.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- 시그니처를 유지해 호출부를 바꾸지 않기 위함
+export function isLocaleIndexable(_locale: string): boolean {
+  return true;
+}
+
+/** canonical(자기 자신)만 반환 — 다국어가 없어 hreflang alternates는 불필요. */
 export function buildAlternates(locale: Locale, pathname: string) {
   const path = normalizePath(pathname);
-  const canonical = absoluteUrl(`/${locale}${path}`);
-  if (!INDEX_EN_LOCALE) return { canonical };
-  return {
-    canonical,
-    languages: {
-      ko: absoluteUrl(`/ko${path}`),
-      en: absoluteUrl(`/en${path}`),
-      "x-default": absoluteUrl(`/ko${path}`),
-    },
-  };
+  return { canonical: absoluteUrl(`/${locale}${path}`) };
+}
+
+/** noindex + 사이트맵 제외 대상 도구(애드센스 재신청 구조 개편, 2026-11-26). */
+export const NOINDEXED_TOOL_SLUGS = [
+  "quote-generator",
+  "profit-calculator",
+  "proposal",
+  "business-utility",
+] as const;
+
+export function isToolIndexable(slug: string): boolean {
+  return !NOINDEXED_TOOL_SLUGS.includes(slug as (typeof NOINDEXED_TOOL_SLUGS)[number]);
 }
 
 export function defaultOgImage(locale: Locale) {

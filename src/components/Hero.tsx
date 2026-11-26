@@ -1,8 +1,13 @@
 import { useTranslations } from "next-intl";
-import ToolPromoBanner from "./ToolPromoBanner";
+import HomeHeroPromo from "./HomeHeroPromo";
+import type { GuideSummary } from "@/lib/guides";
 import styles from "./Hero.module.css";
 
-export default function Hero() {
+interface HeroProps {
+  latestGuide: GuideSummary | null;
+}
+
+export default function Hero({ latestGuide }: HeroProps) {
   const t = useTranslations("hero");
 
   return (
@@ -16,7 +21,7 @@ export default function Hero() {
         <p className={styles.subtitle}>{t("subtitle")}</p>
       </div>
 
-      <ToolPromoBanner />
+      <HomeHeroPromo latestGuide={latestGuide} />
     </section>
   );
 }

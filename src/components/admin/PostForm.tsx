@@ -1,24 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+import { GUIDE_CATEGORIES, type GuideCategorySlug } from "@/lib/guides";
 import styles from "./PostForm.module.css";
-
-export interface CategoryOption {
-  id: string;
-  name: string;
-  locale: string;
-}
 
 export interface PostFormInitialData {
   title: string;
   excerpt: string;
   content: string;
-  category_id: string;
+  category: GuideCategorySlug | "";
   tags: string[];
   published: boolean;
 }
@@ -26,7 +21,6 @@ export interface PostFormInitialData {
 interface PostFormProps {
   mode: "create" | "edit";
   postId?: string;
-  categories: CategoryOption[];
   initialData?: PostFormInitialData;
 }
 
@@ -34,36 +28,30 @@ const emptyData: PostFormInitialData = {
   title: "",
   excerpt: "",
   content: "",
-  category_id: "",
+  category: "",
   tags: [],
   published: false,
 };
 
-export default function PostForm({ mode, postId, categories, initialData }: PostFormProps) {
+export default function PostForm({ mode, postId, initialData }: PostFormProps) {
   const router = useRouter();
   const data = initialData ?? emptyData;
 
   const [title, setTitle] = useState(data.title);
   const [excerpt, setExcerpt] = useState(data.excerpt);
   const [content, setContent] = useState(data.content);
-  const [categoryId, setCategoryId] = useState(data.category_id);
+  const [category, setCategory] = useState<GuideCategorySlug | "">(data.category);
   const [tagsInput, setTagsInput] = useState(data.tags.join(", "));
   const [published, setPublished] = useState(data.published);
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const groupedCategories = useMemo(() => {
-    const ko = categories.filter((c) => c.locale === "ko");
-    const en = categories.filter((c) => c.locale === "en");
-    return { ko, en };
-  }, [categories]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!categoryId) {
+    if (!category) {
       setError("카테고리를 선택해주세요.");
       return;
     }
@@ -72,7 +60,7 @@ export default function PostForm({ mode, postId, categories, initialData }: Post
       title,
       excerpt,
       content,
-      category_id: categoryId,
+      category,
       tags: tagsInput
         .split(",")
         .map((tag) => tag.trim())
@@ -111,33 +99,17 @@ export default function PostForm({ mode, postId, categories, initialData }: Post
 
       <div className={styles.field}>
         <label>카테고리</label>
-        <div className={styles.categoryGroupLabel}>한국어 카테고리</div>
         <div className={styles.chipGroup}>
-          {groupedCategories.ko.map((c) => (
+          {GUIDE_CATEGORIES.map((c) => (
             <button
               type="button"
-              key={c.id}
-              className={`${styles.chip} ${categoryId === c.id ? styles.chipActive : ""}`}
-              onClick={() => setCategoryId(c.id)}
+              key={c.slug}
+              className={`${styles.chip} ${category === c.slug ? styles.chipActive : ""}`}
+              onClick={() => setCategory(c.slug)}
             >
-              {c.name}
+              {c.label}
             </button>
           ))}
-          {groupedCategories.ko.length === 0 && <span className={styles.emptyHint}>없음</span>}
-        </div>
-        <div className={styles.categoryGroupLabel}>English categories</div>
-        <div className={styles.chipGroup}>
-          {groupedCategories.en.map((c) => (
-            <button
-              type="button"
-              key={c.id}
-              className={`${styles.chip} ${categoryId === c.id ? styles.chipActive : ""}`}
-              onClick={() => setCategoryId(c.id)}
-            >
-              {c.name}
-            </button>
-          ))}
-          {groupedCategories.en.length === 0 && <span className={styles.emptyHint}>없음</span>}
         </div>
       </div>
 

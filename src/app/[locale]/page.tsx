@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import BuildLogHighlights from "@/components/BuildLogHighlights";
 import { getRecentHistoryEntries } from "@/lib/history";
+import { getRecentGuides } from "@/lib/guides";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter } from "@/lib/seo";
 import styles from "./page.module.css";
@@ -41,7 +42,10 @@ export default async function Home({
   const t = await getTranslations("homeHub");
   const tHeader = await getTranslations("header");
 
-  const recentBuildLogs = await getRecentHistoryEntries(locale, 3);
+  const [recentBuildLogs, recentGuides] = await Promise.all([
+    getRecentHistoryEntries(locale, 3),
+    getRecentGuides(1),
+  ]);
 
   const hubTools: HubToolCardData[] = [
     {
@@ -74,7 +78,7 @@ export default async function Home({
 
   return (
     <>
-      <Hero />
+      <Hero latestGuide={recentGuides[0] ?? null} />
 
       <div className={styles.gridContainer}>
         <section className={styles.mainArea}>

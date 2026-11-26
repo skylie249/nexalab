@@ -1,154 +1,38 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useTheme } from "./ThemeProvider";
 import styles from "./Header.module.css";
 
-// 개별 도구 8개를 드롭다운에 그대로 나열했더니(2026-09-09 리팩토링) IA 기획
-// (유틸기능_그룹화_올인원진단_기획서.md)과 실제 GNB가 어긋난다는 QA 지적이 있어,
-// 허브 3개(사이트 진단센터/제안·견적/업무 지원)만 노출하는 원래 그룹 구조로 되돌린다.
-// 개별 도구 목록은 각 허브 페이지(/tools/site-check 등)와 대시보드에서 계속 보여준다.
-const AI_TOOL_HUBS = [
+// 애드센스 재신청 구조 개편(2026-11-26): 메인 메뉴를 가이드·진단 도구·개발 기록·About 4개로 고정.
+// "진단 도구" 드롭다운은 noindex 대상이 아닌(= 색인 유지) 도구만 상단에 노출하고, noindex 처리된
+// 4개(견적서/손익계산기/제안서/업무유틸)는 구분선 아래 "기타 도구"로 묶어 내려보낸다.
+// report-checker는 business-utility 허브(noindex) 안에 있지만 그 글 자체는 색인 대상이라
+// 허브를 거치지 않고 바로 찾을 수 있도록 상단에 직접 링크를 승격해 둔다.
+const DIAGNOSTIC_TOOLS = [
   { href: "/tools/site-check", titleKey: "navSiteCheckHub", descKey: "aiToolsSiteCheckHubDesc" },
+  { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc" },
+  { href: "/tools/site-check/all-in-one", titleKey: "navAllInOneCheck", descKey: "aiToolsAllInOneDesc" },
+] as const;
+
+const OTHER_TOOLS = [
+  { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc" },
+  { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc" },
   { href: "/tools/proposal", titleKey: "navProposalHub", descKey: "aiToolsProposalHubDesc" },
   { href: "/tools/business-utility", titleKey: "navBusinessUtilityHub", descKey: "aiToolsBusinessUtilityHubDesc" },
 ] as const;
 
-// AI Apps/Biz(블로그 카테고리) + About/연혁(사이트 소개 성격 콘텐츠)을 "소개" 그룹으로 묶어
-// 최상위 GNB 항목 수를 줄인다.
-const ABOUT_GROUP_LINKS = [
-  { href: "/ai-apps", titleKey: "navAiApps", descKey: "aboutGroupAiAppsDesc" },
-  { href: "/biz", titleKey: "navBiz", descKey: "aboutGroupBizDesc" },
-  { href: "/about", titleKey: "navAbout", descKey: "aboutGroupAboutDesc" },
-  { href: "/history", titleKey: "navHistory", descKey: "aboutGroupHistoryDesc" },
-] as const;
-
-type TrigramPattern = [boolean, boolean, boolean];
-
-function Trigram({ pattern, x, y, rotate }: { pattern: TrigramPattern; x: number; y: number; rotate: number }) {
-  return (
-    <g transform={`translate(${x},${y}) rotate(${rotate})`} fill="#000">
-      {pattern.map((solid, i) => {
-        const barY = (i - 1) * 0.95 - 0.3;
-        return solid ? (
-          <rect key={i} x={-1.7} y={barY} width={3.4} height={0.6} />
-        ) : (
-          <g key={i}>
-            <rect x={-1.7} y={barY} width={1.35} height={0.6} />
-            <rect x={0.35} y={barY} width={1.35} height={0.6} />
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-// 좌우로 펄럭이는 리본 실루엣(상/하단 모서리에 물결 2주기)을 만드는 clipPath 경로
-const FLAG_WAVE_D =
-  "M0,2.7 C1.67,2.7 3.33,0.3 5,0.3 C6.67,0.3 8.33,2.7 10,2.7 C11.67,2.7 13.33,0.3 15,0.3 " +
-  "C16.67,0.3 18.33,2.7 20,2.7 C21.67,2.7 23.33,0.3 25,0.3 C26.67,0.3 28.33,2.7 30,2.7 " +
-  "L30,17.3 C28.33,17.3 26.67,19.7 25,19.7 C23.33,19.7 21.67,17.3 20,17.3 C18.33,17.3 16.67,19.7 15,19.7 " +
-  "C13.33,19.7 11.67,17.3 10,17.3 C8.33,17.3 6.67,19.7 5,19.7 C3.33,19.7 1.67,17.3 0,17.3 Z";
-
-function FlagShineOverlay({ shineId }: { shineId: string }) {
-  return (
-    <>
-      <linearGradient id={shineId} x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#000" stopOpacity="0.18" />
-        <stop offset="16.6%" stopColor="#fff" stopOpacity="0.22" />
-        <stop offset="33.3%" stopColor="#000" stopOpacity="0.16" />
-        <stop offset="50%" stopColor="#fff" stopOpacity="0.22" />
-        <stop offset="66.6%" stopColor="#000" stopOpacity="0.16" />
-        <stop offset="83.3%" stopColor="#fff" stopOpacity="0.22" />
-        <stop offset="100%" stopColor="#000" stopOpacity="0.18" />
-      </linearGradient>
-    </>
-  );
-}
-
-function FlagKR() {
-  return (
-    <svg viewBox="0 0 30 20" className={styles.flagIcon} aria-hidden="true">
-      <defs>
-        <clipPath id="kr-wave">
-          <path d={FLAG_WAVE_D} />
-        </clipPath>
-        <FlagShineOverlay shineId="kr-shine" />
-      </defs>
-      <g clipPath="url(#kr-wave)">
-        <rect width="30" height="20" fill="#fff" />
-        {/* 태극 문양: 공식 국기 SVG(위키미디어 Flag_of_South_Korea.svg)의 비대칭 원호(R, 3R/4, R/2) 좌표를 r=5 기준으로 축척 변환 */}
-        <g transform="translate(15,10) rotate(33.69006752598)">
-          <circle r="5" fill="#fff" />
-          <path d="M2.5,0 A3.75,3.75 0 1,1 -5,0 A5,5 0 1,1 5,0 Z" fill="#cd2e3a" />
-          <path d="M-5,0 A5,5 0 1,0 5,0 A2.5,2.5 0 1,0 0,0 A2.5,2.5 0 1,1 -5,0 Z" fill="#0047a0" />
-        </g>
-        {/* 건(乾) 상단 좌측 */}
-        <Trigram pattern={[true, true, true]} x={8.8} y={5.8} rotate={-33.69006752598} />
-        {/* 감(坎) 상단 우측 */}
-        <Trigram pattern={[false, true, false]} x={21.2} y={5.8} rotate={56.30993247402} />
-        {/* 리(離) 하단 좌측 */}
-        <Trigram pattern={[true, false, true]} x={8.8} y={14.2} rotate={56.30993247402} />
-        {/* 곤(坤) 하단 우측 */}
-        <Trigram pattern={[false, false, false]} x={21.2} y={14.2} rotate={-33.69006752598} />
-        <rect width="30" height="20" fill="url(#kr-shine)" style={{ mixBlendMode: "overlay" }} />
-      </g>
-    </svg>
-  );
-}
-
-function FlagUS() {
-  return (
-    <svg viewBox="0 0 30 20" className={styles.flagIcon} aria-hidden="true">
-      <defs>
-        <clipPath id="us-wave">
-          <path d={FLAG_WAVE_D} />
-        </clipPath>
-        <FlagShineOverlay shineId="us-shine" />
-      </defs>
-      <g clipPath="url(#us-wave)">
-        <rect width="30" height="20" fill="#fff" />
-        <g fill="#B22234">
-          <rect y="0" width="30" height="1.54" />
-          <rect y="3.08" width="30" height="1.54" />
-          <rect y="6.15" width="30" height="1.54" />
-          <rect y="9.23" width="30" height="1.54" />
-          <rect y="12.31" width="30" height="1.54" />
-          <rect y="15.38" width="30" height="1.54" />
-          <rect y="18.46" width="30" height="1.54" />
-        </g>
-        <rect width="12" height="10.77" fill="#3C3B6E" />
-        <g fill="#fff">
-          <circle cx="2" cy="2" r="0.5" />
-          <circle cx="6" cy="2" r="0.5" />
-          <circle cx="10" cy="2" r="0.5" />
-          <circle cx="4" cy="5.4" r="0.5" />
-          <circle cx="8" cy="5.4" r="0.5" />
-          <circle cx="2" cy="8.8" r="0.5" />
-          <circle cx="6" cy="8.8" r="0.5" />
-          <circle cx="10" cy="8.8" r="0.5" />
-        </g>
-        <rect width="30" height="20" fill="url(#us-shine)" style={{ mixBlendMode: "overlay" }} />
-      </g>
-    </svg>
-  );
-}
-
 export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const t = useTranslations("header");
-  const locale = useLocale();
   const pathname = usePathname();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isToolsAccordionOpen, setIsToolsAccordionOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isAboutAccordionOpen, setIsAboutAccordionOpen] = useState(false);
   const toolsDropdownRef = useRef<HTMLLIElement>(null);
-  const aboutDropdownRef = useRef<HTMLLIElement>(null);
 
   // 렌더 중 이전 값과 비교해 상태를 조정하는 React 권장 패턴(effect+setState 대신) —
   // 메뉴가 닫히면 아코디언도 함께 접는다.
@@ -157,7 +41,6 @@ export default function Header() {
     setPrevIsMenuOpen(isMenuOpen);
     if (!isMenuOpen) {
       setIsToolsAccordionOpen(false);
-      setIsAboutAccordionOpen(false);
     }
   }
 
@@ -166,7 +49,6 @@ export default function Header() {
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setIsToolsOpen(false);
-    setIsAboutOpen(false);
   }
 
   useEffect(() => {
@@ -199,17 +81,6 @@ export default function Header() {
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [isToolsOpen]);
 
-  useEffect(() => {
-    if (!isAboutOpen) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      if (aboutDropdownRef.current && !aboutDropdownRef.current.contains(event.target as Node)) {
-        setIsAboutOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [isAboutOpen]);
-
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
@@ -224,7 +95,7 @@ export default function Header() {
 
         <nav className={styles.nav}>
           <ul className={styles.navList}>
-            <li><Link href="/dashboard">{t("navDashboard")}</Link></li>
+            <li><Link href="/guides">{t("navGuides")}</Link></li>
             <li className={styles.dropdownItem} ref={toolsDropdownRef}>
               <button
                 type="button"
@@ -232,10 +103,24 @@ export default function Header() {
                 onClick={() => setIsToolsOpen((prev) => !prev)}
                 aria-expanded={isToolsOpen}
               >
-                {t("navAiTools")}
+                {t("navDiagTools")}
               </button>
               <div className={`${styles.dropdownPanel} ${isToolsOpen ? styles.dropdownPanelOpen : ""}`}>
-                {AI_TOOL_HUBS.map((tool) => (
+                {DIAGNOSTIC_TOOLS.map((tool) => (
+                  <Link
+                    key={tool.href}
+                    href={tool.href}
+                    className={styles.dropdownLink}
+                    onClick={() => setIsToolsOpen(false)}
+                  >
+                    <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
+                    <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
+                  </Link>
+                ))}
+                <div className={styles.dropdownDivider} role="separator">
+                  <span>{t("navOtherTools")}</span>
+                </div>
+                {OTHER_TOOLS.map((tool) => (
                   <Link
                     key={tool.href}
                     href={tool.href}
@@ -248,29 +133,8 @@ export default function Header() {
                 ))}
               </div>
             </li>
-            <li className={styles.dropdownItem} ref={aboutDropdownRef}>
-              <button
-                type="button"
-                className={styles.dropdownTrigger}
-                onClick={() => setIsAboutOpen((prev) => !prev)}
-                aria-expanded={isAboutOpen}
-              >
-                {t("navAboutGroup")}
-              </button>
-              <div className={`${styles.dropdownPanel} ${isAboutOpen ? styles.dropdownPanelOpen : ""}`}>
-                {ABOUT_GROUP_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={styles.dropdownLink}
-                    onClick={() => setIsAboutOpen(false)}
-                  >
-                    <span className={styles.dropdownLinkTitle}>{t(link.titleKey)}</span>
-                    <span className={styles.dropdownLinkDesc}>{t(link.descKey)}</span>
-                  </Link>
-                ))}
-              </div>
-            </li>
+            <li><Link href="/history">{t("navHistory")}</Link></li>
+            <li><Link href="/about">{t("navAbout")}</Link></li>
           </ul>
         </nav>
 
@@ -282,26 +146,6 @@ export default function Header() {
           >
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
-          <div className={styles.langGroup}>
-            <Link
-              href={pathname}
-              locale="ko"
-              className={`${styles.langToggle} ${locale === "ko" ? styles.langActive : ""}`}
-              aria-label={t("switchToKo")}
-              aria-current={locale === "ko" ? "true" : undefined}
-            >
-              <FlagKR />
-            </Link>
-            <Link
-              href={pathname}
-              locale="en"
-              className={`${styles.langToggle} ${locale === "en" ? styles.langActive : ""}`}
-              aria-label={t("switchToEn")}
-              aria-current={locale === "en" ? "true" : undefined}
-            >
-              <FlagUS />
-            </Link>
-          </div>
           <button
             className={`${styles.iconButton} ${styles.menuButton}`}
             onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -319,7 +163,7 @@ export default function Header() {
 
       <nav className={`${styles.mobileNav} ${isMenuOpen ? styles.mobileNavOpen : ""}`}>
         <ul className={styles.mobileNavList}>
-          <li><Link href="/dashboard" onClick={closeMenu}>{t("navDashboard")}</Link></li>
+          <li><Link href="/guides" onClick={closeMenu}>{t("navGuides")}</Link></li>
           <li className={styles.mobileAccordionItem}>
             <button
               type="button"
@@ -327,11 +171,22 @@ export default function Header() {
               onClick={() => setIsToolsAccordionOpen((prev) => !prev)}
               aria-expanded={isToolsAccordionOpen}
             >
-              {t("navAiTools")}
+              {t("navDiagTools")}
               <span className={`${styles.accordionChevron} ${isToolsAccordionOpen ? styles.accordionChevronOpen : ""}`}>▾</span>
             </button>
             <ul className={`${styles.mobileAccordionPanel} ${isToolsAccordionOpen ? styles.mobileAccordionPanelOpen : ""}`}>
-              {AI_TOOL_HUBS.map((tool) => (
+              {DIAGNOSTIC_TOOLS.map((tool) => (
+                <li key={tool.href}>
+                  <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
+                    <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
+                    <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
+                  </Link>
+                </li>
+              ))}
+              <li className={styles.dropdownDivider} role="separator">
+                <span>{t("navOtherTools")}</span>
+              </li>
+              {OTHER_TOOLS.map((tool) => (
                 <li key={tool.href}>
                   <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
                     <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
@@ -341,27 +196,8 @@ export default function Header() {
               ))}
             </ul>
           </li>
-          <li className={styles.mobileAccordionItem}>
-            <button
-              type="button"
-              className={styles.mobileAccordionTrigger}
-              onClick={() => setIsAboutAccordionOpen((prev) => !prev)}
-              aria-expanded={isAboutAccordionOpen}
-            >
-              {t("navAboutGroup")}
-              <span className={`${styles.accordionChevron} ${isAboutAccordionOpen ? styles.accordionChevronOpen : ""}`}>▾</span>
-            </button>
-            <ul className={`${styles.mobileAccordionPanel} ${isAboutAccordionOpen ? styles.mobileAccordionPanelOpen : ""}`}>
-              {ABOUT_GROUP_LINKS.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
-                    <span className={styles.dropdownLinkTitle}>{t(link.titleKey)}</span>
-                    <span className={styles.dropdownLinkDesc}>{t(link.descKey)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </li>
+          <li><Link href="/history" onClick={closeMenu}>{t("navHistory")}</Link></li>
+          <li><Link href="/about" onClick={closeMenu}>{t("navAbout")}</Link></li>
         </ul>
       </nav>
 

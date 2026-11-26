@@ -1,7 +1,9 @@
 import { defineRouting } from "next-intl/routing";
 
 export const routing = defineRouting({
-  locales: ["ko", "en"],
+  // 영문판(/en) 제거(2026-11-26) — 사이트 주제를 한국어 단일 가이드로 재편.
+  // /ko 접두사 제거는 애드센스 승인 이후로 미뤘기 때문에 localePrefix는 "always" 유지.
+  locales: ["ko"],
   defaultLocale: "ko",
   localePrefix: "always",
   // 기본값은 secure 속성이 빠져 있어(next-intl 기본: { name: "NEXT_LOCALE", sameSite: "lax" }),

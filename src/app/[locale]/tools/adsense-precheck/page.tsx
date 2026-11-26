@@ -7,6 +7,8 @@ import JsonLd from "@/components/JsonLd";
 import ToolContentWrapper from "@/components/tool-content/ToolContentWrapper";
 import type { HowToUseStep } from "@/components/tool-content/ToolHowToUse";
 import type { FaqItem } from "@/components/tool-content/ToolFAQ";
+import type { CommonIssueItem } from "@/components/tool-content/ToolCommonIssues";
+import type { RelatedGuideLink } from "@/components/tool-content/ToolRelatedGuides";
 import styles from "./page.module.css";
 import AdsensePrecheckClient from "./AdsensePrecheckClient";
 
@@ -73,8 +75,14 @@ export default async function AdsensePrecheckPage({
         howToUseSteps={t.raw("contentHowToUseSteps") as HowToUseStep[]}
         recommendForTitle={t("contentRecommendForTitle")}
         recommendFor={t.raw("contentRecommendFor") as string[]}
+        resultGuideTitle={t("contentResultGuideTitle")}
+        resultGuideBody={t("contentResultGuideBody")}
+        commonIssuesTitle={t("contentCommonIssuesTitle")}
+        commonIssues={t.raw("contentCommonIssues") as CommonIssueItem[]}
         faqTitle={t("contentFaqTitle")}
         faq={t.raw("contentFaq") as FaqItem[]}
+        relatedGuidesTitle={t("contentRelatedGuidesTitle")}
+        relatedGuides={t.raw("contentRelatedGuides") as RelatedGuideLink[]}
       >
         <Suspense fallback={null}>
           <AdsensePrecheckClient />

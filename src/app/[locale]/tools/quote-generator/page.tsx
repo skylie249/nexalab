@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
-import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
+import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl, NOINDEX_FOLLOW } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
 import ToolContentWrapper from "@/components/tool-content/ToolContentWrapper";
 import type { HowToUseStep } from "@/components/tool-content/ToolHowToUse";
@@ -23,6 +23,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // 애드센스 재신청 구조 개편(2026-11-26): 가이드 중심 사이트 재편에 맞춰 noindex + 사이트맵 제외
+    // + "기타 도구" 하위 메뉴로 이동(CLAUDE.md). URL 직접 접근·기능은 그대로 유지.
+    robots: NOINDEX_FOLLOW,
     alternates: buildAlternates(locale as Locale, "/tools/quote-generator"),
     openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/tools/quote-generator" }),
     twitter: buildTwitter({ title, description, locale: locale as Locale }),

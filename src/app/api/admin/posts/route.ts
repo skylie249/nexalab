@@ -54,7 +54,8 @@ export async function POST(req: NextRequest) {
   }
 
   revalidatePath("/ko");
-  revalidatePath("/en");
+  revalidatePath("/ko/guides");
+  revalidatePath(`/ko/guides/${parsed.data.category}`);
 
   return NextResponse.json({ id: data.id });
 }

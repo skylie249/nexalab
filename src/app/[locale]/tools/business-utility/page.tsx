@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
+import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl, NOINDEX_FOLLOW } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
 import ToolIntro from "@/components/tool-content/ToolIntro";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
@@ -21,6 +21,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // 애드센스 재신청 구조 개편(2026-11-26): noindex + 사이트맵 제외 + "기타 도구" 하위 메뉴로 이동(CLAUDE.md).
+    // report-checker는 이 허브에 포함돼 있지만 그 글 자체(별도 라우트)는 설명 보강 대상으로 색인을 유지한다.
+    robots: NOINDEX_FOLLOW,
     alternates: buildAlternates(locale as Locale, "/tools/business-utility"),
     openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/tools/business-utility" }),
     twitter: buildTwitter({ title, description, locale: locale as Locale }),

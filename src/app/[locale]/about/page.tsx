@@ -26,6 +26,7 @@ export async function generateMetadata({
 }
 
 const stack = ["Next.js", "TypeScript", "Supabase", "Vercel", "Ollama / LLM", "spring boot", "MyBatis", "PostgreSQL", "Redis", "Docker", "Nginx"];
+const PRODUCTS_TECH_STACK = ["Next.js", "TypeScript", "Supabase", "Vercel", "Ollama / LLM"];
 
 export default async function AboutPage({
   params,
@@ -35,6 +36,63 @@ export default async function AboutPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("about");
+
+  // 2026-11-26: /ai-apps, /biz를 About으로 병합 — 두 페이지의 제품 쇼케이스·아이디어 목록을
+  // 그대로 가져와 섹션으로 추가한다(CLAUDE.md "ai-apps/biz 내용을 About으로 합친다").
+  const products = [
+    {
+      name: "Harubite",
+      emoji: "🌱",
+      desc: t("products.harubiteDesc"),
+      longDesc: t("products.harubiteLongDesc"),
+      url: "https://harubite.nexalab.app",
+      color: "#f59e0b",
+      textColor: "var(--harubite-text)",
+    },
+    {
+      name: "Paycheck",
+      emoji: "💰",
+      desc: t("products.paycheckDesc"),
+      longDesc: t("products.paycheckLongDesc"),
+      url: "https://paycheck.nexalab.app",
+      color: "#10b981",
+      textColor: "var(--paycheck-text)",
+    },
+    {
+      name: "TextKit",
+      emoji: "📝",
+      desc: t("products.textkitDesc"),
+      longDesc: t("products.textkitLongDesc"),
+      url: "https://text.nexalab.app",
+      color: "#6366f1",
+      textColor: "var(--textkit-text)",
+    },
+    {
+      name: "EasyPMS",
+      emoji: "✅",
+      desc: t("products.easypmsDesc"),
+      longDesc: t("products.easypmsLongDesc"),
+      url: "https://easypms.nexalab.app",
+      color: "#0d9488",
+      textColor: "var(--easypms-text)",
+    },
+    {
+      name: "Toolbox",
+      emoji: "🧰",
+      desc: t("products.toolboxDesc"),
+      longDesc: t("products.toolboxLongDesc"),
+      url: "https://toolbox.nexalab.app",
+      color: "#0369a1",
+      textColor: "var(--toolbox-text)",
+    },
+  ];
+
+  const bizIdeas = [
+    { key: "idea1", emoji: "💰", title: t("bizIdeas.idea1Title"), desc: t("bizIdeas.idea1Desc"), longDesc: t("bizIdeas.idea1LongDesc") },
+    { key: "idea2", emoji: "🎯", title: t("bizIdeas.idea2Title"), desc: t("bizIdeas.idea2Desc"), longDesc: t("bizIdeas.idea2LongDesc") },
+    { key: "idea3", emoji: "🧭", title: t("bizIdeas.idea3Title"), desc: t("bizIdeas.idea3Desc"), longDesc: t("bizIdeas.idea3LongDesc") },
+  ];
+  const provenTags = [t("bizIdeas.provenTag1"), t("bizIdeas.provenTag2"), t("bizIdeas.provenTag3")];
 
   return (
     <div className={styles.page}>
@@ -49,6 +107,24 @@ export default async function AboutPage({
             url: absoluteUrl(`/${locale}/about`),
             sameAs: ["https://github.com/skylie249/", "https://www.linkedin.com/in/nexalab0812"],
           },
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          url: absoluteUrl(`/${locale}/about`),
+          itemListElement: products.map((app, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "SoftwareApplication",
+              name: app.name,
+              description: app.longDesc,
+              url: app.url,
+              applicationCategory: "BusinessApplication",
+            },
+          })),
         }}
       />
       <header className={styles.intro}>
@@ -119,6 +195,72 @@ export default async function AboutPage({
             <h3>{t("coverageToolsTitle")}</h3>
             <p>{t("coverageToolsDesc")}</p>
           </div>
+        </div>
+      </section>
+
+      <section>
+        <header className={styles.subsectionHeader}>
+          <h2 className={styles.sectionTitle}>{t("productsTitle")}</h2>
+          <p className={styles.sectionSubtitle}>{t("productsSubtitle")}</p>
+        </header>
+        <div className={styles.productGrid}>
+          {products.map((app) => (
+            <Link
+              key={app.name}
+              href={app.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles.productCard} glass`}
+            >
+              <div className={styles.productCardIcon} style={{ backgroundColor: `${app.color}20` }}>
+                {app.emoji}
+              </div>
+              <div>
+                <div className={styles.productCardTitleRow}>
+                  <h3>{app.name}</h3>
+                  <span className={styles.productStatusBadge}>{t("products.statusLabel")}</span>
+                </div>
+                <p className={styles.cardTagline}>{app.desc}</p>
+                <p className={styles.cardLongDesc}>{app.longDesc}</p>
+                <span className={styles.productLinkText} style={{ color: app.textColor }}>{t("products.goTo")}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className={`${styles.techSection} glass`}>
+          <h3>{t("products.techStackTitle")}</h3>
+          <p>{t("products.techStackBody")}</p>
+          <ul className={styles.tags}>
+            {PRODUCTS_TECH_STACK.map((techItem) => (
+              <li key={techItem} className={styles.tag}>{techItem}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section>
+        <header className={styles.subsectionHeader}>
+          <h2 className={styles.sectionTitle}>{t("bizIdeasTitle")}</h2>
+          <p className={styles.sectionSubtitle}>{t("bizIdeasSubtitle")}</p>
+        </header>
+        <div className={styles.gridThree}>
+          {bizIdeas.map((idea) => (
+            <div key={idea.key} className={`${styles.card} glass`}>
+              <div className={styles.productCardIconPlain}>{idea.emoji}</div>
+              <h3>{idea.title}</h3>
+              <p className={styles.cardTagline}>{idea.desc}</p>
+              <p className={styles.cardLongDesc}>{idea.longDesc}</p>
+            </div>
+          ))}
+        </div>
+        <div className={`${styles.provenSection} glass`}>
+          <h3>{t("bizIdeas.provenTitle")}</h3>
+          <p>{t("bizIdeas.provenBody")}</p>
+          <ul className={styles.tags}>
+            {provenTags.map((tag) => (
+              <li key={tag} className={styles.tag}>{tag}</li>
+            ))}
+          </ul>
         </div>
       </section>
 

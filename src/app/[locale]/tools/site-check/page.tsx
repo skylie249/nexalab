@@ -5,6 +5,8 @@ import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
 import ToolIntro from "@/components/tool-content/ToolIntro";
+import ToolFAQ, { type FaqItem } from "@/components/tool-content/ToolFAQ";
+import ToolRelatedGuides, { type RelatedGuideLink } from "@/components/tool-content/ToolRelatedGuides";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import styles from "./page.module.css";
 
@@ -108,6 +110,13 @@ export default async function SiteCheckHubPage({
         <HubToolGrid tools={tools} linkLabel={t("cardLinkLabel")} />
 
         <ToolIntro title={t("introTitle")} problem={t("introProblem")} solution={t("introSolution")} />
+
+        <ToolFAQ title={t("contentFaqTitle")} items={t.raw("contentFaq") as FaqItem[]} />
+
+        <ToolRelatedGuides
+          title={t("contentRelatedGuidesTitle")}
+          links={t.raw("contentRelatedGuides") as RelatedGuideLink[]}
+        />
 
         <div className={styles.crossSellBox}>
           <p className={styles.crossSellText}>{t("crossSellText")}</p>

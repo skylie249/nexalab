@@ -51,7 +51,6 @@ export async function generateMetadata({
     alternates: buildAlternates(locale as Locale, "/"),
     openGraph: buildOpenGraph({ locale: locale as Locale, title, description, pathname: "/" }),
     twitter: buildTwitter({ title, description, locale: locale as Locale }),
-    // 영어판은 INDEX_EN_LOCALE=true 전까지 noindex, follow (src/lib/seo.ts 참고).
     // 하위 페이지가 robots를 직접 지정하지 않으면 이 값을 그대로 상속한다.
     robots: isLocaleIndexable(locale)
       ? {
@@ -86,7 +85,7 @@ function siteJsonLd(locale: Locale) {
       "@type": "WebSite",
       name: SITE_NAME,
       url: absoluteUrl(`/${locale}`),
-      inLanguage: locale === "ko" ? "ko-KR" : "en-US",
+      inLanguage: "ko-KR",
     },
   ];
 }

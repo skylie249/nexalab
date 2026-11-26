@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import DeletePostButton from "@/components/admin/DeletePostButton";
+import { getGuideCategoryLabel } from "@/lib/guides";
 import styles from "./page.module.css";
 
 interface AdminPostRow {
@@ -9,13 +10,13 @@ interface AdminPostRow {
   published: boolean;
   created_at: string;
   views: number | null;
-  categories: { name: string; locale: string } | null;
+  category: string | null;
 }
 
 async function getPosts(): Promise<AdminPostRow[]> {
   const { data, error } = await supabaseAdmin
     .from("posts")
-    .select("id, title, published, created_at, views, categories(name, locale)")
+    .select("id, title, published, created_at, views, category")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -52,7 +53,7 @@ export default async function AdminPostsPage() {
                 <div className={styles.rowInfo}>
                   <span className={styles.rowTitle}>{post.title}</span>
                   <span className={styles.rowMeta}>
-                    {post.categories?.name || "미분류"} ({post.categories?.locale?.toUpperCase() || "-"}) ·{" "}
+                    {post.category ? getGuideCategoryLabel(post.category) : "미분류"} ·{" "}
                     {new Date(post.created_at).toLocaleDateString("ko-KR")} · 조회 {post.views ?? 0}
                   </span>
                 </div>

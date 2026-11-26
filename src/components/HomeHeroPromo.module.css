@@ -28,22 +28,6 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
-.card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.card:hover::before {
-  opacity: 1;
-}
-
 .cardIcon {
   font-size: 2rem;
   width: 3.5rem;
@@ -60,23 +44,22 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
-.titleDesktop,
-.titleMobile {
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+
+.title {
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.35;
-}
-
-.titleDesktop {
-  display: none;
-}
-
-.titleMobile {
-  display: block;
 }
 
 .descDesktop {
@@ -86,40 +69,20 @@
   line-height: 1.5;
 }
 
+@media (min-width: 768px) {
+  .descDesktop {
+    display: block;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+}
+
 .linkText {
   font-size: 0.8rem;
   font-weight: 600;
   margin-top: 0.25rem;
   display: inline-block;
-}
-
-.ctaDesktopText {
-  display: none;
-}
-
-.ctaMobileText {
-  display: inline;
-}
-
-@media (min-width: 768px) {
-  .titleDesktop {
-    display: block;
-    font-size: 1.1rem;
-  }
-
-  .titleMobile {
-    display: none;
-  }
-
-  .descDesktop {
-    display: block;
-  }
-
-  .ctaDesktopText {
-    display: inline;
-  }
-
-  .ctaMobileText {
-    display: none;
-  }
+  color: var(--accent-text);
 }

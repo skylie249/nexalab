@@ -28,6 +28,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     );
   }
 
+  const { data: before } = await supabaseAdmin.from("posts").select("category").eq("id", id).maybeSingle();
+
   const { error } = await supabaseAdmin
     .from("posts")
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
@@ -39,9 +41,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   revalidatePath("/ko");
-  revalidatePath("/en");
-  // 글 URL이 slug 기반이라 id로는 경로를 알 수 없음 — 글 상세 라우트 전체를 재검증
-  revalidatePath("/[locale]/posts/[slug]", "page");
+  revalidatePath("/ko/guides");
+  revalidatePath(`/ko/guides/${parsed.data.category}`);
+  if (before?.category && before.category !== parsed.data.category) {
+    revalidatePath(`/ko/guides/${before.category}`);
+  }
+  // 글 URL이 slug 기반이라 id로는 경로를 알 수 없음 — 가이드 상세 라우트 전체를 재검증
+  revalidatePath("/[locale]/guides/[category]/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }
@@ -53,6 +59,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
 
+  const { data: before } = await supabaseAdmin.from("posts").select("category").eq("id", id).maybeSingle();
+
   const { error } = await supabaseAdmin.from("posts").delete().eq("id", id);
 
   if (error) {
@@ -61,9 +69,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   }
 
   revalidatePath("/ko");
-  revalidatePath("/en");
-  // 글 URL이 slug 기반이라 id로는 경로를 알 수 없음 — 글 상세 라우트 전체를 재검증
-  revalidatePath("/[locale]/posts/[slug]", "page");
+  revalidatePath("/ko/guides");
+  if (before?.category) revalidatePath(`/ko/guides/${before.category}`);
+  // 글 URL이 slug 기반이라 id로는 경로를 알 수 없음 — 가이드 상세 라우트 전체를 재검증
+  revalidatePath("/[locale]/guides/[category]/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }
