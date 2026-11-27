@@ -3,22 +3,12 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import {
-  getQuoteHistory,
-  getProfitHistory,
-  getSeoHistory,
-  getLlmsTxtGeneratedAt,
-  type QuoteHistoryEntry,
-  type ProfitHistoryEntry,
-  type SeoHistoryEntry,
-} from "@/lib/dashboardHistory";
-import { formatWon } from "@/lib/formatCurrency";
+import { getSeoHistory, getLlmsTxtGeneratedAt, type SeoHistoryEntry } from "@/lib/dashboardHistory";
 import HubToolGrid, { type HubToolCardData } from "@/components/HubToolGrid";
 import styles from "./page.module.css";
 
 // 지침서 5번 CTA 규칙 표의 임계값
 const GEO_SCORE_LOW_THRESHOLD = 60;
-const STALE_QUOTE_DAYS = 7;
 
 interface Recommendation {
   key: string;
@@ -27,48 +17,29 @@ interface Recommendation {
   ctaLabel: string;
 }
 
-interface ToolGroup {
-  key: string;
-  emoji: string;
-  title: string;
-  hubHref: string;
-  tools: HubToolCardData[];
-}
-
 export default function DashboardClient() {
   const t = useTranslations("dashboard");
   const tHeader = useTranslations("header");
-  const tIndustries = useTranslations("industries");
   const locale = useLocale();
   const dateLocale = locale === "en" ? "en-US" : "ko-KR";
 
-  const [quoteHistory, setQuoteHistory] = useState<QuoteHistoryEntry[]>([]);
-  const [profitHistory, setProfitHistory] = useState<ProfitHistoryEntry[]>([]);
   const [seoHistory, setSeoHistory] = useState<SeoHistoryEntry[]>([]);
   const [llmsTxtGeneratedAt, setLlmsTxtGeneratedAt] = useState<string | null>(null);
-  // "지금" 시각은 렌더 중 Date.now()를 직접 호출하지 않기 위해 mount 이후 한 번만 확정한다.
-  const [now, setNow] = useState<number | null>(null);
 
   // localStorage는 서버에서 읽을 수 없어 mount 이후에만 채운다 — 초기값(빈 배열)은
   // 서버 렌더 결과와 동일하므로 hydration mismatch 없이 자연스럽게 갱신된다.
   // (effect 기반 setState가 불가피한 경우라 아래 규칙만 이 블록에서 비활성화한다.)
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
-    setQuoteHistory(getQuoteHistory());
-    setProfitHistory(getProfitHistory());
     setSeoHistory(getSeoHistory());
     setLlmsTxtGeneratedAt(getLlmsTxtGeneratedAt());
-    setNow(Date.now());
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  const latestQuote = quoteHistory[0] ?? null;
-  const latestProfit = profitHistory[0] ?? null;
   const latestSeo = seoHistory[0] ?? null;
-  const prevProfit = profitHistory[1] ?? null;
   const prevSeo = seoHistory[1] ?? null;
 
-  const allEmpty = !latestQuote && !latestProfit && !latestSeo;
+  const allEmpty = !latestSeo;
 
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString(dateLocale);
   const formatScoreDelta = (delta: number) => {
@@ -76,16 +47,10 @@ export default function DashboardClient() {
     const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "-";
     return `${sign}${delta}${t("pointSuffix")} ${arrow}`;
   };
-  const formatMoneyDelta = (delta: number) => {
-    const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
-    const arrow = delta > 0 ? "↑" : delta < 0 ? "↓" : "-";
-    return `${sign}${formatWon(Math.abs(delta), locale)} ${arrow}`;
-  };
 
   const seoScoreDelta = latestSeo && prevSeo ? latestSeo.seoScore - prevSeo.seoScore : null;
   const geoScoreDelta = latestSeo && prevSeo ? latestSeo.geoScore - prevSeo.geoScore : null;
-  const profitDelta = latestProfit && prevProfit ? latestProfit.netProfit - prevProfit.netProfit : null;
-  const hasTrend = seoScoreDelta !== null || profitDelta !== null;
+  const hasTrend = seoScoreDelta !== null || geoScoreDelta !== null;
 
   const recommendations: Recommendation[] = [];
 
@@ -98,82 +63,22 @@ export default function DashboardClient() {
     });
   }
 
-  if (latestProfit && latestProfit.netProfit < 0) {
-    recommendations.push({
-      key: "profit-negative",
-      text: t("recoProfitNegative"),
-      href: "/tools/quote-generator",
-      ctaLabel: t("recoProfitNegativeCta"),
-    });
-  }
-
-  if (latestQuote && now !== null) {
-    const daysSince = (now - new Date(latestQuote.createdAt).getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSince >= STALE_QUOTE_DAYS) {
-      recommendations.push({
-        key: "quote-stale",
-        text: t("recoQuoteStale"),
-        href: "/tools/profit-calculator",
-        ctaLabel: t("recoQuoteStaleCta"),
-      });
-    }
-  }
-
-
-  // AI 도구 8종 + 올인원 진단을 "왜 이 도구를 찾아왔는가" 기준 3그룹으로 묶어서 보여준다
-  // (유틸기능_그룹화_올인원진단_기획서.md의 그룹 기준) — 헤더의 "AI 도구" 드롭다운에는
-  // 기존 개별 도구만 남기고, 그룹화된 모습은 대시보드 콘텐츠 쪽으로 옮겼다.
-  const toolGroups: ToolGroup[] = [
+  // 견적서/손익 계산기/제안·견적/업무 지원 허브가 2026-11-27 삭제되며 "그룹" 구조 자체가
+  // 더 이상 필요 없어졌다 — 남은 진단 도구(사이트 진단센터 5종 + report-checker)만 한 그룹으로 보여준다.
+  const tools: HubToolCardData[] = [
     {
-      key: "siteCheck",
-      emoji: "🔍",
-      title: t("toolGroupSiteCheckTitle"),
-      hubHref: "/tools/site-check",
-      tools: [
-        {
-          href: "/tools/site-check/all-in-one",
-          emoji: "⭐",
-          title: tHeader("navAllInOneCheck"),
-          description: tHeader("aiToolsAllInOneDesc"),
-          isFlagship: true,
-          isNew: true,
-        },
-        { href: "/tools/seo-geo-checker", emoji: "🔍", title: tHeader("navSeoGeoChecker"), description: tHeader("aiToolsSeoDesc") },
-        { href: "/tools/security-check", emoji: "🔒", title: tHeader("navSecurityCheck"), description: tHeader("aiToolsSecurityDesc") },
-        { href: "/tools/adsense-precheck", emoji: "💰", title: tHeader("navAdsensePrecheck"), description: tHeader("aiToolsAdsenseDesc") },
-        { href: "/tools/llms-txt-generator", emoji: "📄", title: tHeader("navLlmsTxtGenerator"), description: tHeader("aiToolsLlmsDesc") },
-      ],
+      href: "/tools/site-check/all-in-one",
+      emoji: "⭐",
+      title: tHeader("navAllInOneCheck"),
+      description: tHeader("aiToolsAllInOneDesc"),
+      isFlagship: true,
+      isNew: true,
     },
-    {
-      key: "proposal",
-      emoji: "💼",
-      title: t("toolGroupProposalTitle"),
-      hubHref: "/tools/proposal",
-      tools: [
-        {
-          href: "/tools/feature-item-generator",
-          emoji: "🧩",
-          title: tHeader("navFeatureItemGenerator"),
-          description: tHeader("aiToolsFeatureDesc"),
-        },
-        { href: "/tools/quote-generator", emoji: "📝", title: tHeader("navQuoteGenerator"), description: tHeader("aiToolsQuoteDesc") },
-      ],
-    },
-    {
-      key: "businessUtility",
-      emoji: "🧮",
-      title: t("toolGroupBusinessUtilityTitle"),
-      hubHref: "/tools/business-utility",
-      tools: [
-        {
-          href: "/tools/profit-calculator",
-          emoji: "🧮",
-          title: tHeader("navProfitCalculator"),
-          description: tHeader("aiToolsProfitDesc"),
-        },
-        { href: "/tools/report-checker", emoji: "📄", title: tHeader("navReportChecker"), description: tHeader("aiToolsReportDesc") },
-      ],
-    },
+    { href: "/tools/seo-geo-checker", emoji: "🔍", title: tHeader("navSeoGeoChecker"), description: tHeader("aiToolsSeoDesc") },
+    { href: "/tools/security-check", emoji: "🔒", title: tHeader("navSecurityCheck"), description: tHeader("aiToolsSecurityDesc") },
+    { href: "/tools/adsense-precheck", emoji: "💰", title: tHeader("navAdsensePrecheck"), description: tHeader("aiToolsAdsenseDesc") },
+    { href: "/tools/llms-txt-generator", emoji: "📄", title: tHeader("navLlmsTxtGenerator"), description: tHeader("aiToolsLlmsDesc") },
+    { href: "/tools/report-checker", emoji: "📄", title: tHeader("navReportChecker"), description: tHeader("aiToolsReportDesc") },
   ];
 
   return (
@@ -193,80 +98,20 @@ export default function DashboardClient() {
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>{t("sectionToolsTitle")}</h2>
-        {toolGroups.map((group) => (
-          <div key={group.key} className={styles.toolGroupBlock}>
-            <div className={styles.toolGroupHeader}>
-              <span className={styles.toolGroupTitle}>
-                {group.emoji} {group.title}
-              </span>
-              <Link href={group.hubHref} className={styles.toolGroupMore}>
-                {t("toolGroupMoreLabel")}
-              </Link>
-            </div>
-            <HubToolGrid tools={group.tools} linkLabel={t("toolCardLinkLabel")} />
+        <div className={styles.toolGroupBlock}>
+          <div className={styles.toolGroupHeader}>
+            <span className={styles.toolGroupTitle}>🔍 {t("toolGroupSiteCheckTitle")}</span>
+            <Link href="/tools/site-check" className={styles.toolGroupMore}>
+              {t("toolGroupMoreLabel")}
+            </Link>
           </div>
-        ))}
+          <HubToolGrid tools={tools} linkLabel={t("toolCardLinkLabel")} />
+        </div>
       </section>
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>{t("sectionHealthTitle")}</h2>
         <div className={styles.cardGrid}>
-          {/* 견적서 생성기 카드 */}
-          <div className={`${styles.card} glass`}>
-            <span className={styles.cardTitle}>{t("quoteCardTitle")}</span>
-            {latestQuote ? (
-              <>
-                <span className={styles.cardMetaLabel}>
-                  {t("quoteLatestLabel")} · {formatDate(latestQuote.createdAt)}
-                </span>
-                <p className={styles.cardSummary}>{latestQuote.summary || t("quoteSummaryFallback")}</p>
-                <span className={styles.cardValue}>
-                  {formatWon(latestQuote.totalMin, locale)} ~ {formatWon(latestQuote.totalMax, locale)}
-                </span>
-                <span className={styles.cardSubtext}>{tIndustries(latestQuote.industry)}</span>
-                <Link href="/tools/quote-generator" className={styles.cardCta}>
-                  {t("quoteRestartCta")}
-                </Link>
-              </>
-            ) : (
-              <>
-                <p className={styles.cardEmptyText}>{t("quoteEmptyText")}</p>
-                <Link href="/tools/quote-generator" className={styles.cardCtaPrimary}>
-                  {t("quoteEmptyCta")}
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* 손익 계산기 카드 */}
-          <div className={`${styles.card} glass`}>
-            <span className={styles.cardTitle}>{t("profitCardTitle")}</span>
-            {latestProfit ? (
-              <>
-                <span className={styles.cardMetaLabel}>
-                  {t("profitLatestLabel")} · {formatDate(latestProfit.createdAt)}
-                </span>
-                <span className={styles.cardMiniLabel}>{t("profitNetProfitLabel")}</span>
-                <span className={`${styles.cardValue} ${latestProfit.netProfit < 0 ? styles.negative : ""}`}>
-                  {formatWon(latestProfit.netProfit, locale)}
-                </span>
-                <span className={styles.cardSubtext}>
-                  {t("profitMarginLabel")} {latestProfit.marginRate.toFixed(1)}%
-                </span>
-                <Link href="/tools/profit-calculator" className={styles.cardCta}>
-                  {t("profitRestartCta")}
-                </Link>
-              </>
-            ) : (
-              <>
-                <p className={styles.cardEmptyText}>{t("profitEmptyText")}</p>
-                <Link href="/tools/profit-calculator" className={styles.cardCtaPrimary}>
-                  {t("profitEmptyCta")}
-                </Link>
-              </>
-            )}
-          </div>
-
           {/* SEO/GEO 체커 카드 */}
           <div className={`${styles.card} glass`}>
             <span className={styles.cardTitle}>{t("seoCardTitle")}</span>
@@ -315,9 +160,6 @@ export default function DashboardClient() {
             )}
             {geoScoreDelta !== null && (
               <p className={styles.trendItem}>{t("trendGeoScore", { change: formatScoreDelta(geoScoreDelta) })}</p>
-            )}
-            {profitDelta !== null && (
-              <p className={styles.trendItem}>{t("trendProfitScore", { change: formatMoneyDelta(profitDelta) })}</p>
             )}
           </div>
         </section>

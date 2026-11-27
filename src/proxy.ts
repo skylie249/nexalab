@@ -20,8 +20,6 @@ interface RateLimitEntry {
 // 서버 측 fetch(HTML+robots.txt+llms.txt+sitemap.xml)가 발생해 SSRF 프로빙/스크래핑 남용
 // 우려가 있으므로 동일하게 제한한다.
 const RATE_LIMITS: Record<string, RateLimitRule> = {
-  "/api/quote": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
-  "/api/wizard-to-request": { max: 8, windowMs: 24 * 60 * 60 * 1000 },
   "/api/seo-check": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
   // 원본 점검 결과와 별도로 Gemini/Groq를 호출하는 부가 기능이라 세오-체크 자체보다
   // 약간 낮은 한도로 제한(24시간 캐시가 있어 동일 URL 반복 호출은 어차피 캐시로 흡수됨).
@@ -29,7 +27,6 @@ const RATE_LIMITS: Record<string, RateLimitRule> = {
   "/api/adsense-precheck": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-check": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
   "/api/report-rewrite": { max: 5, windowMs: 24 * 60 * 60 * 1000 },
-  "/api/tools/feature-item-generator": { max: 10, windowMs: 24 * 60 * 60 * 1000 },
   // 요청 1건당 최대 2번의 서버 측 fetch(대상 URL + http:// 리다이렉트 확인)가 발생해
   // 다른 URL 기반 점검기와 동일하게 SSRF 프로빙/스크래핑 남용 우려로 제한한다.
   "/api/security-check": { max: 20, windowMs: 24 * 60 * 60 * 1000 },
@@ -94,14 +91,11 @@ export async function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/api/quote",
-    "/api/wizard-to-request",
     "/api/seo-check",
     "/api/seo-check/ai-comment",
     "/api/adsense-precheck",
     "/api/report-check",
     "/api/report-rewrite",
-    "/api/tools/feature-item-generator",
     "/api/security-check",
     "/admin/:path*",
     // next-intl: 페이지 경로만 대상 — api, admin, _next, 정적 파일(확장자 포함 경로)은 제외

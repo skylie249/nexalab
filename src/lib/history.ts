@@ -57,15 +57,14 @@ export async function getHistoryEntrySummary(slug: string, locale: string): Prom
 
 // 도구 페이지 하단 "이 도구는 어떻게 만들었나요?"에 연결할 출시 빌드로그.
 // 도구가 여러 번 개선됐으면 그 도구가 처음 공개된(또는 핵심 기능이 추가된) 기록을 고른다.
+// 견적서 생성기/손익 계산기/기능 항목 생성기는 2026-11-27 도구 자체가 삭제되며 키도 함께 제거—
+// 해당 빌드로그 글(history_entries)은 지우지 않았으니 /history 목록에서는 계속 볼 수 있다.
 export const TOOL_BUILD_LOGS = {
-  "quote-generator": "ai-quote-generator-mvp-launch",
-  "profit-calculator": "multilingual-support-and-profit-calculator-launch",
   "llms-txt-generator": "llms-txt-generator-and-dashboard-launch",
   "report-checker": "nextjs-16-upgrade-and-cloudflare-incident",
   // SEO/GEO 체커 자체의 최초 출시 기록은 없고, 접근성 점검이 이 도구에 추가된 기록이 가장 가깝다
   "seo-geo-checker": "accessibility-checker-and-self-audit",
   "adsense-precheck": "adsense-reapplication-content-and-precheck-tool",
-  "feature-item-generator": "feature-item-generator-launch",
   "security-check": "security-checker-and-tool-hub-restructure",
   "all-in-one": "security-checker-and-tool-hub-restructure",
 } as const;

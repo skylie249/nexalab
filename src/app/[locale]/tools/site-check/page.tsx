@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { buildAlternates, buildOpenGraph, buildTwitter, absoluteUrl } from "@/lib/seo";
 import JsonLd from "@/components/JsonLd";
@@ -117,13 +116,6 @@ export default async function SiteCheckHubPage({
           title={t("contentRelatedGuidesTitle")}
           links={t.raw("contentRelatedGuides") as RelatedGuideLink[]}
         />
-
-        <div className={styles.crossSellBox}>
-          <p className={styles.crossSellText}>{t("crossSellText")}</p>
-          <Link href="/tools/proposal" className={styles.crossSellButton}>
-            {t("crossSellButton")}
-          </Link>
-        </div>
       </div>
     </div>
   );

@@ -28,18 +28,6 @@ export function buildAlternates(locale: Locale, pathname: string) {
   return { canonical: absoluteUrl(`/${locale}${path}`) };
 }
 
-/** noindex + 사이트맵 제외 대상 도구(애드센스 재신청 구조 개편, 2026-11-26). */
-export const NOINDEXED_TOOL_SLUGS = [
-  "quote-generator",
-  "profit-calculator",
-  "proposal",
-  "business-utility",
-] as const;
-
-export function isToolIndexable(slug: string): boolean {
-  return !NOINDEXED_TOOL_SLUGS.includes(slug as (typeof NOINDEXED_TOOL_SLUGS)[number]);
-}
-
 export function defaultOgImage(locale: Locale) {
   return [{ url: absoluteUrl(`/${locale}/opengraph-image`), width: 1200, height: 630 }];
 }

@@ -63,16 +63,10 @@ export default async function Home({
       description: tHeader("aiToolsSiteCheckHubDesc"),
     },
     {
-      href: "/tools/proposal",
-      emoji: "💼",
-      title: tHeader("navProposalHub"),
-      description: tHeader("aiToolsProposalHubDesc"),
-    },
-    {
-      href: "/tools/business-utility",
-      emoji: "🧮",
-      title: tHeader("navBusinessUtilityHub"),
-      description: tHeader("aiToolsBusinessUtilityHubDesc"),
+      href: "/tools/report-checker",
+      emoji: "📄",
+      title: tHeader("navReportChecker"),
+      description: tHeader("aiToolsReportDesc"),
     },
   ];
 

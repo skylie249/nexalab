@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { supabase } from "@/lib/supabase";
-import { SITE_URL, isLocaleIndexable, isToolIndexable } from "@/lib/seo";
+import { SITE_URL, isLocaleIndexable } from "@/lib/seo";
 import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
 import { historyEntryLocale } from "@/lib/history";
 import { GUIDE_CATEGORIES, getGuideSitemapEntries } from "@/lib/guides";
@@ -17,25 +17,20 @@ const LOCALES = (["ko"] as const).filter(isLocaleIndexable);
 // 바뀌어 구글이 lastmod 신호 자체를 무시하게 된다. 콘텐츠 목록 페이지(홈/블로그/빌드로그)는 최신 글
 // 날짜를 따르고, 나머지 정적 페이지는 신뢰할 만한 수정일이 없으므로 lastmod를 생략한다.
 // (changefreq/priority는 구글이 사용하지 않아 넣지 않음)
-// ai-apps/biz는 About으로 병합(2026-11-26)되며 사이트맵에서 제외, noindex 처리된 4개 도구
-// (견적서/손익계산기/제안서/업무유틸)도 isToolIndexable로 걸러낸다.
+// ai-apps/biz는 About으로 병합(2026-11-26)되며 사이트맵에서 제외. 견적서/손익계산기/제안서/
+// 업무유틸/기능항목생성기는 2026-11-27 도구 자체가 삭제되어 더 이상 목록에 없다.
 const STATIC_PATHS = [
-  "/tools/quote-generator",
-  "/tools/profit-calculator",
   "/tools/seo-geo-checker",
   "/tools/llms-txt-generator",
   "/tools/report-checker",
   "/tools/adsense-precheck",
-  "/tools/feature-item-generator",
   "/tools/security-check",
   "/tools/site-check",
   "/tools/site-check/all-in-one",
-  "/tools/proposal",
-  "/tools/business-utility",
   "/about",
   "/contact",
   "/privacy",
-].filter((path) => isToolIndexable(path.split("/").pop() ?? ""));
+];
 
 interface PostRow {
   id: string;

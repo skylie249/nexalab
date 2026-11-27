@@ -146,22 +146,6 @@
   justify-content: center;
 }
 
-.dropdownDivider {
-  display: flex;
-  align-items: center;
-  padding: 0.6rem 0.7rem 0.3rem;
-  margin-top: 0.2rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.dropdownDivider span {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-}
-
 .iconButton:hover {
   background-color: var(--border-color);
   transform: scale(1.05);
@@ -312,8 +296,7 @@
 }
 
 .mobileAccordionPanelOpen {
-  /* 진단 도구(3) + 기타 도구(4) + 구분선까지 모두 펼쳐지므로 기존 24rem보다 여유를 둔다. */
-  max-height: 36rem;
+  max-height: 24rem;
   padding-bottom: 0.5rem;
 }
 

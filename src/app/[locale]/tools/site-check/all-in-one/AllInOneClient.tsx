@@ -272,13 +272,6 @@ export default function AllInOneClient() {
             </section>
           )}
 
-          <div className={styles.crossSellBox}>
-            <p className={styles.crossSellText}>{t("crossSellText")}</p>
-            <Link href="/tools/quote-generator" className={styles.crossSellButton}>
-              {t("crossSellButton")}
-            </Link>
-          </div>
-
           <KakaoShareButton
             label={t("kakaoShareButton")}
             copiedMessage={t("kakaoShareCopied")}

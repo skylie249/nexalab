@@ -7,21 +7,14 @@ import { useTheme } from "./ThemeProvider";
 import styles from "./Header.module.css";
 
 // 애드센스 재신청 구조 개편(2026-11-26): 메인 메뉴를 가이드·진단 도구·개발 기록·About 4개로 고정.
-// "진단 도구" 드롭다운은 noindex 대상이 아닌(= 색인 유지) 도구만 상단에 노출하고, noindex 처리된
-// 4개(견적서/손익계산기/제안서/업무유틸)는 구분선 아래 "기타 도구"로 묶어 내려보낸다.
-// report-checker는 business-utility 허브(noindex) 안에 있지만 그 글 자체는 색인 대상이라
-// 허브를 거치지 않고 바로 찾을 수 있도록 상단에 직접 링크를 승격해 둔다.
+// 견적서/손익계산기/제안서/업무유틸/기능항목생성기는 2026-11-27 전부 삭제(가이드 중심 재편과
+// 무관한 유틸리티라 운영자가 정리 결정) — "기타 도구" 구분선도 함께 제거.
+// report-checker는 원래 business-utility 허브 안에 있었지만 그 허브가 삭제된 뒤에도 계속
+// 찾을 수 있도록 상단에 직접 링크로 남겨둔다.
 const DIAGNOSTIC_TOOLS = [
   { href: "/tools/site-check", titleKey: "navSiteCheckHub", descKey: "aiToolsSiteCheckHubDesc" },
   { href: "/tools/report-checker", titleKey: "navReportChecker", descKey: "aiToolsReportDesc" },
   { href: "/tools/site-check/all-in-one", titleKey: "navAllInOneCheck", descKey: "aiToolsAllInOneDesc" },
-] as const;
-
-const OTHER_TOOLS = [
-  { href: "/tools/quote-generator", titleKey: "navQuoteGenerator", descKey: "aiToolsQuoteDesc" },
-  { href: "/tools/profit-calculator", titleKey: "navProfitCalculator", descKey: "aiToolsProfitDesc" },
-  { href: "/tools/proposal", titleKey: "navProposalHub", descKey: "aiToolsProposalHubDesc" },
-  { href: "/tools/business-utility", titleKey: "navBusinessUtilityHub", descKey: "aiToolsBusinessUtilityHubDesc" },
 ] as const;
 
 export default function Header() {
@@ -117,20 +110,6 @@ export default function Header() {
                     <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
                   </Link>
                 ))}
-                <div className={styles.dropdownDivider} role="separator">
-                  <span>{t("navOtherTools")}</span>
-                </div>
-                {OTHER_TOOLS.map((tool) => (
-                  <Link
-                    key={tool.href}
-                    href={tool.href}
-                    className={styles.dropdownLink}
-                    onClick={() => setIsToolsOpen(false)}
-                  >
-                    <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
-                    <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
-                  </Link>
-                ))}
               </div>
             </li>
             <li><Link href="/history">{t("navHistory")}</Link></li>
@@ -176,17 +155,6 @@ export default function Header() {
             </button>
             <ul className={`${styles.mobileAccordionPanel} ${isToolsAccordionOpen ? styles.mobileAccordionPanelOpen : ""}`}>
               {DIAGNOSTIC_TOOLS.map((tool) => (
-                <li key={tool.href}>
-                  <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
-                    <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>
-                    <span className={styles.dropdownLinkDesc}>{t(tool.descKey)}</span>
-                  </Link>
-                </li>
-              ))}
-              <li className={styles.dropdownDivider} role="separator">
-                <span>{t("navOtherTools")}</span>
-              </li>
-              {OTHER_TOOLS.map((tool) => (
                 <li key={tool.href}>
                   <Link href={tool.href} className={styles.mobileAccordionLink} onClick={closeMenu}>
                     <span className={styles.dropdownLinkTitle}>{t(tool.titleKey)}</span>

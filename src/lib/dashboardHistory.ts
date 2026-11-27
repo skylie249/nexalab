@@ -5,30 +5,12 @@
 
 const MAX_ENTRIES = 5;
 
+// quote/profit 키는 견적서 생성기·손익 계산기 삭제(2026-11-27)와 함께 제거 — 기존에 이 키로
+// 브라우저에 저장돼 있던 값은 조용히 안 읽히고 남을 뿐, 아무 기능도 참조하지 않아 무해하다.
 export const DASHBOARD_STORAGE_KEYS = {
-  quote: "nexalab_quote_history",
-  profit: "nexalab_profit_history",
   seo: "nexalab_seo_history",
   llmsTxtGeneratedAt: "nexalab_llmstxt_generated_at",
 } as const;
-
-export interface QuoteHistoryEntry {
-  id: string;
-  createdAt: string;
-  industry: string;
-  summary: string;
-  totalMin: number;
-  totalMax: number;
-}
-
-export interface ProfitHistoryEntry {
-  id: string;
-  createdAt: string;
-  industry: string;
-  income: number;
-  netProfit: number;
-  marginRate: number;
-}
 
 export interface SeoHistoryEntry {
   id: string;
@@ -73,34 +55,6 @@ function newId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
     : `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-export function getQuoteHistory(): QuoteHistoryEntry[] {
-  return readList(DASHBOARD_STORAGE_KEYS.quote);
-}
-
-export function saveQuoteHistory(entry: Omit<QuoteHistoryEntry, "id" | "createdAt">): void {
-  pushHistoryEntry(DASHBOARD_STORAGE_KEYS.quote, {
-    ...entry,
-    id: newId(),
-    createdAt: new Date().toISOString(),
-  });
-}
-
-export function getProfitHistory(): ProfitHistoryEntry[] {
-  return readList(DASHBOARD_STORAGE_KEYS.profit);
-}
-
-// sessionId를 넘기면 같은 브라우징 세션에서 값을 조정할 때마다 새 항목을 쌓지 않고 갱신(업서트)한다.
-export function saveProfitHistory(
-  entry: Omit<ProfitHistoryEntry, "id" | "createdAt">,
-  sessionId: string
-): void {
-  pushHistoryEntry(DASHBOARD_STORAGE_KEYS.profit, {
-    ...entry,
-    id: sessionId,
-    createdAt: new Date().toISOString(),
-  });
 }
 
 export function getSeoHistory(): SeoHistoryEntry[] {
