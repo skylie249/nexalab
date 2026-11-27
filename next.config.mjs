@@ -112,6 +112,14 @@ const nextConfig = {
       "/ko/tools/business-utility",
       "/ko/tools/feature-item-generator",
     ].map((source) => ({ source, destination: "/ko", statusCode: 301 }));
+    // 위 도구들을 만든 과정을 다룬 빌드로그 4편도 함께 삭제(2026-11-27, history_entries에서 직접 삭제,
+    // 백업은 .content-backup/history-entries-deleted-2026-11-27.json) — 404 대신 홈으로 301
+    const removedHistory = [
+      "/ko/history/ai-quote-generator-mvp-launch",
+      "/ko/history/feature-item-generator-launch",
+      "/ko/history/multilingual-support-and-profit-calculator-launch",
+      "/ko/history/llms-txt-generator-and-dashboard-launch",
+    ].map((source) => ({ source, destination: "/ko", statusCode: 301 }));
     // 영문판(/en) 제거(2026-11-26) — 같은 경로의 /ko/*로 301. 위 구체적인 규칙들이 먼저 매칭되도록
     // 이 캐치올들은 맨 뒤에 둔다(예: /en/blog는 removedBlog에 먼저 걸려 /ko로 한 번에 감).
     // "/en" 단독 경로는 ":path*"(0개 이상)가 매칭해도 destination이 "/ko/"가 되는 걸 피하려 별도 규칙으로 둠.
@@ -119,7 +127,7 @@ const nextConfig = {
       { source: "/en", destination: "/ko", statusCode: 301 },
       { source: "/en/:path*", destination: "/ko/:path*", statusCode: 301 },
     ];
-    return [removedBlog, ...aboutMerge, ...removedTools, ...merged, ...uuidToSlug, ...enCatchAll];
+    return [removedBlog, ...aboutMerge, ...removedTools, ...removedHistory, ...merged, ...uuidToSlug, ...enCatchAll];
   },
   async headers() {
     return [
