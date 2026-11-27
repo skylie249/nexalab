@@ -17,6 +17,7 @@ import type { Locale } from "@/i18n/routing";
 import { NOINDEX_FOLLOW, SITE_NAME, absoluteUrl, buildAlternates } from "@/lib/seo";
 import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
 import { calculateReadTimeMinutes } from "@/lib/readTime";
+import { decodeSlugParam } from "@/lib/postSlug";
 import {
   getAllGuideParamsForStaticParams,
   getGuideCategoryLabel,
@@ -33,14 +34,16 @@ export async function generateStaticParams() {
   return params.map(({ category, slug }) => ({ category, slug }));
 }
 
-const getGuide = cache(async (category: string, slug: string) => {
+const getGuide = cache(async (category: string, slugParam: string) => {
   try {
     const { data } = await supabase
       .from("posts")
       .select("*")
       .eq("type", "guide")
       .eq("category", category)
-      .eq("slug", slug)
+      // 라우트 파라미터가 퍼센트 인코딩된 채로 들어올 수 있어(posts/[slug]의 decodeSlugParam과 동일한
+      // 이유) DB에 저장된(디코딩된) slug 값과 맞추려면 여기서도 디코딩해야 한다.
+      .eq("slug", decodeSlugParam(slugParam))
       .eq("published", true)
       .maybeSingle();
     return data;
@@ -60,12 +63,13 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; category: string; slug: string }>;
 }): Promise<Metadata> {
-  const { locale, category, slug } = await params;
+  const { locale, category, slug: slugParam } = await params;
   if (!isGuideCategory(category)) return { robots: { index: false, follow: false } };
 
-  const post = await getGuide(category, slug);
+  const post = await getGuide(category, slugParam);
   if (!post) return { robots: { index: false, follow: false } };
 
+  const slug = post.slug as string;
   const title = `${post.title} - ${SITE_NAME}`;
   const description = buildDescription(post);
   const url = absoluteUrl(`/${locale}/guides/${category}/${slug}`);
@@ -101,15 +105,16 @@ export default async function GuideDetail({
 }: {
   params: Promise<{ locale: string; category: string; slug: string }>;
 }) {
-  const { locale, category, slug } = await params;
+  const { locale, category, slug: slugParam } = await params;
   if (!isGuideCategory(category)) notFound();
   setRequestLocale(locale);
   const t = await getTranslations("guides");
 
-  const post = await getGuide(category, slug);
+  const post = await getGuide(category, slugParam);
   if (!post) notFound();
   if (post.category !== category) notFound();
 
+  const slug = post.slug as string;
   const categoryLabel = getGuideCategoryLabel(category);
   const guideUrl = absoluteUrl(`/${locale}/guides/${category}/${slug}`);
 

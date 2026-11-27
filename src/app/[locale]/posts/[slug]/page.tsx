@@ -26,7 +26,15 @@ export const revalidate = 60;
 
 export async function generateStaticParams() {
   try {
-    const { data: posts } = await supabase.from('posts').select('slug').eq('published', true);
+    // category가 있는 글은 가이드(/guides/[category]/[slug]가 정식 URL)라 여기서는 미리 생성하지
+    // 않는다(아래 PostDetail의 리다이렉트로만 처리) — 두 URL이 동시에 색인되는 중복 콘텐츠 방지.
+    // (type 컬럼은 ALTER TABLE 기본값 때문에 기존 글도 전부 'guide'로 채워져 있어 구분 기준으로
+    // 쓸 수 없다 — category가 실제로 신규 가이드 글인지 가려주는 유일한 신호다.)
+    const { data: posts } = await supabase
+      .from('posts')
+      .select('slug')
+      .eq('published', true)
+      .is('category', null);
     return posts?.map((post) => ({ slug: post.slug })) || [];
   } catch {
     return [];
@@ -123,6 +131,13 @@ export default async function PostDetail({ params }: { params: Promise<{ locale:
       if (slug) permanentRedirect(`/${resolvedParams.locale}/posts/${encodeURIComponent(slug)}`);
     }
     notFound();
+  }
+
+  // category가 있는 글은 가이드 — 정식 URL인 /guides/[category]/[slug]로 영구 리다이렉트
+  // (generateStaticParams가 이미 이런 글을 걸러내지만, 빌드 이후 새로 만든 가이드나
+  // 캐시되지 않은 요청에도 동일하게 적용되도록 런타임에서도 한 번 더 확인한다).
+  if (post.category) {
+    permanentRedirect(`/${resolvedParams.locale}/guides/${post.category}/${encodeURIComponent(post.slug)}`);
   }
 
   // 카테고리는 언어별로 분리 운영 — 현재 로케일과 글의 카테고리 언어가 다르면 404

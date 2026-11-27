@@ -43,6 +43,7 @@ interface PostRow {
   created_at: string;
   updated_at: string | null;
   is_indexable?: boolean | null;
+  category?: string | null;
   categories: { locale?: string } | { locale?: string }[] | null;
 }
 
@@ -70,6 +71,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const post of (posts || []) as PostRow[]) {
       if (!isPostIndexable(post)) continue;
+      // category가 있는 글은 가이드 — /guides/[category]/[slug]로 아래 guideEntries에서 따로 넣는다.
+      // 여기서도 넣으면 /posts/[slug]와 /guides/... 두 URL이 같은 글로 동시에 색인된다.
+      if (post.category) continue;
       const categoryData = Array.isArray(post.categories) ? post.categories[0] : post.categories;
       const locale = categoryData?.locale === "en" ? "en" : "ko";
       if (!isLocaleIndexable(locale)) continue;

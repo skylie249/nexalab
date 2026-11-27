@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getPostLastModified, isPostIndexable } from "@/lib/postIndexing";
+import { decodeSlugParam } from "@/lib/postSlug";
 
 // 가이드 카테고리 4개는 CLAUDE.md가 고정한 값 — DB 테이블을 새로 만들지 않고
 // TOOL_BUILD_LOGS(src/lib/history.ts)와 같은 방식으로 코드에 둔다.
@@ -105,7 +106,10 @@ export async function getRecentGuides(limit = 3): Promise<GuideSummary[]> {
   return (result.data as unknown as GuideSummary[]).filter(isPostIndexable);
 }
 
-export async function getGuideBySlug(category: string, slug: string) {
+export async function getGuideBySlug(category: string, slugParam: string) {
+  // posts/[slug]/page.tsx의 decodeSlugParam과 동일한 이유 — 라우트 파라미터가 퍼센트 인코딩된
+  // 채로 들어올 수 있어 DB에 저장된(디코딩된) slug 값과 맞추려면 여기서 디코딩해야 한다.
+  const slug = decodeSlugParam(slugParam);
   const result = await queryGuides(() =>
     supabase
       .from("posts")

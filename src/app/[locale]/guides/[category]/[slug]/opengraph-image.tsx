@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { createClient } from '@supabase/supabase-js';
 import { getGuideCategoryLabel } from '@/lib/guides';
+import { decodeSlugParam } from '@/lib/postSlug';
 
 export const alt = 'NexaLab 가이드 대표 이미지';
 export const size = {
@@ -24,7 +25,7 @@ export default async function Image({ params }: { params: Promise<{ category: st
       .select('title')
       .eq('type', 'guide')
       .eq('category', resolvedParams.category)
-      .eq('slug', resolvedParams.slug)
+      .eq('slug', decodeSlugParam(resolvedParams.slug))
       .single();
     if (data) postTitle = data.title;
   } catch {
